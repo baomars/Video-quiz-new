@@ -16,6 +16,8 @@ export default defineConfig({
   },
   server: {
     port: FRONTEND_PORT,
+    host: '0.0.0.0',
+    allowedHosts: true,
     proxy: {
       '/api': {
         target: `http://localhost:${BACKEND_PORT}`,

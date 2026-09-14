@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 1280" width="720" height="1280">
+  <defs>
+    <linearGradient id="geoBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="100%" stop-color="#e2e8f0" />
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#818cf8" stop-opacity="0.15" />
+    </linearGradient>
+  </defs>
+  <rect width="720" height="1280" fill="url(#geoBg)" />
+  <circle cx="600" cy="200" r="300" fill="url(#accentGrad)" />
+  <polygon points="0,400 300,550 100,750 0,650" fill="#fbcfe8" fill-opacity="0.25" />
+  <polygon points="500,800 720,700 720,1100 450,1050" fill="#bae6fd" fill-opacity="0.3" />
+  <circle cx="100" cy="1150" r="250" fill="#fef08a" fill-opacity="0.3" />
+</svg>

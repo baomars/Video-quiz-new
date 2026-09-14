@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 80" width="320" height="80">
+  <defs>
+    <linearGradient id="cyberText" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#06b6d4" />
+    </linearGradient>
+  </defs>
+  <rect width="320" height="80" rx="12" fill="#090d16" stroke="#06b6d4" stroke-width="2" />
+  <rect x="20" y="20" width="40" height="40" rx="8" fill="#0284c7" />
+  <text x="40" y="48" text-anchor="middle" fill="#f0f9ff" font-family="monospace" font-weight="900" font-size="24">&gt;_</text>
+  <text x="75" y="49" fill="url(#cyberText)" font-family="Arial, sans-serif" font-weight="900" font-size="23" letter-spacing="2">TECH PULSE</text>
+</svg>

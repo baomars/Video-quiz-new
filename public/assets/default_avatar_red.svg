@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <radialGradient id="redGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ff2d55" />
+      <stop offset="100%" stop-color="#880e4f" />
+    </radialGradient>
+  </defs>
+  <rect width="200" height="200" rx="45" fill="#18020c" stroke="#ff2d55" stroke-width="4" />
+  <circle cx="100" cy="100" r="65" fill="url(#redGlow)" opacity="0.85" />
+  <text x="100" y="125" text-anchor="middle" fill="#ffffff" font-family="Arial, sans-serif" font-weight="900" font-size="70">?</text>
+</svg>

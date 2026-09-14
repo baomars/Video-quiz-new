@@ -1,0 +1,36 @@
+{
+  "identity": {
+    "channelName": "KIẾN THỨC MỖI NGÀY",
+    "description": "Khám phá điều kỳ diệu quanh ta",
+    "avatarUrl": "/assets/default_avatar_gold.svg",
+    "logoUrl": "/assets/default_logo_gold.svg",
+    "watermarkUrl": "",
+    "watermarkOpacity": 0.85,
+    "watermarkPosition": "top-right",
+    "showWatermark": true
+  },
+  "colors": {
+    "primary": "#2563eb",
+    "secondary": "#eff6ff",
+    "accent": "#f59e0b",
+    "background": "#ffffff",
+    "cardBg": "#ffffff",
+    "text": "#0f172a",
+    "textMuted": "#64748b",
+    "correct": "#16a34a",
+    "wrong": "#dc2626",
+    "buttonBg": "#ffffff",
+    "border": "#e2e8f0"
+  },
+  "fonts": {
+    "primary": "Be Vietnam Pro",
+    "secondary": "Noto Sans",
+    "headingWeight": "800",
+    "bodyWeight": "600"
+  },
+  "effects": {
+    "shadowStyle": "subtle",
+    "borderRadius": 18,
+    "glassmorphism": false
+  }
+}

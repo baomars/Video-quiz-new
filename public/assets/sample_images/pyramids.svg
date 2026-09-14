@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 450" width="600" height="450">
+  <defs>
+    <linearGradient id="desertSky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#451a03" />
+      <stop offset="50%" stop-color="#b45309" />
+      <stop offset="100%" stop-color="#f59e0b" />
+    </linearGradient>
+    <linearGradient id="sandGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#d97706" />
+      <stop offset="100%" stop-color="#78350f" />
+    </linearGradient>
+  </defs>
+  <rect width="600" height="450" fill="url(#desertSky)" />
+  <circle cx="160" cy="140" r="55" fill="#fef3c7" opacity="0.9" />
+  <!-- Big Pyramid -->
+  <polygon points="280,140 100,380 340,380" fill="#fde68a" />
+  <polygon points="280,140 340,380 460,380" fill="#d97706" />
+  <!-- Small Pyramid -->
+  <polygon points="460,220 360,380 490,380" fill="#fde68a" opacity="0.9" />
+  <polygon points="460,220 490,380 560,380" fill="#b45309" opacity="0.9" />
+  <!-- Dunes -->
+  <path d="M0,360 Q150,330 300,370 T600,350 L600,450 L0,450 Z" fill="url(#sandGrad)" />
+</svg>

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 80" width="320" height="80">
+  <defs>
+    <linearGradient id="goldText" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a" />
+      <stop offset="100%" stop-color="#f59e0b" />
+    </linearGradient>
+  </defs>
+  <rect width="320" height="80" rx="16" fill="#0f172a" stroke="#fbbf24" stroke-width="2" />
+  <circle cx="45" cy="40" r="24" fill="#fbbf24" />
+  <text x="45" y="48" text-anchor="middle" fill="#0f172a" font-family="Arial, sans-serif" font-weight="900" font-size="22">Q</text>
+  <text x="85" y="48" fill="url(#goldText)" font-family="Arial, sans-serif" font-weight="800" font-size="24" letter-spacing="1">TRIVIA MASTER</text>
+</svg>

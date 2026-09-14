@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="cyberGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#06b6d4" />
+    </linearGradient>
+  </defs>
+  <rect width="200" height="200" rx="30" fill="#090d16" stroke="#06b6d4" stroke-width="4" />
+  <polygon points="100,30 170,70 170,150 100,190 30,150 30,70" fill="none" stroke="url(#cyberGrad)" stroke-width="4" />
+  <path d="M75 100 L95 125 L135 80" fill="none" stroke="#38bdf8" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" />
+</svg>

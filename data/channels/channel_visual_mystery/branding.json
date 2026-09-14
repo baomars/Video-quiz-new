@@ -1,0 +1,36 @@
+{
+  "identity": {
+    "channelName": "ĐỐ VUI TINH MẮT",
+    "description": "Nhìn hình đoán vật - Thử tài tinh mắt",
+    "avatarUrl": "/assets/default_avatar_red.svg",
+    "logoUrl": "/assets/default_logo_red.svg",
+    "watermarkUrl": "",
+    "watermarkOpacity": 0.85,
+    "watermarkPosition": "top-left",
+    "showWatermark": true
+  },
+  "colors": {
+    "primary": "#7c3aed",
+    "secondary": "#faf5ff",
+    "accent": "#db2777",
+    "background": "#faf5ff",
+    "cardBg": "#ffffff",
+    "text": "#1e1b4b",
+    "textMuted": "#6b7280",
+    "correct": "#16a34a",
+    "wrong": "#e11d48",
+    "buttonBg": "#ffffff",
+    "border": "#e9d5ff"
+  },
+  "fonts": {
+    "primary": "Be Vietnam Pro",
+    "secondary": "Noto Sans",
+    "headingWeight": "800",
+    "bodyWeight": "600"
+  },
+  "effects": {
+    "shadowStyle": "subtle",
+    "borderRadius": 20,
+    "glassmorphism": false
+  }
+}

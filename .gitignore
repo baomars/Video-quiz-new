@@ -1,0 +1,55 @@
+# Dependencies
+node_modules/
+/.pnp
+.pnp.js
+
+# Production build outputs
+dist/
+dist-ssr/
+*.local
+
+# Rendered video files (keep data/renders directory tracked via .gitkeep)
+data/renders/*.mp4
+data/renders/*.mkv
+data/renders/*.webm
+!data/renders/.gitkeep
+*.mp4
+*.mkv
+*.webm
+public/cache/
+public/uploads/
+.remotion/
+chrome-headless-shell/
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+token.txt
+
+# Logs, scratch and temporary files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+scratch/
+.system_generated/
+.tempmediaStorage/
+
+# Temporary data, cache and test files
+data/cache/
+data/test_snapshots/
+data/renders/snapshots/
+data/*.jpg
+data/*.png
+test*.mp3
+quiz new moi/
+
+# OS metadata
+.DS_Store
+Thumbs.db
+Desktop.ini
+

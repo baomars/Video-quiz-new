@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 450" width="600" height="450">
+  <defs>
+    <linearGradient id="skyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1e1b4b" />
+      <stop offset="60%" stop-color="#312e81" />
+      <stop offset="100%" stop-color="#fb7185" />
+    </linearGradient>
+  </defs>
+  <rect width="600" height="450" fill="url(#skyGrad)" />
+  <circle cx="480" cy="120" r="45" fill="#fef08a" opacity="0.8" />
+  <!-- Ground -->
+  <rect y="380" width="600" height="70" fill="#0f172a" />
+  <!-- Eiffel Tower Silhouette -->
+  <polygon points="300,60 294,150 286,260 250,380 270,380 288,290 312,290 330,380 350,380 314,260 306,150" fill="#f8fafc" opacity="0.95" />
+  <!-- Spire tip -->
+  <line x1="300" y1="30" x2="300" y2="60" stroke="#f8fafc" stroke-width="4" stroke-linecap="round" />
+  <!-- Platforms -->
+  <rect x="282" y="150" width="36" height="8" rx="2" fill="#e2e8f0" />
+  <rect x="274" y="260" width="52" height="12" rx="3" fill="#e2e8f0" />
+  <!-- Arch -->
+  <path d="M280,380 Q300,320 320,380" fill="none" stroke="#f8fafc" stroke-width="6" />
+</svg>

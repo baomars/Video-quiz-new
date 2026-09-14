@@ -1,0 +1,11 @@
+{
+  "language": "vi",
+  "voice": "vi-VN-NamMinhNeural",
+  "rate": "+5%",
+  "pitch": "+0Hz",
+  "volume": "+0%",
+  "readOptions": false,
+  "introScript": "Chào các bạn! Cùng kiểm tra kiến thức công nghệ nhé.",
+  "outroScript": "Đăng ký kênh để đón xem câu đố công nghệ mới nhất!",
+  "revealScript": "Chính xác! Đáp án là"
+}

@@ -1,0 +1,8 @@
+{
+  "id": "channel_trivia_master",
+  "name": "Kiến Thức Tươi Sáng (Knowledge Bright)",
+  "description": "Kênh câu đố kiến thức tổng hợp giao diện Light tươi sáng, sạch sẽ và hiện đại.",
+  "createdAt": "2026-09-11T16:12:44.857Z",
+  "updatedAt": "2026-09-11T16:12:46.304Z",
+  "activeTemplateId": "classic-stacked"
+}

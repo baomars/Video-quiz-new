@@ -1,0 +1,38 @@
+{
+  "identity": {
+    "channelName": "TECH VIBRANT",
+    "description": "Đột phá công nghệ tương lai",
+    "avatarUrl": "/assets/default_avatar_cyber.svg",
+    "logoUrl": "/assets/default_logo_cyber.svg",
+    "watermarkUrl": "",
+    "watermarkOpacity": 0.85,
+    "watermarkPosition": "top-right",
+    "showWatermark": true,
+    "showLogo": false,
+    "showChannelName": false
+  },
+  "colors": {
+    "primary": "#d97706",
+    "secondary": "#fffbeb",
+    "accent": "#0284c7",
+    "background": "#fffbeb",
+    "cardBg": "#ffffff",
+    "text": "#1e293b",
+    "textMuted": "#64748b",
+    "correct": "#15803d",
+    "wrong": "#e11d48",
+    "buttonBg": "#ffffff",
+    "border": "#fde68a"
+  },
+  "fonts": {
+    "primary": "Be Vietnam Pro",
+    "secondary": "Noto Sans",
+    "headingWeight": "800",
+    "bodyWeight": "600"
+  },
+  "effects": {
+    "shadowStyle": "subtle",
+    "borderRadius": 16,
+    "glassmorphism": false
+  }
+}

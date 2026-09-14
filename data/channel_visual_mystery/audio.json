@@ -1,0 +1,19 @@
+{
+  "bgmTrack": "/assets/audio/bgm/bgm_chill_lofi.mp3",
+  "bgmVolume": 0.22,
+  "duckingIntensity": 0.15,
+  "sfx": {
+    "tick": "/assets/audio/sfx/tick.wav",
+    "finish": "/assets/audio/sfx/finish.wav",
+    "reveal": "/assets/audio/sfx/reveal.wav",
+    "correct": "/assets/audio/sfx/correct.wav",
+    "transition": "/assets/audio/sfx/transition.wav"
+  },
+  "volumes": {
+    "tick": 0.6,
+    "finish": 0.8,
+    "reveal": 0.9,
+    "correct": 1,
+    "transition": 0.5
+  }
+}

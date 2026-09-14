@@ -1,0 +1,19 @@
+{
+  "bgmTrack": "/assets/audio/bgm/bgm_mystery_suspense.mp3",
+  "bgmVolume": 0.25,
+  "duckingIntensity": 0.2,
+  "sfx": {
+    "tick": "/assets/audio/sfx/tick.wav",
+    "finish": "/assets/audio/sfx/finish.wav",
+    "reveal": "/assets/audio/sfx/reveal.wav",
+    "correct": "/assets/audio/sfx/correct.wav",
+    "transition": "/assets/audio/sfx/transition.wav"
+  },
+  "volumes": {
+    "tick": 0.7,
+    "finish": 0.85,
+    "reveal": 0.95,
+    "correct": 1,
+    "transition": 0.6
+  }
+}

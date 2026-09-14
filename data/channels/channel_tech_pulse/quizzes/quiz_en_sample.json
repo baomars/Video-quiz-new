@@ -1,0 +1,52 @@
+{
+  "id": "quiz_en_sample",
+  "title": "World Wonders & Tech Quiz",
+  "language": "en",
+  "channelId": "channel_tech_pulse",
+  "createdAt": "2026-09-11T14:04:49.447Z",
+  "updatedAt": "2026-09-11T14:22:48.926Z",
+  "questions": [
+    {
+      "id": "q_en_1",
+      "question": "In which capital city is the iconic Eiffel Tower located?",
+      "options": {
+        "A": "Paris",
+        "B": "Rome",
+        "C": "Berlin"
+      },
+      "correctAnswer": "A",
+      "explanation": "The Eiffel Tower is situated on the Champ de Mars in Paris, France.",
+      "illustrations": [
+        "/assets/sample_images/eiffel_tower.svg"
+      ]
+    },
+    {
+      "id": "q_en_2",
+      "question": "Which ancient land is home to the Great Pyramids of Giza?",
+      "options": {
+        "A": "Greece",
+        "B": "Egypt",
+        "C": "Italy"
+      },
+      "correctAnswer": "B",
+      "explanation": "The Great Pyramids are ancient architectural wonders situated in Egypt.",
+      "illustrations": [
+        "/assets/sample_images/pyramids.svg"
+      ]
+    },
+    {
+      "id": "q_en_3",
+      "question": "Modern AI algorithms and robotics belong to which field?",
+      "options": {
+        "A": "Handicraft",
+        "B": "High Technology",
+        "C": "Ancient Pottery"
+      },
+      "correctAnswer": "B",
+      "explanation": "AI and robotics are driving forces in modern high technology innovation.",
+      "illustrations": [
+        "/assets/sample_images/robot_ai.svg"
+      ]
+    }
+  ]
+}

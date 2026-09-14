@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 450" width="600" height="450">
+  <defs>
+    <linearGradient id="oceanSunset" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#311042" />
+      <stop offset="50%" stop-color="#701a75" />
+      <stop offset="100%" stop-color="#f43f5e" />
+    </linearGradient>
+  </defs>
+  <rect width="600" height="450" fill="url(#oceanSunset)" />
+  <circle cx="300" cy="180" r="70" fill="#fef08a" opacity="0.8" />
+  <!-- Water -->
+  <rect y="360" width="600" height="90" fill="#1e1b4b" />
+  <!-- Torch and Statue Silhouette -->
+  <!-- Torch arm -->
+  <polygon points="210,130 220,110 235,115 225,135" fill="#fcd34d" />
+  <circle cx="215" cy="105" r="10" fill="#ef4444" />
+  <!-- Head with crown spikes -->
+  <circle cx="270" cy="170" r="30" fill="#f8fafc" />
+  <polygon points="245,155 240,130 255,150" fill="#f8fafc" />
+  <polygon points="260,145 265,120 273,145" fill="#f8fafc" />
+  <polygon points="280,145 292,125 288,150" fill="#f8fafc" />
+  <polygon points="295,155 310,135 298,160" fill="#f8fafc" />
+  <!-- Body/Robe -->
+  <path d="M240,200 L310,200 L340,360 L210,360 Z" fill="#f8fafc" />
+  <!-- Pedestal -->
+  <rect x="180" y="340" width="180" height="40" fill="#cbd5e1" />
+</svg>

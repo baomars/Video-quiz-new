@@ -1,7 +1,7 @@
 const http = require('http');
 const { exec } = require('child_process');
 
-const port = process.env.FRONTEND_PORT || 5400;
+const port = process.env.FRONTEND_PORT || 4500;
 const url = `http://localhost:${port}`;
 
 let attempts = 0;

@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 
-const FRONTEND_PORT = Number(process.env.FRONTEND_PORT) || 5400;
+const FRONTEND_PORT = Number(process.env.FRONTEND_PORT) || 4500;
 const BACKEND_PORT = Number(process.env.BACKEND_PORT) || 5410;
 
 export default defineConfig({

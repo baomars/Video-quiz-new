@@ -127,6 +127,7 @@ export class RenderManager {
   private chromePath: string;
   private cachedBundleLocation: string | null = null;
   private liveJunctionsCreated: boolean = false;
+  private cachedNvencSupport?: boolean;
 
   constructor(
     rendersDir: string,
@@ -159,8 +160,76 @@ export class RenderManager {
     } else if (fs.existsSync(edgeBrowser)) {
       this.chromePath = edgeBrowser;
       console.log(`[RENDER_INIT] Sử dụng Microsoft Edge: ${edgeBrowser}`);
+    } else if (process.platform === 'linux') {
+      const linuxChromePaths = [
+        '/usr/bin/google-chrome-stable',
+        '/usr/bin/google-chrome',
+        '/usr/bin/chromium-browser',
+        '/usr/bin/chromium'
+      ];
+      const found = linuxChromePaths.find(p => fs.existsSync(p));
+      if (found) {
+        this.chromePath = found;
+        console.log(`[RENDER_INIT] Sử dụng Linux Chrome/Chromium: ${found}`);
+      } else {
+        this.chromePath = '';
+      }
     } else {
       this.chromePath = '';
+    }
+  }
+
+  private hasNvidiaGpu(): boolean {
+    try {
+      if (process.platform === 'linux' && (fs.existsSync('/proc/driver/nvidia/version') || fs.existsSync('/dev/nvidia0'))) {
+        return true;
+      }
+      execSync('nvidia-smi', { stdio: 'ignore', timeout: 2000 });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  private isNvencAvailable(): boolean {
+    if (this.cachedNvencSupport !== undefined) {
+      return this.cachedNvencSupport;
+    }
+    if (!this.hasNvidiaGpu()) {
+      this.cachedNvencSupport = false;
+      return false;
+    }
+    try {
+      let ffmpegPath = '';
+      if (process.platform === 'win32') {
+        ffmpegPath = path.resolve(process.cwd(), 'node_modules/@remotion/compositor-win32-x64-msvc/ffmpeg.exe');
+      } else {
+        ffmpegPath = path.resolve(process.cwd(), 'node_modules/@remotion/compositor-linux-x64-gnu/ffmpeg');
+        if (!fs.existsSync(ffmpegPath)) {
+          ffmpegPath = 'ffmpeg';
+        }
+      }
+
+      if (!fs.existsSync(ffmpegPath) && process.platform === 'win32') {
+        this.cachedNvencSupport = false;
+        return false;
+      }
+
+      const png1x1 = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64');
+      const probeFile = path.join(os.tmpdir(), 'nvenc_probe_1x1.png');
+      fs.writeFileSync(probeFile, png1x1);
+
+      execSync(`"${ffmpegPath}" -loop 1 -i "${probeFile}" -c:v h264_nvenc -frames:v 1 -f null -`, {
+        stdio: 'pipe',
+        timeout: 4000
+      });
+      console.log('[RENDER_INIT] Tăng tốc phần cứng GPU NVIDIA NVENC sẵn sàng!');
+      this.cachedNvencSupport = true;
+      return true;
+    } catch {
+      console.log('[RENDER_INIT] GPU không hỗ trợ chip NVENC hoặc chạy trên CPU VM. Sử dụng CPU libx264 tối ưu.');
+      this.cachedNvencSupport = false;
+      return false;
     }
   }
 
@@ -778,8 +847,22 @@ export class RenderManager {
     };
 
     const cpuCount = os.cpus().length || 4;
-    // On 4-thread machines, concurrency=3 maximizes Chromium frame capture throughput while keeping 1 thread for FFmpeg
-    const optimalConcurrency = cpuCount >= 4 ? 3 : 2;
+    const hasGpu = this.hasNvidiaGpu();
+    const nvencEnabled = this.isNvencAvailable();
+
+    // Concurrency: with NVENC active, Chromium can safely use more threads without competing with FFmpeg
+    const optimalConcurrency = nvencEnabled ? Math.min(6, Math.max(3, cpuCount)) : (cpuCount >= 4 ? 3 : 2);
+
+    const glOption: 'angle-egl' | 'angle' | 'swangle' = hasGpu
+      ? (process.platform === 'linux' ? 'angle-egl' : 'angle')
+      : 'swangle';
+
+    this.addLog(
+      job,
+      'info',
+      'stage_4_render_frames',
+      `Cấu hình tăng tốc: NVENC=${nvencEnabled ? 'BẬT (Hardware GPU)' : 'TẮT (libx264 veryfast)'}, GL=${glOption}, Concurrency=${optimalConcurrency}`
+    );
 
     let renderFramesStartTime = 0;
     let lastProgressFrame = 0;
@@ -799,14 +882,18 @@ export class RenderManager {
         concurrency: optimalConcurrency,
         imageFormat: 'jpeg',
         jpegQuality: 80,
-        x264Preset: 'veryfast',
-        crf: 23,
+        x264Preset: nvencEnabled ? undefined : 'veryfast',
+        // CRITICAL FIX: Do NOT set crf when hardware acceleration is enabled! Remotion disables NVENC if crf is passed.
+        crf: nvencEnabled ? undefined : 23,
+        videoBitrate: nvencEnabled ? '4500k' : undefined,
         pixelFormat: 'yuv420p',
-        hardwareAcceleration: 'if-possible',
+        hardwareAcceleration: nvencEnabled ? 'if-possible' : 'disable',
         chromiumOptions: {
           disableWebSecurity: true,
           ignoreCertificateErrors: true,
-          headless: true
+          headless: true,
+          enableMultiProcessOnLinux: true,
+          gl: glOption
         },
         timeoutInMilliseconds: Math.max(20, Math.ceil(quiz.questions.length * 2.5)) * 60 * 1000,
         cancelSignal,

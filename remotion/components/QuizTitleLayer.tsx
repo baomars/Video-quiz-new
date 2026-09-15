@@ -14,7 +14,7 @@ interface QuizTitleLayerProps {
   defaultColor?: string;
 }
 
-export const QuizTitleLayer: React.FC<QuizTitleLayerProps> = ({
+export const QuizTitleLayer: React.FC<QuizTitleLayerProps> = React.memo(({
   style = { x: 7, y: 7, width: 86, height: 6 },
   quizTitle = '',
   defaultFont = 'Montserrat, sans-serif',
@@ -33,7 +33,10 @@ export const QuizTitleLayer: React.FC<QuizTitleLayerProps> = ({
     return null;
   }
 
-  const transform = getEntranceTransform(style.animation || 'slide-up', frame, fps, 0);
+  // Freeze transform after entrance animation (25 frames) to avoid per-frame matrix recalculations
+  const transform = (style.animation === 'none' || frame >= 25)
+    ? { opacity: 1, transform: 'none' }
+    : getEntranceTransform(style.animation || 'slide-up', frame, fps, 0);
 
   // Horizontal Alignment
   const width = style.width ?? 86;
@@ -91,4 +94,4 @@ export const QuizTitleLayer: React.FC<QuizTitleLayerProps> = ({
       </span>
     </div>
   );
-};
+});

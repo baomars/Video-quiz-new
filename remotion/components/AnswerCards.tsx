@@ -52,7 +52,7 @@ function parseBgColor(colorStr?: string, opacityVal?: number): string {
   return result;
 }
 
-export const AnswerCards: React.FC<AnswerCardsProps> = ({
+export const AnswerCards: React.FC<AnswerCardsProps> = React.memo(({
   style,
   layoutMode,
   options,
@@ -94,8 +94,8 @@ export const AnswerCards: React.FC<AnswerCardsProps> = ({
     : '6%';
   const topPos = style.y !== undefined ? `${style.y}%` : '63%';
 
-  // Styling presets
-  const blurPx = style.backdropBlur !== undefined ? style.backdropBlur : 12;
+  // Styling presets - Only apply backdrop blur if glassmorphism is active and not solid
+  const blurPx = style.backdropBlur !== undefined ? style.backdropBlur : (style.glassmorphism ? 12 : 0);
   const borderWidth = style.borderWidth !== undefined ? style.borderWidth : 2;
   const defaultBorderColor = style.borderColor || `${primaryColor}66` || '#38bdf8';
   const strokeWidth = style.textStrokeWidth ?? 0;
@@ -225,4 +225,4 @@ export const AnswerCards: React.FC<AnswerCardsProps> = ({
       })}
     </div>
   );
-};
+});

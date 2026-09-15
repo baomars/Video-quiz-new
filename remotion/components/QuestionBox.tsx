@@ -45,7 +45,7 @@ function parseBgColor(colorStr?: string, opacityVal?: number): string {
   return result;
 }
 
-export const QuestionBox: React.FC<QuestionBoxProps> = ({
+export const QuestionBox: React.FC<QuestionBoxProps> = React.memo(({
   style,
   questionText,
   questionIndex,
@@ -57,7 +57,7 @@ export const QuestionBox: React.FC<QuestionBoxProps> = ({
 }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const entrance = delayFrame >= 0
+  const entrance = (delayFrame >= 0 && frame < delayFrame + 25)
     ? getEntranceTransform(style.animation || 'pop', frame, fps, delayFrame)
     : { opacity: 1, transform: 'none' };
 
@@ -149,4 +149,4 @@ export const QuestionBox: React.FC<QuestionBoxProps> = ({
       </div>
     </div>
   );
-};
+});

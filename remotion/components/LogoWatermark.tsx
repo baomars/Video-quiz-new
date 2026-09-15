@@ -13,7 +13,7 @@ interface LogoWatermarkProps {
   branding: ChannelBranding;
 }
 
-export const LogoWatermark: React.FC<LogoWatermarkProps> = ({ style = { x: 75, y: 8, width: 16, height: 6 }, branding }) => {
+export const LogoWatermark: React.FC<LogoWatermarkProps> = React.memo(({ style = { x: 75, y: 8, width: 16, height: 6 }, branding }) => {
   const showLogo = style.showLogo ?? branding.identity.showLogo ?? true;
   const showChannelName = style.showChannelName ?? branding.identity.showChannelName ?? false;
 
@@ -60,6 +60,8 @@ export const LogoWatermark: React.FC<LogoWatermarkProps> = ({ style = { x: 75, y
         <img
           src={resolveMedia(logoUrl)}
           alt="channel logo"
+          loading="eager"
+          decoding="async"
           style={{
             width: `${logoSize}px`,
             height: `${logoSize}px`,
@@ -86,4 +88,4 @@ export const LogoWatermark: React.FC<LogoWatermarkProps> = ({ style = { x: 75, y
       )}
     </div>
   );
-};
+});

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useCurrentFrame, useVideoConfig, interpolate } from 'remotion';
+import { useCurrentFrame, useVideoConfig, interpolate, Img } from 'remotion';
 import { ComponentStyle, IllustrationLayout } from '../types/index';
 import { getEntranceTransform } from '../animations/index';
 import { resolveMedia } from '../utils/media';
@@ -69,7 +69,7 @@ export const IllustrationFrame: React.FC<IllustrationFrameProps> = ({
   // Single image rendering (Split 2 completely removed as per specification)
   return (
     <div style={containerStyle}>
-      <img
+      <Img
         src={resolveMedia(validImages[0])}
         alt="quiz illustration"
         style={{

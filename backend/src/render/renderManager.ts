@@ -31,10 +31,58 @@ export interface RenderLogEntry {
   message: string;
 }
 
+export type RenderPresetType = 'fast' | 'standard' | 'high_quality';
+
+export interface RenderPresetConfig {
+  name: string;
+  width: number;
+  height: number;
+  fps: number;
+  jpegQuality: number;
+  x264Preset: 'ultrafast' | 'superfast' | 'veryfast' | 'faster' | 'fast' | 'medium';
+  videoBitrate: string;
+  crf: number;
+}
+
+export const RENDER_PRESETS: Record<RenderPresetType, RenderPresetConfig> = {
+  fast: {
+    name: 'Nháp nhanh (720p)',
+    width: 720,
+    height: 1280,
+    fps: 30,
+    jpegQuality: 62,
+    x264Preset: 'ultrafast',
+    videoBitrate: '2600k',
+    crf: 30
+  },
+  standard: {
+    name: 'Cân bằng (720p)',
+    width: 720,
+    height: 1280,
+    fps: 30,
+    jpegQuality: 80,
+    x264Preset: 'veryfast',
+    videoBitrate: '4500k',
+    crf: 23
+  },
+  high_quality: {
+    name: 'Chất lượng cao (1080p)',
+    width: 1080,
+    height: 1920,
+    fps: 30,
+    jpegQuality: 92,
+    x264Preset: 'fast',
+    videoBitrate: '8000k',
+    crf: 18
+  }
+};
+
 export interface RenderJob {
   jobId: string;
   fileName?: string;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
+  status: 'pending' | 'queued' | 'processing' | 'completed' | 'failed';
+  queuePosition?: number;
+  renderPreset?: RenderPresetType;
   progress: number;
   stage: string;
   currentStageId: string;
@@ -96,6 +144,8 @@ export interface RenderRequestParams {
   quiz: Quiz;
   language: LanguageCode;
   customFileName?: string;
+  renderPreset?: RenderPresetType;
+  customConcurrency?: number;
 }
 
 export interface BatchRenderRequestParams {
@@ -105,6 +155,8 @@ export interface BatchRenderRequestParams {
   language: LanguageCode;
   config: BatchConfig;
   customFileNames?: string[];
+  renderPreset?: RenderPresetType;
+  customConcurrency?: number;
 }
 
 const PIPELINE_STAGES_CONFIG: Array<{ id: string; name: string; minProgress: number; maxProgress: number }> = [
@@ -128,6 +180,8 @@ export class RenderManager {
   private cachedBundleLocation: string | null = null;
   private liveJunctionsCreated: boolean = false;
   private cachedNvencSupport?: boolean;
+  private renderQueue: Array<{ jobId: string; params: RenderRequestParams }> = [];
+  private activeJobId: string | null = null;
 
   constructor(
     rendersDir: string,
@@ -376,6 +430,7 @@ export class RenderManager {
     const job: RenderJob = {
       jobId,
       status: 'processing',
+      renderPreset: params.renderPreset || 'standard',
       progress: 0,
       stage: 'Đang khởi tạo tác vụ render...',
       currentStageId: 'stage_1_prepare',
@@ -385,8 +440,36 @@ export class RenderManager {
       updatedAt: now
     };
 
+    // FIFO Queue: If another render job is already running, enqueue this job
+    if (this.activeJobId !== null) {
+      job.status = 'queued';
+      this.renderQueue.push({ jobId, params });
+      job.queuePosition = this.renderQueue.length;
+      job.stage = `Đang trong hàng đợi render (vị trí #${job.queuePosition})...`;
+      this.jobs.set(jobId, job);
+      this.addLog(
+        job,
+        'info',
+        'QUEUE',
+        `Hệ thống đang render tác vụ ${this.activeJobId}. Đã xếp tác vụ ${jobId} vào hàng đợi tại vị trí #${job.queuePosition}`
+      );
+      console.log(`[RENDER_QUEUE] Job ${jobId} xếp hàng (vị trí #${job.queuePosition}). Đang chạy: ${this.activeJobId}`);
+      return jobId;
+    }
+
+    this.activeJobId = jobId;
+    job.status = 'processing';
     this.jobs.set(jobId, job);
-    this.addLog(job, 'info', 'INIT', `Bắt đầu phiên render video cho kênh: "${params.channel.name}" | Template: "${params.template.name}"`);
+    this.addLog(job, 'info', 'INIT', `Bắt đầu phiên render video cho kênh: "${params.channel.name}" | Template: "${params.template.name}" | Preset: ${params.renderPreset || 'standard'}`);
+
+    this.executeJobWithTimeout(jobId, params);
+
+    return jobId;
+  }
+
+  private executeJobWithTimeout(jobId: string, params: RenderRequestParams) {
+    const job = this.jobs.get(jobId);
+    if (!job) return;
 
     // Dynamic timeout safeguard based on question count (at least 20 minutes, ~2.5 mins per question for large videos)
     const qCount = params.quiz?.questions?.length || 3;
@@ -400,12 +483,56 @@ export class RenderManager {
     Promise.race([
       this.processRenderJob(jobId, params),
       timeoutPromise
-    ]).catch(err => {
-      console.error(`Render job ${jobId} failed with unhandled error:`, err);
-      this.failJob(job, job.currentStageId || 'stage_4_render_frames', err);
+    ])
+      .catch(err => {
+        console.error(`Render job ${jobId} failed with unhandled error:`, err);
+        this.failJob(job, job.currentStageId || 'stage_4_render_frames', err);
+      })
+      .finally(() => {
+        this.onJobFinished(jobId);
+      });
+  }
+
+  private onJobFinished(finishedJobId: string) {
+    if (this.activeJobId === finishedJobId) {
+      this.activeJobId = null;
+    }
+    this.processNextInQueue();
+  }
+
+  private processNextInQueue() {
+    if (this.activeJobId !== null || this.renderQueue.length === 0) {
+      return;
+    }
+
+    const next = this.renderQueue.shift()!;
+    this.activeJobId = next.jobId;
+
+    // Update queue position for remaining jobs
+    this.renderQueue.forEach((item, index) => {
+      const queuedJob = this.jobs.get(item.jobId);
+      if (queuedJob && queuedJob.status === 'queued') {
+        queuedJob.queuePosition = index + 1;
+        queuedJob.stage = `Đang trong hàng đợi render (vị trí #${index + 1})...`;
+        queuedJob.updatedAt = new Date().toISOString();
+      }
     });
 
-    return jobId;
+    const nextJob = this.jobs.get(next.jobId);
+    if (!nextJob) {
+      this.activeJobId = null;
+      this.processNextInQueue();
+      return;
+    }
+
+    nextJob.status = 'processing';
+    nextJob.queuePosition = undefined;
+    nextJob.stage = 'Đang khởi tạo tác vụ render từ hàng đợi...';
+    nextJob.updatedAt = new Date().toISOString();
+    this.addLog(nextJob, 'info', 'QUEUE', `Bắt đầu xử lý tác vụ từ hàng đợi (Job ID: ${next.jobId})`);
+    console.log(`[RENDER_QUEUE] Bắt đầu render tác vụ hàng đợi tiếp theo: ${next.jobId}`);
+
+    this.executeJobWithTimeout(next.jobId, next.params);
   }
 
   public async startBatchRender(params: BatchRenderRequestParams): Promise<string> {
@@ -480,7 +607,9 @@ export class RenderManager {
             template: videoTemplate,
             quiz: subQuiz,
             language,
-            customFileName: designatedFileName
+            customFileName: designatedFileName,
+            renderPreset: params.renderPreset,
+            customConcurrency: params.customConcurrency
           });
 
           batchJob.currentJobId = subJobId;
@@ -703,6 +832,10 @@ export class RenderManager {
     const durationSec = Math.round((totalDurationFrames / 30) * 10) / 10;
     job.durationSec = durationSec;
 
+    const selectedPresetKey = params.renderPreset || 'standard';
+    const presetConfig = RENDER_PRESETS[selectedPresetKey] || RENDER_PRESETS.standard;
+    job.renderPreset = selectedPresetKey;
+
     const compositionProps: VideoCompositionProps = {
       channel,
       template,
@@ -710,9 +843,9 @@ export class RenderManager {
       language,
       totalDurationFrames,
       cues,
-      fps: 30,
-      width: 720,
-      height: 1280
+      fps: presetConfig.fps || 30,
+      width: presetConfig.width,
+      height: presetConfig.height
     };
 
     const entryPoint = path.resolve(process.cwd(), 'remotion', 'index.ts');
@@ -865,6 +998,9 @@ export class RenderManager {
     // On 2-vCPU machines (like Google Colab free/T4 tier), concurrency MUST not exceed 2 to prevent severe CPU thrashing!
     // On multi-core machines (>=4 vCPUs), concurrency can safely scale up to 3 or 4.
     const optimalConcurrency = cpuCount <= 2 ? 2 : (nvencEnabled ? Math.min(4, cpuCount) : Math.min(3, cpuCount - 1));
+    const userConcurrency = params.customConcurrency && params.customConcurrency >= 1 && params.customConcurrency <= 8
+      ? params.customConcurrency
+      : optimalConcurrency;
 
     // On Linux with GPU, if Xvfb/DISPLAY is active, use 'angle' for full hardware GPU rasterization.
     // If headless without display, use null (lets Chromium auto-detect hardware).
@@ -877,7 +1013,7 @@ export class RenderManager {
       job,
       'info',
       'stage_4_render_frames',
-      `Cấu hình tăng tốc: NVENC=${nvencEnabled ? 'BẬT (Hardware GPU)' : 'TẮT (libx264 veryfast)'}, GL=${glOption || 'auto-gpu'}, Concurrency=${optimalConcurrency}`
+      `Cấu hình tăng tốc: Preset=${presetConfig.name} (${presetConfig.width}x${presetConfig.height}), NVENC=${nvencEnabled ? 'BẬT (Hardware GPU)' : 'TẮT (libx264 ' + presetConfig.x264Preset + ')'}, GL=${glOption || 'auto-gpu'}, Concurrency=${userConcurrency}`
     );
 
     let renderFramesStartTime = 0;
@@ -895,13 +1031,13 @@ export class RenderManager {
         outputLocation: outputPath,
         inputProps: compositionProps as any,
         browserExecutable: this.chromePath || undefined,
-        concurrency: optimalConcurrency,
+        concurrency: userConcurrency,
         imageFormat: 'jpeg',
-        jpegQuality: 80,
-        x264Preset: nvencEnabled ? undefined : 'veryfast',
+        jpegQuality: presetConfig.jpegQuality,
+        x264Preset: nvencEnabled ? undefined : presetConfig.x264Preset,
         // CRITICAL FIX: Do NOT set crf when hardware acceleration is enabled! Remotion disables NVENC if crf is passed.
-        crf: nvencEnabled ? undefined : 23,
-        videoBitrate: nvencEnabled ? '4500k' : undefined,
+        crf: nvencEnabled ? undefined : presetConfig.crf,
+        videoBitrate: nvencEnabled ? presetConfig.videoBitrate : undefined,
         pixelFormat: 'yuv420p',
         hardwareAcceleration: nvencEnabled ? 'if-possible' : 'disable',
         chromiumOptions: {

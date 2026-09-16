@@ -152,7 +152,6 @@ export const AnswerCards: React.FC<AnswerCardsProps> = React.memo(({
         }
 
         const opacityVal = style.bgOpacity !== undefined ? style.bgOpacity : 0.88;
-        const shouldCardBlur = blurPx > 0 && opacityVal < 0.92 && !(isRevealed && isCorrect);
         const badgeShape = style.optionBadgeShape || 'circle';
         const badgeRadius = badgeShape === 'circle' ? '50%' : badgeShape === 'pill' ? '12px' : '8px';
 
@@ -168,8 +167,7 @@ export const AnswerCards: React.FC<AnswerCardsProps> = React.memo(({
               border: `${borderWidth}px solid ${borderColor}`,
               borderRadius: `${style.borderRadius ?? 16}px`,
               boxShadow,
-              backdropFilter: shouldCardBlur ? `blur(${blurPx}px)` : undefined,
-              WebkitBackdropFilter: shouldCardBlur ? `blur(${blurPx}px)` : undefined,
+              // Performance optimization: eliminate expensive Skia backdrop-filter blur pass on each frame
               opacity: cardOpacity * (entrance.opacity !== undefined ? Number(entrance.opacity) : 1.0),
               transform: `${entrance.transform !== 'none' ? entrance.transform : ''} scale(${cardScale})`.trim(),
               boxSizing: 'border-box',

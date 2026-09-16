@@ -371,7 +371,7 @@ app.post('/api/timeline/compute', (req, res) => {
 // --- Render Endpoints ---
 app.post('/api/render/start', async (req, res) => {
   try {
-    const { channel, template, quiz, language, customFileName } = req.body;
+    const { channel, template, quiz, language, customFileName, renderPreset, customConcurrency } = req.body;
     if (!channel || !template || !quiz) {
       return res.status(400).json({ success: false, error: 'Missing render payload parameters' });
     }
@@ -380,7 +380,9 @@ app.post('/api/render/start', async (req, res) => {
       template,
       quiz,
       language: language || 'vi',
-      customFileName
+      customFileName,
+      renderPreset,
+      customConcurrency
     });
     res.json({ success: true, jobId });
   } catch (err: any) {
@@ -413,7 +415,7 @@ app.get('/api/render/download/:jobId', (req, res) => {
 // --- Batch Render Endpoints ---
 app.post('/api/render/batch', async (req, res) => {
   try {
-    const { channel, template, quiz, language, config, customFileNames } = req.body;
+    const { channel, template, quiz, language, config, customFileNames, renderPreset, customConcurrency } = req.body;
     if (!channel || !template || !quiz || !config) {
       return res.status(400).json({ success: false, error: 'Missing batch render parameters' });
     }
@@ -423,7 +425,9 @@ app.post('/api/render/batch', async (req, res) => {
       quiz,
       language: language || 'vi',
       config,
-      customFileNames
+      customFileNames,
+      renderPreset,
+      customConcurrency
     });
     res.json({ success: true, batchId });
   } catch (err: any) {

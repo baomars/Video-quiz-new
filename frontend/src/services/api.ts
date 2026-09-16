@@ -220,6 +220,8 @@ export async function startRender(params: {
   quiz: Quiz;
   language: LanguageCode;
   customFileName?: string;
+  renderPreset?: 'fast' | 'standard' | 'high_quality';
+  customConcurrency?: number;
 }): Promise<string> {
   const res = await fetch(`${API_BASE}/render/start`, {
     method: 'POST',
@@ -252,6 +254,8 @@ export async function startBatchRender(params: {
   language: LanguageCode;
   config: any;
   customFileNames?: string[];
+  renderPreset?: 'fast' | 'standard' | 'high_quality';
+  customConcurrency?: number;
 }): Promise<string> {
   const res = await fetch(`${API_BASE}/render/batch`, {
     method: 'POST',

@@ -19,6 +19,7 @@ import {
   SelectionMode,
   BatchConfig
 } from '../../utils/quizBatchEngine';
+import { RenderProgressScrubber } from './RenderProgressScrubber';
 import {
   Video,
   Download,
@@ -87,7 +88,9 @@ interface RenderLogEntry {
 interface RenderJob {
   jobId: string;
   fileName?: string;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
+  status: 'pending' | 'queued' | 'processing' | 'completed' | 'failed';
+  queuePosition?: number;
+  renderPreset?: 'fast' | 'standard' | 'high_quality';
   progress: number;
   stage: string;
   currentStageId?: string;
@@ -169,6 +172,10 @@ export const RenderTab: React.FC<RenderTabProps> = ({
 }) => {
   // Mode selection
   const [renderMode, setRenderMode] = useState<'single' | 'batch'>('single');
+
+  // Performance & Preset configuration
+  const [renderPreset, setRenderPreset] = useState<'fast' | 'standard' | 'high_quality'>('standard');
+  const [customConcurrency, setCustomConcurrency] = useState<number>(0); // 0 = Auto
 
   // Single mode config
   const [singleQuestionCount, setSingleQuestionCount] = useState<number>(quiz.questions?.length || 5);
@@ -449,7 +456,9 @@ export const RenderTab: React.FC<RenderTabProps> = ({
         template,
         quiz: singleQuizPayload,
         language,
-        customFileName: singleFileName
+        customFileName: singleFileName,
+        renderPreset,
+        customConcurrency: customConcurrency > 0 ? customConcurrency : undefined
       });
 
       setActiveJobId(jobId);
@@ -457,6 +466,7 @@ export const RenderTab: React.FC<RenderTabProps> = ({
         jobId,
         fileName: singleFileName,
         status: 'processing',
+        renderPreset,
         progress: 0,
         stage: 'Đang khởi tạo pipeline render...',
         currentStageId: 'stage_1_prepare',
@@ -480,7 +490,7 @@ export const RenderTab: React.FC<RenderTabProps> = ({
             timestamp: new Date().toISOString(),
             level: 'info',
             stage: 'INIT',
-            message: `Khởi động render video: ${channel.name} • ${quiz.title} (${questionsToRender.length} câu hỏi, File: ${singleFileName})`
+            message: `Khởi động render video: ${channel.name} • ${quiz.title} (${questionsToRender.length} câu hỏi, Preset: ${renderPreset}, File: ${singleFileName})`
           }
         ]
       });
@@ -514,7 +524,9 @@ export const RenderTab: React.FC<RenderTabProps> = ({
         quiz,
         language,
         config,
-        customFileNames: batchFileNames
+        customFileNames: batchFileNames,
+        renderPreset,
+        customConcurrency: customConcurrency > 0 ? customConcurrency : undefined
       });
 
       setActiveBatchId(batchId);
@@ -605,6 +617,106 @@ export const RenderTab: React.FC<RenderTabProps> = ({
               <Boxes size={14} />
               <span>Render Nhiều Video (Batch)</span>
             </button>
+          </div>
+        </div>
+
+        {/* Render Preset & Performance Settings */}
+        <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+              <Zap size={14} className="text-amber-600" />
+              <span>Cấu Hình Tốc Độ & Chất Lượng Render (Presets)</span>
+            </span>
+            <span className="text-[11px] text-slate-500 font-medium">Tự động tối ưu phần cứng CPU/GPU</span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            {/* 1. Fast */}
+            <button
+              type="button"
+              disabled={isRendering}
+              onClick={() => setRenderPreset('fast')}
+              className={`p-3 rounded-xl border text-left transition cursor-pointer ${
+                renderPreset === 'fast'
+                  ? 'bg-amber-50/80 border-amber-400 ring-2 ring-amber-400/50 shadow-xs'
+                  : 'bg-white border-slate-200 hover:border-slate-300'
+              }`}
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-black text-slate-900 flex items-center gap-1">
+                  <span>⚡ Nháp nhanh</span>
+                </span>
+                <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-800">720p • Q62</span>
+              </div>
+              <p className="text-[11px] text-slate-500 leading-snug">
+                720×1280 • JPEG Q62 • CRF 30 • x264 ultrafast. Tốc độ cao nhất, kiểm tra nhanh nội dung.
+              </p>
+            </button>
+
+            {/* 2. Standard */}
+            <button
+              type="button"
+              disabled={isRendering}
+              onClick={() => setRenderPreset('standard')}
+              className={`p-3 rounded-xl border text-left transition cursor-pointer ${
+                renderPreset === 'standard'
+                  ? 'bg-amber-50/80 border-amber-400 ring-2 ring-amber-400/50 shadow-xs'
+                  : 'bg-white border-slate-200 hover:border-slate-300'
+              }`}
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-black text-slate-900 flex items-center gap-1">
+                  <span>🎯 Cân bằng (Mặc định)</span>
+                </span>
+                <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">720p • Q80</span>
+              </div>
+              <p className="text-[11px] text-slate-500 leading-snug">
+                720×1280 • JPEG Q80 • CRF 23 • x264 veryfast. Cân bằng tối ưu giữa độ nét & tốc độ.
+              </p>
+            </button>
+
+            {/* 3. High Quality */}
+            <button
+              type="button"
+              disabled={isRendering}
+              onClick={() => setRenderPreset('high_quality')}
+              className={`p-3 rounded-xl border text-left transition cursor-pointer ${
+                renderPreset === 'high_quality'
+                  ? 'bg-amber-50/80 border-amber-400 ring-2 ring-amber-400/50 shadow-xs'
+                  : 'bg-white border-slate-200 hover:border-slate-300'
+              }`}
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-xs font-black text-slate-900 flex items-center gap-1">
+                  <span>✨ Chất lượng cao</span>
+                </span>
+                <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-purple-100 text-purple-800">1080p • Q92</span>
+              </div>
+              <p className="text-[11px] text-slate-500 leading-snug">
+                1080×1920 • JPEG Q92 • CRF 18 • x264 fast. Độ nét cao nhất, phù hợp đăng tải chính thức.
+              </p>
+            </button>
+          </div>
+
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 border-t border-slate-200 text-xs">
+            <div className="flex items-center gap-2">
+              <label className="text-[11px] font-bold text-slate-700">Luồng render (Concurrency):</label>
+              <select
+                value={customConcurrency}
+                onChange={(e) => setCustomConcurrency(Number(e.target.value))}
+                disabled={isRendering}
+                className="px-2.5 py-1 bg-white border border-slate-300 rounded-lg text-xs font-bold text-slate-800"
+              >
+                <option value={0}>Tự động (Auto detect phần cứng)</option>
+                <option value={1}>1 Worker (Tiết kiệm CPU/RAM nhất)</option>
+                <option value={2}>2 Workers (Chuẩn Colab T4 / 2 vCPUs)</option>
+                <option value={3}>3 Workers (Máy 4-6 cores)</option>
+                <option value={4}>4 Workers (Máy 8+ cores & GPU mạnh)</option>
+              </select>
+            </div>
+            <span className="text-[10px] text-slate-500">
+              * Hàng đợi FIFO: tự động xếp hàng và xử lý từng video lần lượt tránh treo máy
+            </span>
           </div>
         </div>
 
@@ -1044,6 +1156,26 @@ export const RenderTab: React.FC<RenderTabProps> = ({
       {/* 2. REALTIME TELEMETRY & ETA DASHBOARD (Requirement 5) */}
       {(jobState || batchState) && (
         <section className="bg-white border-2 border-amber-400/80 rounded-2xl p-4 sm:p-5 space-y-4 shadow-sm">
+          {/* Queue Status Alert Banner */}
+          {jobState?.status === 'queued' && (
+            <div className="bg-amber-50 border-2 border-amber-400 rounded-xl p-4 flex items-center gap-3 animate-pulse">
+              <div className="w-10 h-10 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center font-black text-sm shrink-0 shadow-xs">
+                #{jobState.queuePosition || 1}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-black text-amber-900 uppercase">Hàng Đợi Render (Queue FIFO)</span>
+                  <span className="px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 text-[10px] font-bold">
+                    Vị trí #{jobState.queuePosition || 1}
+                  </span>
+                </div>
+                <p className="text-xs text-amber-800 mt-0.5">
+                  Máy chủ đang bận xử lý tác vụ trước để chống nghẽn CPU/RAM. Tác vụ của bạn sẽ tự động được render ngay khi đến lượt!
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Top Status Bar */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
             <div className="flex items-center gap-2.5">
@@ -1065,6 +1197,11 @@ export const RenderTab: React.FC<RenderTabProps> = ({
                   <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 text-slate-600 font-bold">
                     {batchState ? batchState.batchId : jobState?.jobId}
                   </span>
+                  {jobState?.renderPreset && (
+                    <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-300">
+                      {jobState.renderPreset}
+                    </span>
+                  )}
                 </div>
                 <span className="text-xs text-slate-600 block mt-0.5">
                   {batchState ? batchState.stage : jobState?.stage}
@@ -1083,13 +1220,20 @@ export const RenderTab: React.FC<RenderTabProps> = ({
             </div>
           </div>
 
-          {/* Master Progress Bar */}
-          <div className="w-full h-3.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200 p-0.5">
-            <div
-              className="h-full rounded-full bg-gradient-to-r from-amber-500 via-rose-500 to-emerald-500 transition-all duration-300"
-              style={{ width: `${batchState ? batchState.progress : jobState?.progress}%` }}
-            />
-          </div>
+          {/* Video Player Timeline Scrubber */}
+          <RenderProgressScrubber
+            progress={batchState ? batchState.progress : (jobState?.progress || 0)}
+            status={(batchState ? batchState.status : jobState?.status) || 'pending'}
+            currentStageName={batchState ? batchState.stage : jobState?.stage}
+            currentFps={currentDisplayFps}
+            renderSpeed={currentDisplaySpeed}
+            currentFrame={currentDisplayFrame}
+            totalFrames={currentDisplayTotalFrames}
+            elapsedSec={currentDisplayElapsed}
+            etaSec={currentDisplayEta}
+            stages={stagesList}
+            renderPreset={jobState?.renderPreset || renderPreset}
+          />
 
           {/* REALTIME METRICS GRID (Exact format as required in prompt) */}
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2.5 font-mono text-xs">

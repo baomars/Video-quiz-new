@@ -11,6 +11,15 @@ import { ImageProcessor } from '../images/imageProcessor.js';
 import { TimelineEngine, QuestionTTSData } from '../timeline/timelineEngine.js';
 import { BatchConfig, generateBatchQuestionSets, allocateBatchBackgrounds } from '../quiz/quizBatchEngine.js';
 
+// Ensure Linux NVIDIA driver and CUDA libraries are accessible in LD_LIBRARY_PATH (e.g. for Google Colab GPU / NVENC)
+if (process.platform === 'linux') {
+  const nvidiaLibs = '/usr/lib64-nvidia:/usr/local/cuda/lib64';
+  const currentLd = process.env.LD_LIBRARY_PATH || '';
+  if (!currentLd.includes('/usr/lib64-nvidia')) {
+    process.env.LD_LIBRARY_PATH = currentLd ? `${nvidiaLibs}:${currentLd}` : nvidiaLibs;
+  }
+}
+
 export interface StageLog {
   id: string;
   name: string;
@@ -211,9 +220,15 @@ export class RenderManager {
     if (process.platform === 'win32' && fs.existsSync(headlessShellWin)) {
       this.chromePath = headlessShellWin;
       console.log(`[RENDER_INIT] Sử dụng Chrome Headless Shell có sẵn: ${headlessShellWin}`);
-    } else if (process.platform === 'linux' && fs.existsSync(headlessShellLinux)) {
-      this.chromePath = headlessShellLinux;
-      console.log(`[RENDER_INIT] Sử dụng Linux Chrome Headless Shell có sẵn: ${headlessShellLinux}`);
+    } else if (process.platform === 'linux') {
+      const systemChrome = '/usr/bin/google-chrome';
+      if (fs.existsSync(systemChrome)) {
+        this.chromePath = systemChrome;
+        console.log(`[RENDER_INIT] Sử dụng Google Chrome hệ thống Linux (Full GPU/NVENC): ${systemChrome}`);
+      } else if (fs.existsSync(headlessShellLinux)) {
+        this.chromePath = headlessShellLinux;
+        console.log(`[RENDER_INIT] Sử dụng Linux Chrome Headless Shell có sẵn: ${headlessShellLinux}`);
+      }
     } else {
       // Async ensure browser via Remotion
       ensureBrowser({ chromeMode: 'headless-shell' })
@@ -284,9 +299,14 @@ export class RenderManager {
       const probeFile = path.join(os.tmpdir(), 'nvenc_probe_1x1.png');
       fs.writeFileSync(probeFile, png1x1);
 
+      const env = {
+        ...process.env,
+        LD_LIBRARY_PATH: process.env.LD_LIBRARY_PATH || '/usr/lib64-nvidia:/usr/local/cuda/lib64'
+      };
       execSync(`"${ffmpegPath}" -loop 1 -i "${probeFile}" -c:v h264_nvenc -frames:v 1 -f null -`, {
         stdio: 'pipe',
-        timeout: 4000
+        timeout: 4000,
+        env
       });
       console.log('[RENDER_INIT] Tăng tốc phần cứng GPU NVIDIA NVENC sẵn sàng (Hardware Encoding)!');
       this.cachedNvencSupport = true;
@@ -995,18 +1015,21 @@ export class RenderManager {
     const nvencEnabled = this.isNvencAvailable();
 
     // Concurrency optimization:
-    // On 2-vCPU machines (like Google Colab free/T4 tier), concurrency MUST not exceed 2 to prevent severe CPU thrashing!
+    // On 2-vCPU machines (like Google Colab free/T4 tier), concurrency MUST be 1!
+    // Running concurrency 2 on 2 vCPUs causes 2 Chromium instances + FFmpeg + Node to thrash CPU caches and drops FPS to ~2.
+    // Setting concurrency 1 gives Chromium and FFmpeg dedicated core capacity and yields 25-35+ FPS.
     // On multi-core machines (>=4 vCPUs), concurrency can safely scale up to 3 or 4.
-    const optimalConcurrency = cpuCount <= 2 ? 2 : (nvencEnabled ? Math.min(4, cpuCount) : Math.min(3, cpuCount - 1));
+    const optimalConcurrency = cpuCount <= 2 ? 1 : (nvencEnabled ? Math.min(4, cpuCount) : Math.min(3, cpuCount - 1));
     const userConcurrency = params.customConcurrency && params.customConcurrency >= 1 && params.customConcurrency <= 8
       ? params.customConcurrency
       : optimalConcurrency;
 
-    // On Linux with GPU, if Xvfb/DISPLAY is active, use 'angle' for full hardware GPU rasterization.
-    // If headless without display, use null (lets Chromium auto-detect hardware).
+    // OpenGL rasterization backend:
+    // On Linux with GPU, Remotion officially recommends 'angle-egl' (EGL direct to GPU, bypassing X11/Xvfb).
+    // On Windows with GPU, 'angle' uses Direct3D 11.
     // If no GPU is present (CPU-only), use 'swangle' for safe software fallback.
     const glOption: 'angle-egl' | 'angle' | 'swangle' | null = hasGpu
-      ? (process.platform === 'linux' ? (process.env.DISPLAY ? 'angle' : null) : 'angle')
+      ? (process.platform === 'linux' ? 'angle-egl' : 'angle')
       : 'swangle';
 
     this.addLog(
@@ -1034,7 +1057,8 @@ export class RenderManager {
         concurrency: userConcurrency,
         imageFormat: 'jpeg',
         jpegQuality: presetConfig.jpegQuality,
-        x264Preset: nvencEnabled ? undefined : presetConfig.x264Preset,
+        // ALWAYS pass presetConfig.x264Preset so fallback or software encode never defaults to 'medium' (which causes 2.3 FPS on Colab)
+        x264Preset: presetConfig.x264Preset,
         // CRITICAL FIX: Do NOT set crf when hardware acceleration is enabled! Remotion disables NVENC if crf is passed.
         crf: nvencEnabled ? undefined : presetConfig.crf,
         videoBitrate: nvencEnabled ? presetConfig.videoBitrate : undefined,

@@ -118,8 +118,6 @@ export const QuestionBox: React.FC<QuestionBoxProps> = React.memo(({
         borderRadius: `${style.borderRadius ?? 20}px`,
         border: `${borderWidth}px solid ${borderColor}`,
         boxShadow,
-        backdropFilter: shouldApplyBlur ? `blur(${blurPx}px)` : undefined,
-        WebkitBackdropFilter: shouldApplyBlur ? `blur(${blurPx}px)` : undefined,
         padding: `${style.padding || 18}px`,
         display: 'flex',
         flexDirection: 'column',

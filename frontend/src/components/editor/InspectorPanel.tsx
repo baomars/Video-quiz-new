@@ -231,6 +231,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
   const logoFileInputRef = useRef<HTMLInputElement | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isRemovingBg, setIsRemovingBg] = useState(false);
+  const [removeBgStatus, setRemoveBgStatus] = useState<string | null>(null);
   const [newPresetName, setNewPresetName] = useState('');
   const [savedPresets, setSavedPresets] = useState<any[]>(() => {
     try {
@@ -578,19 +579,20 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
       setIsRemovingBg(true);
       setRemoveBgStatus('Đang tách nền...');
       const res = await removeImageBackground(currentLogo);
-      if (res.transparentUrl) {
+      const transparentUrl = res.url || (res as any).transparentUrl;
+      if (transparentUrl) {
         onChannelChange({
           ...channel,
           branding: {
             ...channel.branding,
             identity: {
               ...channel.branding?.identity,
-              logoUrl: res.transparentUrl
+              logoUrl: transparentUrl
             }
           },
           brand: {
             ...(channel as any).brand,
-            logoUrl: res.transparentUrl
+            logoUrl: transparentUrl
           }
         });
         onTemplateChange({
@@ -599,7 +601,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
             ...template.components,
             logo: {
               ...template.components.logo,
-              logoUrl: res.transparentUrl
+              logoUrl: transparentUrl
             }
           }
         });

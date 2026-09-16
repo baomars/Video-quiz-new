@@ -65,8 +65,7 @@ export const LogoWatermark: React.FC<LogoWatermarkProps> = React.memo(({ style =
           style={{
             width: `${logoSize}px`,
             height: `${logoSize}px`,
-            objectFit: 'contain',
-            filter: style.boxShadow ? `drop-shadow(${style.boxShadow})` : 'drop-shadow(0 2px 8px rgba(0,0,0,0.15))'
+            objectFit: 'contain'
           }}
         />
       )}

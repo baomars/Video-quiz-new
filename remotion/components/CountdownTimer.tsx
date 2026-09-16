@@ -208,8 +208,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
             fontSize: `${iconSize}px`,
             lineHeight: 1,
             display: 'inline-flex',
-            alignItems: 'center',
-            filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.12))'
+            alignItems: 'center'
           }}
         >
           ⏱️

@@ -138,7 +138,8 @@
       "optionBadgeShape": "circle",
       "animation": "fade",
       "fontFamily": "Be Vietnam Pro",
-      "textShadow": "0 2px 8px rgba(0,0,0,0.85)"
+      "textShadow": "0 2px 8px rgba(0,0,0,0.85)",
+      "textStrokeWidth": 0
     },
     "countdown": {
       "x": 40,

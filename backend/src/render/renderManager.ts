@@ -214,6 +214,10 @@ export class RenderManager {
         ffmpegPath = path.resolve(process.cwd(), 'node_modules/@remotion/compositor-linux-x64-gnu/ffmpeg');
         if (!fs.existsSync(ffmpegPath)) {
           ffmpegPath = 'ffmpeg';
+        } else {
+          try {
+            fs.chmodSync(ffmpegPath, 0o755);
+          } catch {}
         }
       }
 
@@ -230,11 +234,11 @@ export class RenderManager {
         stdio: 'pipe',
         timeout: 4000
       });
-      console.log('[RENDER_INIT] Tăng tốc phần cứng GPU NVIDIA NVENC sẵn sàng!');
+      console.log('[RENDER_INIT] Tăng tốc phần cứng GPU NVIDIA NVENC sẵn sàng (Hardware Encoding)!');
       this.cachedNvencSupport = true;
       return true;
-    } catch {
-      console.log('[RENDER_INIT] GPU không hỗ trợ chip NVENC hoặc chạy trên CPU VM. Sử dụng CPU libx264 tối ưu.');
+    } catch (nvencErr: any) {
+      console.log(`[RENDER_INIT] GPU không kích hoạt được NVENC (${nvencErr.message?.slice(0, 80) || 'no hardware chip'}). Sử dụng CPU libx264 tối ưu.`);
       this.cachedNvencSupport = false;
       return false;
     }
@@ -862,17 +866,18 @@ export class RenderManager {
     // On multi-core machines (>=4 vCPUs), concurrency can safely scale up to 3 or 4.
     const optimalConcurrency = cpuCount <= 2 ? 2 : (nvencEnabled ? Math.min(4, cpuCount) : Math.min(3, cpuCount - 1));
 
-    // On Linux headless containers (Colab, Docker), EGL display is not initialized, so angle-egl causes timeouts/crashes.
-    // 'swangle' provides vectorized, crash-free headless rendering.
-    const glOption: 'angle-egl' | 'angle' | 'swangle' = (process.platform === 'linux')
-      ? 'swangle'
-      : (hasGpu ? 'angle' : 'swangle');
+    // On Linux with GPU, if Xvfb/DISPLAY is active, use 'angle' for full hardware GPU rasterization.
+    // If headless without display, use null (lets Chromium auto-detect hardware).
+    // If no GPU is present (CPU-only), use 'swangle' for safe software fallback.
+    const glOption: 'angle-egl' | 'angle' | 'swangle' | null = hasGpu
+      ? (process.platform === 'linux' ? (process.env.DISPLAY ? 'angle' : null) : 'angle')
+      : 'swangle';
 
     this.addLog(
       job,
       'info',
       'stage_4_render_frames',
-      `Cấu hình tăng tốc: NVENC=${nvencEnabled ? 'BẬT (Hardware GPU)' : 'TẮT (libx264 veryfast)'}, GL=${glOption}, Concurrency=${optimalConcurrency}`
+      `Cấu hình tăng tốc: NVENC=${nvencEnabled ? 'BẬT (Hardware GPU)' : 'TẮT (libx264 veryfast)'}, GL=${glOption || 'auto-gpu'}, Concurrency=${optimalConcurrency}`
     );
 
     let renderFramesStartTime = 0;
@@ -904,7 +909,7 @@ export class RenderManager {
           ignoreCertificateErrors: true,
           headless: true,
           enableMultiProcessOnLinux: true,
-          gl: glOption
+          gl: glOption || undefined
         },
         timeoutInMilliseconds: Math.max(20, Math.ceil(quiz.questions.length * 2.5)) * 60 * 1000,
         cancelSignal,

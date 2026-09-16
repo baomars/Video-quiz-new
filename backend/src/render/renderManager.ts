@@ -2,8 +2,8 @@ import path from 'path';
 import fs from 'fs';
 import os from 'os';
 import { execSync } from 'child_process';
-import { bundle } from '@remotion/bundler';
-import { renderMedia, selectComposition, makeCancelSignal, ensureBrowser } from '@remotion/renderer';
+import { NativeQuizRenderer } from './native/nativeQuizRenderer.js';
+import { NativeAudioMixer } from './native/audioMixer.js';
 import { Channel, VideoTemplate, Quiz, LanguageCode, VideoCompositionProps } from '../../../remotion/types/index.js';
 import { generateDefaultFileName, sanitizeCustomFileName } from '../../../remotion/utils/fileNameHelper.js';
 import { EdgeTTSProvider } from '../tts/ttsProvider.js';
@@ -185,9 +185,6 @@ export class RenderManager {
   private ttsProvider: EdgeTTSProvider;
   private imageProcessor: ImageProcessor;
   private timelineEngine: TimelineEngine;
-  private chromePath: string;
-  private cachedBundleLocation: string | null = null;
-  private liveJunctionsCreated: boolean = false;
   private cachedNvencSupport?: boolean;
   private renderQueue: Array<{ jobId: string; params: RenderRequestParams }> = [];
   private activeJobId: string | null = null;
@@ -206,53 +203,7 @@ export class RenderManager {
       fs.mkdirSync(this.rendersDir, { recursive: true });
     }
 
-    // Detect High-Performance Chrome executable (Prefer chrome-headless-shell for ~4x-5x faster headless rendering)
-    this.chromePath = '';
-    const headlessShellWin = path.resolve(
-      process.cwd(),
-      'node_modules/.remotion/chrome-headless-shell/win64/chrome-headless-shell-win64/chrome-headless-shell.exe'
-    );
-    const headlessShellLinux = path.resolve(
-      process.cwd(),
-      'node_modules/.remotion/chrome-headless-shell/linux64/chrome-headless-shell-linux64/chrome-headless-shell'
-    );
-
-    if (process.platform === 'win32' && fs.existsSync(headlessShellWin)) {
-      this.chromePath = headlessShellWin;
-      console.log(`[RENDER_INIT] Sử dụng Chrome Headless Shell có sẵn: ${headlessShellWin}`);
-    } else if (process.platform === 'linux') {
-      const systemChrome = '/usr/bin/google-chrome';
-      if (fs.existsSync(systemChrome)) {
-        this.chromePath = systemChrome;
-        console.log(`[RENDER_INIT] Sử dụng Google Chrome hệ thống Linux (Full GPU/NVENC): ${systemChrome}`);
-      } else if (fs.existsSync(headlessShellLinux)) {
-        this.chromePath = headlessShellLinux;
-        console.log(`[RENDER_INIT] Sử dụng Linux Chrome Headless Shell có sẵn: ${headlessShellLinux}`);
-      }
-    } else {
-      // Async ensure browser via Remotion
-      ensureBrowser({ chromeMode: 'headless-shell' })
-        .then((res) => {
-          if (res && 'path' in res && res.path) {
-            this.chromePath = res.path;
-            console.log(`[RENDER_INIT] Remotion Headless Shell sẵn sàng: ${res.path}`);
-          }
-        })
-        .catch((err) => {
-          console.warn(`[RENDER_INIT] Không thể tự động tải headless-shell: ${err.message}`);
-          if (process.platform === 'win32') {
-            const defaultChrome = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
-            const edgeBrowser = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe';
-            if (fs.existsSync(defaultChrome)) {
-              this.chromePath = defaultChrome;
-              console.log(`[RENDER_INIT] Fallback sang Google Chrome: ${defaultChrome}`);
-            } else if (fs.existsSync(edgeBrowser)) {
-              this.chromePath = edgeBrowser;
-              console.log(`[RENDER_INIT] Fallback sang Microsoft Edge: ${edgeBrowser}`);
-            }
-          }
-        });
-    }
+    console.log('[RENDER_INIT] Native Skia 2D Video Renderer sẵn sàng (Zero Browser / 100% Native).');
   }
 
   private hasNvidiaGpu(): boolean {
@@ -868,87 +819,7 @@ export class RenderManager {
       height: presetConfig.height
     };
 
-    const entryPoint = path.resolve(process.cwd(), 'remotion', 'index.ts');
-    const publicDir = path.resolve(process.cwd(), 'public');
-
-    let bundleLocation = this.cachedBundleLocation;
-    if (!bundleLocation || !fs.existsSync(bundleLocation)) {
-      bundleLocation = await bundle({
-        entryPoint,
-        publicDir,
-        webpackOverride: (config) => config
-      });
-      this.cachedBundleLocation = bundleLocation;
-      this.liveJunctionsCreated = false;
-    }
-
-    // Zero-copy live sync of assets into bundleLocation root and bundleLocation/public
-    // Cached: only creates junctions once per bundle to avoid redundant disk I/O
-    if (!this.liveJunctionsCreated) {
-      try {
-        const ensureLiveJunction = (target: string, link: string) => {
-          if (!fs.existsSync(target)) fs.mkdirSync(target, { recursive: true });
-          if (fs.existsSync(link)) {
-            try {
-              const isSym = fs.lstatSync(link).isSymbolicLink();
-              if (isSym) return; // already a live junction
-              fs.rmSync(link, { recursive: true, force: true });
-            } catch {
-              // fallback if locked
-            }
-          }
-          try {
-            fs.symlinkSync(target, link, 'junction');
-          } catch {
-            if (!fs.existsSync(link)) fs.mkdirSync(link, { recursive: true });
-          }
-        };
-
-        const folders = ['cache', 'assets', 'uploads'];
-        const bundlePublicDir = path.join(bundleLocation, 'public');
-        if (!fs.existsSync(bundlePublicDir)) {
-          try {
-            fs.mkdirSync(bundlePublicDir, { recursive: true });
-          } catch {}
-        }
-
-        for (const folder of folders) {
-          const target = path.join(publicDir, folder);
-          ensureLiveJunction(target, path.join(bundleLocation, folder));
-          ensureLiveJunction(target, path.join(bundlePublicDir, folder));
-        }
-        this.liveJunctionsCreated = true;
-      } catch (syncErr: any) {
-        console.warn(`[ASSET_SYNC] Cảnh báo tạo liên kết assets: ${syncErr.message}`);
-      }
-    }
-
-    this.completeStage(job, 'stage_3_timeline', 'Đóng gói composition hoàn tất.');
-
-    // =========================================================================
-    // STAGE 4, 5, 6: Render Frames, Process Audio & FFmpeg Muxing (35% -> 98%)
-    // =========================================================================
-    this.startStage(job, 'stage_4_render_frames', `Bắt đầu render ${totalDurationFrames} khung hình video (720×1280)...`);
-
-    const composition = await selectComposition({
-      serveUrl: bundleLocation,
-      id: 'QuizVideoComposition',
-      inputProps: compositionProps as any,
-      browserExecutable: this.chromePath || undefined
-    });
-
-    this.addLog(
-      job,
-      'info',
-      'stage_4_render_frames',
-      `Remotion composition đã chọn: ${composition.durationInFrames} frames (Mục tiêu: ${totalDurationFrames} frames, ~${(composition.durationInFrames / 30).toFixed(2)}s)`
-    );
-
-    if (composition.durationInFrames !== totalDurationFrames) {
-      throw new Error(
-        `Remotion composition durationInFrames (${composition.durationInFrames}) không khớp với totalDurationFrames (${totalDurationFrames})!`
-      );
-    }
+    this.completeStage(job, 'stage_3_timeline', 'Tính toán timeline hoàn tất.');
 
     // Filename resolution according to Rule: [Video Title]_[YYYY-MM-DD]_[Video Number].mp4
     let finalFileName = '';
@@ -964,7 +835,6 @@ export class RenderManager {
 
     let outputFileName = finalFileName;
     let outputPath = path.join(this.rendersDir, outputFileName);
-    // If a file with the exact same name already exists on disk, append timestamp to prevent overwriting
     if (fs.existsSync(outputPath)) {
       const ext = path.extname(finalFileName);
       const base = path.basename(finalFileName, ext);
@@ -973,175 +843,82 @@ export class RenderManager {
     }
 
     job.fileName = outputFileName;
-    const { cancelSignal, cancel } = makeCancelSignal();
 
-    let isAudioStageStarted = false;
-    let isMuxingStageStarted = false;
-    let heartbeatTimer: any = null;
-    let heartbeatProgress = 75;
+    const tempVideoPath = path.join(this.rendersDir, `temp_video_${job.jobId}.mp4`);
+    const tempAudioPath = path.join(this.rendersDir, `temp_audio_${job.jobId}.aac`);
 
-    // Heartbeat simulator for Remotion's unnotified audio processing / FFmpeg muxing stages
-    const startAudioHeartbeat = () => {
-      if (heartbeatTimer) return;
-      heartbeatTimer = setInterval(() => {
-        if (job.status !== 'processing') {
-          clearInterval(heartbeatTimer);
-          return;
-        }
+    // =========================================================================
+    // STAGE 4: Render Frames with Native Skia Engine (Zero-Browser) (35% -> 75%)
+    // =========================================================================
+    this.startStage(job, 'stage_4_render_frames', `Bắt đầu render ${totalDurationFrames} khung hình video (720×1280 bằng Native Skia Engine)...`);
 
-        if (!isMuxingStageStarted && heartbeatProgress >= 88) {
-          isMuxingStageStarted = true;
-          this.completeStage(job, 'stage_5_process_audio', 'Hòa âm audio hoàn tất.');
-          this.startStage(job, 'stage_6_ffmpeg_mux', 'Đang ghép luồng Video & Audio bằng FFmpeg (FastStart)...');
-        }
-
-        if (heartbeatProgress < 97) {
-          heartbeatProgress += 1;
-          const activeStageId = isMuxingStageStarted ? 'stage_6_ffmpeg_mux' : 'stage_5_process_audio';
-          const stageConfig = PIPELINE_STAGES_CONFIG.find(s => s.id === activeStageId)!;
-          const pct = Math.round(((heartbeatProgress - stageConfig.minProgress) / (stageConfig.maxProgress - stageConfig.minProgress)) * 100);
-          
-          let msg = 'Đang xử lý các kênh âm thanh và hòa âm BGM...';
-          if (isMuxingStageStarted) {
-            msg = 'Đang ghép luồng Video H.264 và Audio AAC bằng FFmpeg...';
-          }
-          this.updateStageProgress(job, activeStageId, pct, msg);
-        }
-      }, 1200);
-    };
-
-    const cpuCount = os.cpus().length || 4;
     const hasGpu = this.hasNvidiaGpu();
     const nvencEnabled = this.isNvencAvailable();
-
-    // Concurrency optimization:
-    // On 2-vCPU machines (like Google Colab free/T4 tier), concurrency MUST be 1!
-    // Running concurrency 2 on 2 vCPUs causes 2 Chromium instances + FFmpeg + Node to thrash CPU caches and drops FPS to ~2.
-    // Setting concurrency 1 gives Chromium and FFmpeg dedicated core capacity and yields 25-35+ FPS.
-    // On multi-core machines (>=4 vCPUs), concurrency can safely scale up to 3 or 4.
-    const optimalConcurrency = cpuCount <= 2 ? 1 : (nvencEnabled ? Math.min(4, cpuCount) : Math.min(3, cpuCount - 1));
-    const userConcurrency = params.customConcurrency && params.customConcurrency >= 1 && params.customConcurrency <= 8
-      ? params.customConcurrency
-      : optimalConcurrency;
-
-    // OpenGL rasterization backend:
-    // On Linux with GPU, Remotion officially recommends 'angle-egl' (EGL direct to GPU, bypassing X11/Xvfb).
-    // On Windows with GPU, 'angle' uses Direct3D 11.
-    // If no GPU is present (CPU-only), use 'swangle' for safe software fallback.
-    const glOption: 'angle-egl' | 'angle' | 'swangle' | null = hasGpu
-      ? (process.platform === 'linux' ? 'angle-egl' : 'angle')
-      : 'swangle';
 
     this.addLog(
       job,
       'info',
       'stage_4_render_frames',
-      `Cấu hình tăng tốc: Preset=${presetConfig.name} (${presetConfig.width}x${presetConfig.height}), NVENC=${nvencEnabled ? 'BẬT (Hardware GPU)' : 'TẮT (libx264 ' + presetConfig.x264Preset + ')'}, GL=${glOption || 'auto-gpu'}, Concurrency=${userConcurrency}`
+      `Khởi chạy Native Skia 2D Engine (Zero-Browser): Preset=${presetConfig.name} (${presetConfig.width}x${presetConfig.height}), NVENC=${nvencEnabled ? 'BẬT (GPU)' : 'TẮT (libx264 ' + presetConfig.x264Preset + ')'}`
     );
 
-    let renderFramesStartTime = 0;
-    let lastProgressFrame = 0;
-    let lastProgressTime = 0;
-    let smoothFps = 0;
-
     try {
-      await renderMedia({
-        composition,
-        serveUrl: bundleLocation,
-        codec: 'h264',
-        audioCodec: 'aac',
-        audioBitrate: '160k',
-        outputLocation: outputPath,
-        inputProps: compositionProps as any,
-        browserExecutable: this.chromePath || undefined,
-        concurrency: userConcurrency,
-        imageFormat: 'jpeg',
-        jpegQuality: presetConfig.jpegQuality,
-        // ALWAYS pass presetConfig.x264Preset so fallback or software encode never defaults to 'medium' (which causes 2.3 FPS on Colab)
-        x264Preset: presetConfig.x264Preset,
-        // CRITICAL FIX: Do NOT set crf when hardware acceleration is enabled! Remotion disables NVENC if crf is passed.
-        crf: nvencEnabled ? undefined : presetConfig.crf,
-        videoBitrate: nvencEnabled ? presetConfig.videoBitrate : undefined,
-        pixelFormat: 'yuv420p',
-        hardwareAcceleration: nvencEnabled ? 'if-possible' : 'disable',
-        chromiumOptions: {
-          disableWebSecurity: true,
-          ignoreCertificateErrors: true,
-          headless: true,
-          enableMultiProcessOnLinux: true,
-          gl: glOption || undefined
-        },
-        timeoutInMilliseconds: Math.max(20, Math.ceil(quiz.questions.length * 2.5)) * 60 * 1000,
-        cancelSignal,
-        onProgress: ({ renderedFrames, encodedFrames, progress, stitchStage }) => {
-          const frameProgressPct = Math.round((renderedFrames / totalDurationFrames) * 100);
+      await NativeQuizRenderer.renderVideo({
+        channel,
+        template,
+        quiz,
+        cues,
+        totalDurationFrames,
+        fps: presetConfig.fps || 30,
+        width: presetConfig.width,
+        height: presetConfig.height,
+        outputPath: tempVideoPath,
+        presetConfig,
+        nvencEnabled,
+        onProgress: ({ renderedFrames, fps, speed, percent }) => {
+          const now = Date.now();
+          const elapsedSec = Math.round((now - renderJobStartTime) / 1000);
+          const remainingFrames = Math.max(0, totalDurationFrames - renderedFrames);
+          const etaSec = fps > 0 ? Math.ceil(remainingFrames / fps) + 3 : 0;
 
-          if (stitchStage === 'encoding' && renderedFrames < totalDurationFrames) {
-            const now = Date.now();
-            if (!renderFramesStartTime) {
-              renderFramesStartTime = now;
-              lastProgressTime = now;
-              lastProgressFrame = renderedFrames;
-            } else {
-              const dt = (now - lastProgressTime) / 1000;
-              const df = renderedFrames - lastProgressFrame;
-              if (dt >= 0.4 && df > 0) {
-                const instantFps = df / dt;
-                smoothFps = smoothFps === 0 ? instantFps : (smoothFps * 0.7 + instantFps * 0.3);
-                lastProgressTime = now;
-                lastProgressFrame = renderedFrames;
-              }
-            }
+          job.currentFps = fps;
+          job.renderSpeed = speed;
+          job.currentFrame = renderedFrames;
+          job.totalFrames = totalDurationFrames;
+          job.elapsedSec = elapsedSec;
+          job.etaSec = etaSec;
 
-            const elapsedFrameSec = (now - renderFramesStartTime) / 1000;
-            const overallFps = elapsedFrameSec > 0 ? (renderedFrames / elapsedFrameSec) : 0;
-            const currentFps = smoothFps > 0 ? Math.round(smoothFps * 10) / 10 : Math.round(overallFps * 10) / 10;
-            const renderSpeed = currentFps > 0 ? Math.round((currentFps / 30) * 100) / 100 : 0;
-            const remainingFrames = Math.max(0, totalDurationFrames - renderedFrames);
-            const remainingSec = currentFps > 0 ? Math.ceil(remainingFrames / currentFps) : 0;
-            const etaSec = remainingSec + 3;
-
-            job.currentFps = currentFps;
-            job.renderSpeed = renderSpeed;
-            job.currentFrame = renderedFrames;
-            job.totalFrames = totalDurationFrames;
-            job.elapsedSec = Math.round((now - renderJobStartTime) / 1000);
-            job.etaSec = etaSec;
-
-            this.updateStageProgress(
-              job,
-              'stage_4_render_frames',
-              frameProgressPct,
-              `Đang render khung hình: ${renderedFrames}/${totalDurationFrames} (${frameProgressPct}%) • ${currentFps} FPS (${renderSpeed}x)`
-            );
-          } else {
-            // Frame rendering is done! Transition to audio processing & FFmpeg muxing
-            if (!isAudioStageStarted) {
-              isAudioStageStarted = true;
-              job.currentFrame = totalDurationFrames;
-              job.elapsedSec = Math.round((Date.now() - renderJobStartTime) / 1000);
-              this.completeStage(job, 'stage_4_render_frames', `Render xong toàn bộ ${totalDurationFrames} khung hình.`);
-              this.startStage(job, 'stage_5_process_audio', 'Đang trích xuất và hòa âm các kênh Audio (BGM ducking, TTS, SFX)...');
-              startAudioHeartbeat();
-            }
-          }
+          this.updateStageProgress(
+            job,
+            'stage_4_render_frames',
+            percent,
+            `Đang render khung hình (Native Skia): ${renderedFrames}/${totalDurationFrames} (${percent}%) • ${fps} FPS (${speed}x)`
+          );
         }
       });
+
+      this.completeStage(job, 'stage_4_render_frames', `Render xong toàn bộ ${totalDurationFrames} khung hình bằng Native Skia Engine.`);
+
+      // =======================================================================
+      // STAGE 5: Process & Mix Audio (TTS, SFX) bằng FFmpeg (75% -> 88%)
+      // =======================================================================
+      this.startStage(job, 'stage_5_process_audio', 'Đang hòa âm các kênh Audio (TTS, SFX) bằng FFmpeg...');
+      await NativeAudioMixer.mixAudio(cues, durationSec, tempAudioPath);
+      this.completeStage(job, 'stage_5_process_audio', 'Hòa âm audio hoàn tất.');
+
+      // =======================================================================
+      // STAGE 6: FFmpeg Stream Copy Muxing (FastStart) (88% -> 98%)
+      // =======================================================================
+      this.startStage(job, 'stage_6_ffmpeg_mux', 'Đang ghép luồng Video & Audio (FFmpeg Stream Copy FastStart)...');
+      await NativeAudioMixer.muxVideoAudio(tempVideoPath, tempAudioPath, outputPath);
+      this.completeStage(job, 'stage_6_ffmpeg_mux', 'Ghép muxing video & audio hoàn tất.');
     } finally {
-      if (heartbeatTimer) clearInterval(heartbeatTimer);
+      // Dọn dẹp các file video và audio tạm
+      try {
+        if (fs.existsSync(tempVideoPath)) fs.unlinkSync(tempVideoPath);
+        if (fs.existsSync(tempAudioPath)) fs.unlinkSync(tempAudioPath);
+      } catch {}
     }
-
-    // Mark Audio & Muxing stages completed if they were running
-    if (!isAudioStageStarted) {
-      this.completeStage(job, 'stage_4_render_frames');
-      this.startStage(job, 'stage_5_process_audio', 'Hòa âm audio');
-    }
-    this.completeStage(job, 'stage_5_process_audio', 'Hòa âm hoàn tất.');
-
-    if (!isMuxingStageStarted) {
-      this.startStage(job, 'stage_6_ffmpeg_mux', 'Ghép video và audio');
-    }
-    this.completeStage(job, 'stage_6_ffmpeg_mux', 'Ghép muxing FFmpeg thành công.');
 
     // =========================================================================
     // STAGE 7: Xuất bản & Kiểm tra MP4 (98% -> 100%)

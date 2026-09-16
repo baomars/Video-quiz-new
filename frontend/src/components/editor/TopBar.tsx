@@ -178,7 +178,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             Edge-TTS
           </span>
           <span className="text-slate-600">|</span>
-          <span className="text-amber-400">Chrome Headless</span>
+          <span className="text-green-400 font-medium">Native Skia Engine</span>
         </div>
       </div>
 

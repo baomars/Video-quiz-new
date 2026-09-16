@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "concurrently -n \"SERVER,CLIENT\" -c \"blue,green\" \"npm run server:dev\" \"npm run client:dev\"",
-    "server:dev": "tsx watch backend/src/index.ts",
+    "server:dev": "tsx watch --tsconfig backend/tsconfig.json backend/src/index.ts",
     "client:dev": "vite",
     "open": "node scripts/open-browser.cjs",
     "start": "concurrently -n \"SERVER,CLIENT,BROWSER\" -c \"blue,green,magenta\" \"npm run server:dev\" \"npm run client:dev\" \"npm run open\"",
@@ -16,6 +16,7 @@
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
+    "@napi-rs/canvas": "^1.0.9",
     "@radix-ui/react-dialog": "^1.1.23",
     "@radix-ui/react-dropdown-menu": "^2.1.24",
     "@radix-ui/react-slider": "^1.4.7",

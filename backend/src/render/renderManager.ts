@@ -3,7 +3,7 @@ import fs from 'fs';
 import os from 'os';
 import { execSync } from 'child_process';
 import { bundle } from '@remotion/bundler';
-import { renderMedia, selectComposition, makeCancelSignal } from '@remotion/renderer';
+import { renderMedia, selectComposition, makeCancelSignal, ensureBrowser } from '@remotion/renderer';
 import { Channel, VideoTemplate, Quiz, LanguageCode, VideoCompositionProps } from '../../../remotion/types/index.js';
 import { generateDefaultFileName, sanitizeCustomFileName } from '../../../remotion/utils/fileNameHelper.js';
 import { EdgeTTSProvider } from '../tts/ttsProvider.js';
@@ -144,38 +144,45 @@ export class RenderManager {
     }
 
     // Detect High-Performance Chrome executable (Prefer chrome-headless-shell for ~4x-5x faster headless rendering)
-    const headlessShellPath = path.resolve(
+    this.chromePath = '';
+    const headlessShellWin = path.resolve(
       process.cwd(),
       'node_modules/.remotion/chrome-headless-shell/win64/chrome-headless-shell-win64/chrome-headless-shell.exe'
     );
-    const defaultChrome = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
-    const edgeBrowser = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe';
+    const headlessShellLinux = path.resolve(
+      process.cwd(),
+      'node_modules/.remotion/chrome-headless-shell/linux64/chrome-headless-shell-linux64/chrome-headless-shell'
+    );
 
-    if (fs.existsSync(headlessShellPath)) {
-      this.chromePath = headlessShellPath;
-      console.log(`[RENDER_INIT] Sử dụng Chrome Headless Shell siêu tốc: ${headlessShellPath}`);
-    } else if (fs.existsSync(defaultChrome)) {
-      this.chromePath = defaultChrome;
-      console.log(`[RENDER_INIT] Sử dụng Google Chrome: ${defaultChrome}`);
-    } else if (fs.existsSync(edgeBrowser)) {
-      this.chromePath = edgeBrowser;
-      console.log(`[RENDER_INIT] Sử dụng Microsoft Edge: ${edgeBrowser}`);
-    } else if (process.platform === 'linux') {
-      const linuxChromePaths = [
-        '/usr/bin/google-chrome-stable',
-        '/usr/bin/google-chrome',
-        '/usr/bin/chromium-browser',
-        '/usr/bin/chromium'
-      ];
-      const found = linuxChromePaths.find(p => fs.existsSync(p));
-      if (found) {
-        this.chromePath = found;
-        console.log(`[RENDER_INIT] Sử dụng Linux Chrome/Chromium: ${found}`);
-      } else {
-        this.chromePath = '';
-      }
+    if (process.platform === 'win32' && fs.existsSync(headlessShellWin)) {
+      this.chromePath = headlessShellWin;
+      console.log(`[RENDER_INIT] Sử dụng Chrome Headless Shell có sẵn: ${headlessShellWin}`);
+    } else if (process.platform === 'linux' && fs.existsSync(headlessShellLinux)) {
+      this.chromePath = headlessShellLinux;
+      console.log(`[RENDER_INIT] Sử dụng Linux Chrome Headless Shell có sẵn: ${headlessShellLinux}`);
     } else {
-      this.chromePath = '';
+      // Async ensure browser via Remotion
+      ensureBrowser({ chromeMode: 'headless-shell' })
+        .then((res) => {
+          if (res && 'path' in res && res.path) {
+            this.chromePath = res.path;
+            console.log(`[RENDER_INIT] Remotion Headless Shell sẵn sàng: ${res.path}`);
+          }
+        })
+        .catch((err) => {
+          console.warn(`[RENDER_INIT] Không thể tự động tải headless-shell: ${err.message}`);
+          if (process.platform === 'win32') {
+            const defaultChrome = 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+            const edgeBrowser = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe';
+            if (fs.existsSync(defaultChrome)) {
+              this.chromePath = defaultChrome;
+              console.log(`[RENDER_INIT] Fallback sang Google Chrome: ${defaultChrome}`);
+            } else if (fs.existsSync(edgeBrowser)) {
+              this.chromePath = edgeBrowser;
+              console.log(`[RENDER_INIT] Fallback sang Microsoft Edge: ${edgeBrowser}`);
+            }
+          }
+        });
     }
   }
 
@@ -850,12 +857,16 @@ export class RenderManager {
     const hasGpu = this.hasNvidiaGpu();
     const nvencEnabled = this.isNvencAvailable();
 
-    // Concurrency: with NVENC active, Chromium can safely use more threads without competing with FFmpeg
-    const optimalConcurrency = nvencEnabled ? Math.min(6, Math.max(3, cpuCount)) : (cpuCount >= 4 ? 3 : 2);
+    // Concurrency optimization:
+    // On 2-vCPU machines (like Google Colab free/T4 tier), concurrency MUST not exceed 2 to prevent severe CPU thrashing!
+    // On multi-core machines (>=4 vCPUs), concurrency can safely scale up to 3 or 4.
+    const optimalConcurrency = cpuCount <= 2 ? 2 : (nvencEnabled ? Math.min(4, cpuCount) : Math.min(3, cpuCount - 1));
 
-    const glOption: 'angle-egl' | 'angle' | 'swangle' = hasGpu
-      ? (process.platform === 'linux' ? 'angle-egl' : 'angle')
-      : 'swangle';
+    // On Linux headless containers (Colab, Docker), EGL display is not initialized, so angle-egl causes timeouts/crashes.
+    // 'swangle' provides vectorized, crash-free headless rendering.
+    const glOption: 'angle-egl' | 'angle' | 'swangle' = (process.platform === 'linux')
+      ? 'swangle'
+      : (hasGpu ? 'angle' : 'swangle');
 
     this.addLog(
       job,

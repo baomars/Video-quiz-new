@@ -98,13 +98,16 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
 
       {/* Slide-up Bottom Sheet for Mobile Editing */}
       <Sheet open={Boolean(activeSheet)} onOpenChange={(open) => !open && onSelectTab(null)}>
-        <SheetContent side="bottom" className="max-h-[85vh] p-4 sm:p-6 overflow-y-auto bg-slate-900 border-slate-800 text-slate-100">
-          <SheetHeader className="mb-3 border-b border-slate-800 pb-2">
-            <SheetTitle className="text-sm uppercase tracking-wider font-extrabold text-amber-400">
+        <SheetContent
+          side="bottom"
+          className="h-[88vh] max-h-[88vh] flex flex-col p-0 bg-slate-950 border-t border-slate-800 text-slate-100 rounded-t-2xl shadow-2xl focus:outline-none overflow-hidden"
+        >
+          <SheetHeader className="px-4 py-2.5 border-b border-slate-800 shrink-0 flex flex-row items-center justify-between bg-slate-900/90">
+            <SheetTitle className="text-xs uppercase tracking-wider font-extrabold text-amber-400">
               {sheetTitle}
             </SheetTitle>
           </SheetHeader>
-          <div className="pb-16">{children}</div>
+          <div className="flex-1 min-h-0 overflow-hidden flex flex-col">{children}</div>
         </SheetContent>
       </Sheet>
     </>

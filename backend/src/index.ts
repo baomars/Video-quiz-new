@@ -332,6 +332,10 @@ app.post('/api/timeline/compute', (req, res) => {
       const langConfig = channel.languages?.[language] || { voice: 'vi-VN-HoaiMyNeural' };
       const revealPrefix = langConfig.revealScript || (language === 'vi' ? 'Đáp án chính xác là' : 'The correct answer is');
 
+      const answerTtsEnabled = (template?.components?.answerButtons as any)?.readTts !== false &&
+        (langConfig?.readAnswer !== false);
+      const explanationTtsEnabled = template?.components?.explanation?.readTts !== false;
+
       for (const q of quiz.questions) {
         if (!ttsMap[q.id]) {
           const qCached = ttsProvider.getCached({
@@ -341,20 +345,33 @@ app.post('/api/timeline/compute', (req, res) => {
             pitch: langConfig.pitch,
             volume: langConfig.volume
           });
-          const correctText = `${revealPrefix} ${q.correctAnswer}. ${q.explanation || ''}`.trim();
-          const expCached = ttsProvider.getCached({
-            text: correctText,
+          const answerOption = (q.options && q.options[q.correctAnswer])
+            ? `${q.correctAnswer}. ${q.options[q.correctAnswer]}`
+            : q.correctAnswer;
+          const answerText = `${revealPrefix} ${answerOption}`.trim();
+          const ansCached = answerTtsEnabled ? ttsProvider.getCached({
+            text: answerText,
             voice: langConfig.voice,
             rate: langConfig.rate,
             pitch: langConfig.pitch,
             volume: langConfig.volume
-          });
-          if (qCached || expCached) {
+          }) : null;
+          const expText = (q.explanation || '').trim();
+          const expCached = (explanationTtsEnabled && expText) ? ttsProvider.getCached({
+            text: expText,
+            voice: langConfig.voice,
+            rate: langConfig.rate,
+            pitch: langConfig.pitch,
+            volume: langConfig.volume
+          }) : null;
+          if (qCached || ansCached || expCached) {
             ttsMap[q.id] = {
               questionUrl: qCached?.url,
               questionDuration: qCached?.durationSec,
-              explanationUrl: expCached?.url,
-              explanationDuration: expCached?.durationSec
+              revealUrl: answerTtsEnabled ? ansCached?.url : undefined,
+              revealDuration: answerTtsEnabled ? ansCached?.durationSec : undefined,
+              explanationUrl: explanationTtsEnabled ? expCached?.url : undefined,
+              explanationDuration: explanationTtsEnabled ? expCached?.durationSec : undefined
             };
           }
         }

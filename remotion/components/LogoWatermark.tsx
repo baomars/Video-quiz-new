@@ -14,11 +14,12 @@ interface LogoWatermarkProps {
 }
 
 export const LogoWatermark: React.FC<LogoWatermarkProps> = React.memo(({ style = { x: 75, y: 8, width: 16, height: 6 }, branding }) => {
-  const showLogo = style.showLogo ?? branding.identity.showLogo ?? true;
-  const showChannelName = style.showChannelName ?? branding.identity.showChannelName ?? false;
+  const identity = branding?.identity;
+  const showLogo = style.showLogo ?? identity?.showLogo ?? false;
+  const showChannelName = style.showChannelName ?? identity?.showChannelName ?? false;
 
-  const logoUrl = branding.identity.logoUrl || branding.identity.avatarUrl;
-  const channelName = style.channelName || branding.identity.channelName;
+  const logoUrl = identity?.logoUrl || identity?.avatarUrl;
+  const channelName = style.channelName || identity?.channelName;
 
   const hasLogoToRender = Boolean(showLogo && logoUrl);
   const hasNameToRender = Boolean(showChannelName && channelName);
@@ -35,7 +36,7 @@ export const LogoWatermark: React.FC<LogoWatermarkProps> = React.memo(({ style =
     : '75%';
 
   const justify = style.textAlign === 'left' ? 'flex-start' : style.textAlign === 'right' ? 'flex-end' : 'center';
-  const opacity = style.opacity ?? branding.identity.watermarkOpacity ?? 0.9;
+  const opacity = style.opacity ?? identity?.watermarkOpacity ?? 0.9;
   const logoSize = style.logoSize || 42;
 
   return (
@@ -73,10 +74,10 @@ export const LogoWatermark: React.FC<LogoWatermarkProps> = React.memo(({ style =
       {hasNameToRender && (
         <span
           style={{
-            fontFamily: style.fontFamily || branding.fonts.primary || 'Be Vietnam Pro, sans-serif',
+            fontFamily: style.fontFamily || branding?.fonts?.primary || branding?.typography?.bodyFont || 'Be Vietnam Pro, sans-serif',
             fontSize: `${style.fontSize || 18}px`,
             fontWeight: style.fontWeight || '800',
-            color: style.color || branding.colors.primary || '#ffffff',
+            color: style.color || branding?.colors?.primary || '#ffffff',
             textShadow: '0 2px 8px rgba(0,0,0,0.25)',
             whiteSpace: 'nowrap',
             letterSpacing: '0.02em'

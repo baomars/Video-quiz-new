@@ -9,6 +9,8 @@ interface NeonBackgroundProps {
   color1?: string;
   color2?: string;
   color3?: string;
+  direction?: string;
+  movement?: number;
 }
 
 // Precomputed static parameters to avoid runtime allocations or hook ordering
@@ -57,15 +59,40 @@ export const NeonBackground: React.FC<NeonBackgroundProps> = ({
   intensity = 1.0,
   color1,
   color2,
-  color3
+  color3,
+  direction = 'down',
+  movement = 25
 }) => {
   const frame = useCurrentFrame();
 
   const effectiveSpeed = Math.max(0.2, speed);
   const effectiveIntensity = Math.max(0.2, intensity);
 
+  let effectivePreset = presetId;
+  if (effectivePreset === 'particles') effectivePreset = 'light-particles';
+  if (effectivePreset === 'light-streaks') effectivePreset = 'energy-lines';
+
+  // 0. GRADIENT MOTION (Rotating angle with breathing multi-colors)
+  if (effectivePreset === 'gradient-motion') {
+    const c1 = color1 || '#3b82f6';
+    const c2 = color2 || '#8b5cf6';
+    const c3 = color3 || '#ec4899';
+    const angle = (frame * 1.5 * effectiveSpeed) % 360;
+    return (
+      <div
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background: `linear-gradient(${angle}deg, ${c1} 0%, ${c2} 50%, ${c3} 100%)`,
+          filter: `brightness(${effectiveIntensity})`,
+          overflow: 'hidden'
+        }}
+      />
+    );
+  }
+
   // 1. NEON GRADIENT (Dynamic multi-stop angle & focal point shifting)
-  if (presetId === 'neon-gradient') {
+  if (effectivePreset === 'neon-gradient') {
     const c1 = color1 || '#00f0ff'; // cyan
     const c2 = color2 || '#ff007f'; // magenta
     const c3 = color3 || '#7928ca'; // purple
@@ -109,7 +136,7 @@ export const NeonBackground: React.FC<NeonBackgroundProps> = ({
   }
 
   // 2. CYBER GLOW (Pulsing plasma light orbs with chromatic aberration)
-  if (presetId === 'cyber-glow') {
+  if (effectivePreset === 'cyber-glow') {
     const c1 = color1 || '#00f2fe';
     const c2 = color2 || '#f72585';
     const c3 = color3 || '#7209b7';
@@ -194,7 +221,7 @@ export const NeonBackground: React.FC<NeonBackgroundProps> = ({
   }
 
   // 3. ABSTRACT LIGHT WAVES (Multi-layered sinusoidal glowing curves)
-  if (presetId === 'light-waves') {
+  if (effectivePreset === 'light-waves') {
     const c1 = color1 || '#00f0ff';
     const c2 = color2 || '#ff007f';
     const c3 = color3 || '#8b5cf6';
@@ -293,7 +320,7 @@ export const NeonBackground: React.FC<NeonBackgroundProps> = ({
   }
 
   // 4. NEON GRID (Synthwave / Cyber 3D Perspective Plane)
-  if (presetId === 'neon-grid') {
+  if (effectivePreset === 'neon-grid') {
     const c1 = color1 || '#00f0ff';
     const c2 = color2 || '#ff007f';
     const horizon = 42;
@@ -400,7 +427,7 @@ export const NeonBackground: React.FC<NeonBackgroundProps> = ({
   }
 
   // 5. ENERGY LINES (High-speed vertical laser streaks)
-  if (presetId === 'energy-lines') {
+  if (effectivePreset === 'energy-lines') {
     const c1 = color1 || '#00f5d4';
     const c2 = color2 || '#7b2cbf';
     const c3 = color3 || '#4cc9f0';
@@ -449,7 +476,7 @@ export const NeonBackground: React.FC<NeonBackgroundProps> = ({
   }
 
   // 6. LIGHT PARTICLES / FLUID BOKEH
-  if (presetId === 'light-particles') {
+  if (effectivePreset === 'light-particles') {
     const c1 = color1 || '#38bdf8';
     const c2 = color2 || '#ec4899';
     const c3 = color3 || '#a855f7';
@@ -504,7 +531,7 @@ export const NeonBackground: React.FC<NeonBackgroundProps> = ({
   }
 
   // 7. GEOMETRIC NEON (Rotating concentric tech wireframes)
-  if (presetId === 'geometric-neon') {
+  if (effectivePreset === 'geometric-neon') {
     const c1 = color1 || '#00f0ff';
     const c2 = color2 || '#a855f7';
 
@@ -614,7 +641,7 @@ export const NeonBackground: React.FC<NeonBackgroundProps> = ({
   }
 
   // 8. AURORA NEON (Ethereal drifting polar curtains)
-  if (presetId === 'aurora-neon') {
+  if (effectivePreset === 'aurora-neon') {
     const c1 = color1 || '#10b981';
     const c2 = color2 || '#06b6d4';
     const c3 = color3 || '#d946ef';

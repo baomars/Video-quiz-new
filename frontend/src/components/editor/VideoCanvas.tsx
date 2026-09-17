@@ -34,6 +34,66 @@ interface VideoCanvasProps {
   onSelectComponentKey?: (key: string) => void;
 }
 
+interface ErrorBoundaryProps {
+  children: React.ReactNode;
+  resetKey?: string;
+  onReset?: () => void;
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error: Error | null;
+}
+
+export class CanvasErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    return { hasError: true, error };
+  }
+
+  componentDidUpdate(prevProps: ErrorBoundaryProps) {
+    if (prevProps.resetKey !== this.props.resetKey && this.state.hasError) {
+      this.setState({ hasError: false, error: null });
+    }
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error('[VideoCanvas] Render error caught by ErrorBoundary:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center bg-slate-900 text-slate-200">
+          <div className="w-12 h-12 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center mb-3">
+            <span className="text-xl">⚠️</span>
+          </div>
+          <h4 className="font-bold text-sm text-slate-100 mb-1">Không thể tải Preview</h4>
+          <p className="text-xs text-slate-400 mb-4 max-w-xs break-words">
+            {this.state.error?.message || 'Đã xảy ra lỗi khi hiển thị preview.'}
+          </p>
+          <Button
+            size="sm"
+            variant="outline"
+            className="border-slate-700 hover:bg-slate-800 text-xs"
+            onClick={() => {
+              this.setState({ hasError: false, error: null });
+              this.props.onReset?.();
+            }}
+          >
+            Thử tải lại Preview
+          </Button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 export const VideoCanvas: React.FC<VideoCanvasProps> = ({
   compositionProps,
   cues,
@@ -183,22 +243,24 @@ export const VideoCanvas: React.FC<VideoCanvasProps> = ({
             aspectRatio: '720 / 1280'
           }}
         >
-          <Player
-            ref={playerRef}
-            component={QuizVideoComposition}
-            inputProps={compositionProps}
-            durationInFrames={totalFrames || 600}
-            compositionWidth={720}
-            compositionHeight={1280}
-            fps={30}
-            style={{
-              width: '100%',
-              height: '100%'
-            }}
-            controls={false}
-            autoPlay={false}
-            loop
-          />
+          <CanvasErrorBoundary resetKey={compositionProps.template?.id || 'default'}>
+            <Player
+              ref={playerRef}
+              component={QuizVideoComposition}
+              inputProps={compositionProps}
+              durationInFrames={totalFrames || 600}
+              compositionWidth={720}
+              compositionHeight={1280}
+              fps={30}
+              style={{
+                width: '100%',
+                height: '100%'
+              }}
+              controls={false}
+              autoPlay={false}
+              loop
+            />
+          </CanvasErrorBoundary>
 
           {/* Safe Zone Overlay */}
           {showSafeZone && (

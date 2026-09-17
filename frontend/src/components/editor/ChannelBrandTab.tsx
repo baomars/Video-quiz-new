@@ -43,7 +43,7 @@ export const ChannelBrandTab: React.FC<ChannelBrandTabProps> = ({ channel, onCha
       branding: {
         ...branding,
         fonts: {
-          ...branding.fonts,
+          ...(branding.fonts || {}),
           [key]: value
         }
       }
@@ -215,7 +215,7 @@ export const ChannelBrandTab: React.FC<ChannelBrandTabProps> = ({ channel, onCha
           <div>
             <label className="text-xs text-slate-600 font-semibold mb-1 block">Phông chữ Chính:</label>
             <select
-              value={branding.fonts.primary}
+              value={branding.fonts?.primary || branding.typography?.headingFont || 'Be Vietnam Pro, sans-serif'}
               onChange={(e) => updateFont('primary', e.target.value)}
               className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 font-medium focus:bg-white focus:border-amber-500 focus:outline-none shadow-sm"
             >
@@ -230,7 +230,7 @@ export const ChannelBrandTab: React.FC<ChannelBrandTabProps> = ({ channel, onCha
           <div>
             <label className="text-xs text-slate-600 font-semibold mb-1 block">Độ đậm tiêu đề (Heading Weight):</label>
             <select
-              value={branding.fonts.headingWeight}
+              value={branding.fonts?.headingWeight || '800'}
               onChange={(e) => updateFont('headingWeight', e.target.value)}
               className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 font-medium focus:bg-white focus:border-amber-500 focus:outline-none shadow-sm"
             >

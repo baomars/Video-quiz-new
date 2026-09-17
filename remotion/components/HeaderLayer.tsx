@@ -49,7 +49,7 @@ export const HeaderLayer: React.FC<HeaderLayerProps> = ({ style, branding, quizT
         ...transform
       }}
     >
-      {branding.identity.avatarUrl && (
+      {branding?.identity?.avatarUrl && (
         <img
           src={resolveMedia(branding.identity.avatarUrl)}
           alt="avatar"
@@ -58,30 +58,30 @@ export const HeaderLayer: React.FC<HeaderLayerProps> = ({ style, branding, quizT
             height: '42px',
             borderRadius: '50%',
             objectFit: 'cover',
-            border: `2px solid ${branding.colors.primary}`
+            border: `2px solid ${branding?.colors?.primary || '#2563eb'}`
           }}
         />
       )}
       <div style={{ display: 'flex', flexDirection: 'column', textAlign }}>
         <span
           style={{
-            fontFamily: branding.fonts.primary || 'Be Vietnam Pro, sans-serif',
+            fontFamily: branding?.fonts?.primary || branding?.typography?.headingFont || 'Be Vietnam Pro, sans-serif',
             fontSize: `${style.fontSize || 24}px`,
-            fontWeight: style.fontWeight || branding.fonts.headingWeight || '800',
-            color: style.color || branding.colors.primary,
+            fontWeight: style.fontWeight || branding?.fonts?.headingWeight || '800',
+            color: style.color || branding?.colors?.primary || '#2563eb',
             letterSpacing: '0.04em',
             textTransform: 'uppercase'
           }}
         >
-          {branding.identity.channelName}
+          {branding?.identity?.channelName || ''}
         </span>
         {style.showTitle !== false && quizTitle && (
           <span
             style={{
-              fontFamily: branding.fonts.secondary || 'Noto Sans, sans-serif',
+              fontFamily: branding?.fonts?.secondary || branding?.typography?.bodyFont || 'Noto Sans, sans-serif',
               fontSize: '13px',
               fontWeight: '600',
-              color: branding.colors.textMuted || '#64748b'
+              color: branding?.colors?.textMuted || '#64748b'
             }}
           >
             {quizTitle}

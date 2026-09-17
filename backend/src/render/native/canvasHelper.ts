@@ -158,3 +158,257 @@ export function getEntranceTransform(
       };
   }
 }
+
+export function drawHudPath(
+  ctx: SKRSContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  chamfer: number = 14
+): void {
+  const c = Math.min(chamfer, width / 4, height / 4);
+  ctx.beginPath();
+  ctx.moveTo(x + c, y);
+  ctx.lineTo(x + width - c, y);
+  ctx.lineTo(x + width, y + c);
+  ctx.lineTo(x + width, y + height - c);
+  ctx.lineTo(x + width - c, y + height);
+  ctx.lineTo(x + c, y + height);
+  ctx.lineTo(x, y + height - c);
+  ctx.lineTo(x, y + c);
+  ctx.closePath();
+}
+
+export function drawHexagonPath(
+  ctx: SKRSContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number
+): void {
+  const w2 = width / 2;
+  const h2 = height / 2;
+  const cx = x + w2;
+  const cy = y + h2;
+  ctx.beginPath();
+  for (let i = 0; i < 6; i++) {
+    const angle = (i * Math.PI) / 3 - Math.PI / 6;
+    const px = cx + w2 * Math.cos(angle);
+    const py = cy + h2 * Math.sin(angle);
+    if (i === 0) ctx.moveTo(px, py);
+    else ctx.lineTo(px, py);
+  }
+  ctx.closePath();
+}
+
+export function drawCirclePath(
+  ctx: SKRSContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number
+): void {
+  const r = Math.min(width, height) / 2;
+  const cx = x + width / 2;
+  const cy = y + height / 2;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.closePath();
+}
+
+export function drawDiamondPath(
+  ctx: SKRSContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number
+): void {
+  const cx = x + width / 2;
+  const cy = y + height / 2;
+  ctx.beginPath();
+  ctx.moveTo(cx, y);
+  ctx.lineTo(x + width, cy);
+  ctx.lineTo(cx, y + height);
+  ctx.lineTo(x, cy);
+  ctx.closePath();
+}
+
+export function drawEllipsePath(
+  ctx: SKRSContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number
+): void {
+  const cx = x + width / 2;
+  const cy = y + height / 2;
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, width / 2, height / 2, 0, 0, Math.PI * 2);
+  ctx.closePath();
+}
+
+export function drawBlobPath(
+  ctx: SKRSContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number
+): void {
+  // Smooth organic blob using cubic beziers
+  const cx = x + width / 2;
+  const cy = y + height / 2;
+  const rx = width / 2;
+  const ry = height / 2;
+  ctx.beginPath();
+  ctx.moveTo(cx, y);
+  ctx.bezierCurveTo(cx + rx * 0.9, y, x + width, cy - ry * 0.4, x + width, cy);
+  ctx.bezierCurveTo(x + width, cy + ry * 0.8, cx + rx * 0.5, y + height, cx, y + height);
+  ctx.bezierCurveTo(cx - rx * 0.8, y + height, x, cy + ry * 0.5, x, cy);
+  ctx.bezierCurveTo(x, cy - ry * 0.8, cx - rx * 0.6, y, cx, y);
+  ctx.closePath();
+}
+
+export function drawTicketPath(
+  ctx: SKRSContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  notchRadius: number = 10
+): void {
+  const nr = Math.min(notchRadius, height / 4, width / 4);
+  const r = 8;
+  const cy = y + height / 2;
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + width - r, y);
+  ctx.quadraticCurveTo(x + width, y, x + width, y + r);
+  ctx.lineTo(x + width, cy - nr);
+  ctx.arc(x + width, cy, nr, -Math.PI / 2, Math.PI / 2, true); // inward notch right
+  ctx.lineTo(x + width, y + height - r);
+  ctx.quadraticCurveTo(x + width, y + height, x + width - r, y + height);
+  ctx.lineTo(x + r, y + height);
+  ctx.quadraticCurveTo(x, y + height, x, y + height - r);
+  ctx.lineTo(x, cy + nr);
+  ctx.arc(x, cy, nr, Math.PI / 2, -Math.PI / 2, true); // inward notch left
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+export function drawBadgePath(
+  ctx: SKRSContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number
+): void {
+  // 8-point chamfered badge
+  const c = Math.min(12, width / 6, height / 6);
+  ctx.beginPath();
+  ctx.moveTo(x + c, y);
+  ctx.lineTo(x + width - c, y);
+  ctx.lineTo(x + width, y + c);
+  ctx.lineTo(x + width, y + height - c);
+  ctx.lineTo(x + width - c, y + height);
+  ctx.lineTo(x + c, y + height);
+  ctx.lineTo(x, y + height - c);
+  ctx.lineTo(x, y + c);
+  ctx.closePath();
+}
+
+export function drawSpeechBubblePath(
+  ctx: SKRSContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number
+): void {
+  // Speech bubble: rounded card with small tail pointer at bottom-left
+  const r = Math.min(22, height / 3, width / 4);
+  const tailW = 14;
+  const tailH = 8;
+  const tailX = x + 24;
+  const bodyH = height - tailH;
+
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + width - r, y);
+  ctx.quadraticCurveTo(x + width, y, x + width, y + r);
+  ctx.lineTo(x + width, y + bodyH - r);
+  ctx.quadraticCurveTo(x + width, y + bodyH, x + width - r, y + bodyH);
+  ctx.lineTo(tailX + tailW, y + bodyH);
+  ctx.lineTo(tailX, y + height); // Tail tip
+  ctx.lineTo(tailX + 2, y + bodyH);
+  ctx.lineTo(x + r, y + bodyH);
+  ctx.quadraticCurveTo(x, y + bodyH, x, y + bodyH - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+export function drawShapePath(
+  ctx: SKRSContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  style: any
+): void {
+  const shape = style?.shape;
+  switch (shape) {
+    case 'rectangle':
+      ctx.beginPath();
+      ctx.rect(x, y, width, height);
+      ctx.closePath();
+      break;
+    case 'circle':
+      drawCirclePath(ctx, x, y, width, height);
+      break;
+    case 'ellipse':
+      drawEllipsePath(ctx, x, y, width, height);
+      break;
+    case 'diamond':
+      drawDiamondPath(ctx, x, y, width, height);
+      break;
+    case 'hexagon':
+      drawHexagonPath(ctx, x, y, width, height);
+      break;
+    case 'hud':
+      drawHudPath(ctx, x, y, width, height, style?.chamferSize || 14);
+      break;
+    case 'blob':
+      drawBlobPath(ctx, x, y, width, height);
+      break;
+    case 'ticket':
+      drawTicketPath(ctx, x, y, width, height, 10);
+      break;
+    case 'badge':
+      drawBadgePath(ctx, x, y, width, height);
+      break;
+    case 'speech-bubble':
+      drawSpeechBubblePath(ctx, x, y, width, height);
+      break;
+    case 'bubble':
+      drawRoundedRect(ctx, x, y, width, height, [30, 12, 30, 12]);
+      break;
+    case 'capsule':
+    case 'pill':
+      drawRoundedRect(ctx, x, y, width, height, Math.min(width, height) / 2);
+      break;
+    case 'color-block':
+      drawRoundedRect(ctx, x, y, width, height, style?.borderRadius ?? 16);
+      break;
+    case 'doodle':
+      drawRoundedRect(ctx, x, y, width, height, style?.borderRadius ?? 16);
+      break;
+    case 'glass':
+    case 'rounded':
+    default:
+      const radius = style?.borderRadius !== undefined ? style.borderRadius : 16;
+      drawRoundedRect(ctx, x, y, width, height, radius);
+      break;
+  }
+}
+

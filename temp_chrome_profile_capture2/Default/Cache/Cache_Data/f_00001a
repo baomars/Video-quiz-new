@@ -1,0 +1,244 @@
+import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/src/components/ui/sheet.tsx");import __vite__cjsImport0_react_jsxDevRuntime from "/@fs/D:/source code/Video quiz new/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=234e6012"; const jsxDEV = __vite__cjsImport0_react_jsxDevRuntime["jsxDEV"];
+import * as RefreshRuntime from "/@react-refresh";
+const inWebWorker = typeof WorkerGlobalScope !== "undefined" && self instanceof WorkerGlobalScope;
+let prevRefreshReg;
+let prevRefreshSig;
+if (import.meta.hot && !inWebWorker) {
+  if (!window.$RefreshReg$) {
+    throw new Error(
+      "@vitejs/plugin-react can't detect preamble. Something is wrong."
+    );
+  }
+  prevRefreshReg = window.$RefreshReg$;
+  prevRefreshSig = window.$RefreshSig$;
+  window.$RefreshReg$ = RefreshRuntime.getRefreshReg("D:/source code/Video quiz new/frontend/src/components/ui/sheet.tsx");
+  window.$RefreshSig$ = RefreshRuntime.createSignatureFunctionForTransform;
+}
+import __vite__cjsImport3_react from "/@fs/D:/source code/Video quiz new/node_modules/.vite/deps/react.js?v=234e6012"; const React = ((m) => m?.__esModule ? m : { ...typeof m === "object" && !Array.isArray(m) || typeof m === "function" ? m : {}, default: m })(__vite__cjsImport3_react);
+import * as SheetPrimitive from "/@fs/D:/source code/Video quiz new/node_modules/.vite/deps/@radix-ui_react-dialog.js?v=a9351b79";
+import { cva } from "/@fs/D:/source code/Video quiz new/node_modules/.vite/deps/class-variance-authority.js?v=cd9c3de5";
+import { X } from "/@fs/D:/source code/Video quiz new/node_modules/.vite/deps/lucide-react.js?v=e1a71809";
+import { cn } from "/src/lib/utils.ts";
+const Sheet = SheetPrimitive.Root;
+const SheetTrigger = SheetPrimitive.Trigger;
+const SheetClose = SheetPrimitive.Close;
+const SheetPortal = SheetPrimitive.Portal;
+const SheetOverlay = React.forwardRef(
+  _c = ({ className, ...props }, ref) => /* @__PURE__ */ jsxDEV(
+    SheetPrimitive.Overlay,
+    {
+      className: cn(
+        "fixed inset-0 z-50 bg-slate-950/40 backdrop-blur-xs data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+        className
+      ),
+      ...props,
+      ref
+    },
+    void 0,
+    false,
+    {
+      fileName: "D:/source code/Video quiz new/frontend/src/components/ui/sheet.tsx",
+      lineNumber: 35,
+      columnNumber: 1
+    },
+    this
+  )
+);
+_c2 = SheetOverlay;
+SheetOverlay.displayName = SheetPrimitive.Overlay.displayName;
+const sheetVariants = cva(
+  "fixed z-50 gap-4 bg-slate-900 border-slate-800 text-slate-100 p-4 sm:p-6 shadow-2xl transition ease-in-out data-[state=closed]:duration-300 data-[state=open]:duration-300 data-[state=open]:animate-in data-[state=closed]:animate-out",
+  {
+    variants: {
+      side: {
+        top: "inset-x-0 top-0 border-b border-slate-800 data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top",
+        bottom: "inset-x-0 bottom-0 border-t border-slate-800 rounded-t-3xl max-h-[88vh] overflow-y-auto data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom",
+        left: "inset-y-0 left-0 h-full w-3/4 border-r border-slate-800 data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left sm:max-w-sm",
+        right: "inset-y-0 right-0 h-full w-3/4 border-l border-slate-800 data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right sm:max-w-md"
+      }
+    },
+    defaultVariants: {
+      side: "bottom"
+    }
+  }
+);
+const SheetContent = React.forwardRef(
+  _c3 = ({ side = "bottom", className, children, ...props }, ref) => /* @__PURE__ */ jsxDEV(SheetPortal, { children: [
+    /* @__PURE__ */ jsxDEV(SheetOverlay, {}, void 0, false, {
+      fileName: "D:/source code/Video quiz new/frontend/src/components/ui/sheet.tsx",
+      lineNumber: 74,
+      columnNumber: 5
+    }, this),
+    /* @__PURE__ */ jsxDEV(
+      SheetPrimitive.Content,
+      {
+        ref,
+        className: cn(sheetVariants({ side }), className),
+        ...props,
+        children: [
+          side === "bottom" && /* @__PURE__ */ jsxDEV("div", { className: "w-12 h-1.5 bg-slate-700 rounded-full mx-auto -mt-1 mb-3 shrink-0" }, void 0, false, {
+            fileName: "D:/source code/Video quiz new/frontend/src/components/ui/sheet.tsx",
+            lineNumber: 82,
+            columnNumber: 5
+          }, this),
+          children,
+          /* @__PURE__ */ jsxDEV(SheetPrimitive.Close, { className: "absolute right-4 top-4 rounded-xl p-1.5 text-slate-400 opacity-70 transition-opacity hover:opacity-100 hover:text-slate-100 hover:bg-slate-800 focus:outline-none disabled:pointer-events-none", children: [
+            /* @__PURE__ */ jsxDEV(X, { className: "h-4 w-4" }, void 0, false, {
+              fileName: "D:/source code/Video quiz new/frontend/src/components/ui/sheet.tsx",
+              lineNumber: 86,
+              columnNumber: 9
+            }, this),
+            /* @__PURE__ */ jsxDEV("span", { className: "sr-only", children: "Close" }, void 0, false, {
+              fileName: "D:/source code/Video quiz new/frontend/src/components/ui/sheet.tsx",
+              lineNumber: 87,
+              columnNumber: 9
+            }, this)
+          ] }, void 0, true, {
+            fileName: "D:/source code/Video quiz new/frontend/src/components/ui/sheet.tsx",
+            lineNumber: 85,
+            columnNumber: 7
+          }, this)
+        ]
+      },
+      void 0,
+      true,
+      {
+        fileName: "D:/source code/Video quiz new/frontend/src/components/ui/sheet.tsx",
+        lineNumber: 75,
+        columnNumber: 5
+      },
+      this
+    )
+  ] }, void 0, true, {
+    fileName: "D:/source code/Video quiz new/frontend/src/components/ui/sheet.tsx",
+    lineNumber: 73,
+    columnNumber: 1
+  }, this)
+);
+_c4 = SheetContent;
+SheetContent.displayName = SheetPrimitive.Content.displayName;
+const SheetHeader = ({
+  className,
+  ...props
+}) => /* @__PURE__ */ jsxDEV(
+  "div",
+  {
+    className: cn(
+      "flex flex-col space-y-1.5 text-left pb-3 border-b border-slate-800",
+      className
+    ),
+    ...props
+  },
+  void 0,
+  false,
+  {
+    fileName: "D:/source code/Video quiz new/frontend/src/components/ui/sheet.tsx",
+    lineNumber: 98,
+    columnNumber: 1
+  },
+  this
+);
+_c5 = SheetHeader;
+SheetHeader.displayName = "SheetHeader";
+const SheetFooter = ({
+  className,
+  ...props
+}) => /* @__PURE__ */ jsxDEV(
+  "div",
+  {
+    className: cn(
+      "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 pt-3 border-t border-slate-800",
+      className
+    ),
+    ...props
+  },
+  void 0,
+  false,
+  {
+    fileName: "D:/source code/Video quiz new/frontend/src/components/ui/sheet.tsx",
+    lineNumber: 112,
+    columnNumber: 1
+  },
+  this
+);
+_c6 = SheetFooter;
+SheetFooter.displayName = "SheetFooter";
+const SheetTitle = React.forwardRef(
+  _c7 = ({ className, ...props }, ref) => /* @__PURE__ */ jsxDEV(
+    SheetPrimitive.Title,
+    {
+      ref,
+      className: cn("text-base font-bold text-slate-100", className),
+      ...props
+    },
+    void 0,
+    false,
+    {
+      fileName: "D:/source code/Video quiz new/frontend/src/components/ui/sheet.tsx",
+      lineNumber: 126,
+      columnNumber: 1
+    },
+    this
+  )
+);
+_c8 = SheetTitle;
+SheetTitle.displayName = SheetPrimitive.Title.displayName;
+const SheetDescription = React.forwardRef(
+  _c9 = ({ className, ...props }, ref) => /* @__PURE__ */ jsxDEV(
+    SheetPrimitive.Description,
+    {
+      ref,
+      className: cn("text-xs text-slate-500", className),
+      ...props
+    },
+    void 0,
+    false,
+    {
+      fileName: "D:/source code/Video quiz new/frontend/src/components/ui/sheet.tsx",
+      lineNumber: 138,
+      columnNumber: 1
+    },
+    this
+  )
+);
+_c0 = SheetDescription;
+SheetDescription.displayName = SheetPrimitive.Description.displayName;
+export {
+  Sheet,
+  SheetPortal,
+  SheetOverlay,
+  SheetTrigger,
+  SheetClose,
+  SheetContent,
+  SheetHeader,
+  SheetFooter,
+  SheetTitle,
+  SheetDescription
+};
+var _c, _c2, _c3, _c4, _c5, _c6, _c7, _c8, _c9, _c0;
+$RefreshReg$(_c, "SheetOverlay$React.forwardRef");
+$RefreshReg$(_c2, "SheetOverlay");
+$RefreshReg$(_c3, "SheetContent$React.forwardRef");
+$RefreshReg$(_c4, "SheetContent");
+$RefreshReg$(_c5, "SheetHeader");
+$RefreshReg$(_c6, "SheetFooter");
+$RefreshReg$(_c7, "SheetTitle$React.forwardRef");
+$RefreshReg$(_c8, "SheetTitle");
+$RefreshReg$(_c9, "SheetDescription$React.forwardRef");
+$RefreshReg$(_c0, "SheetDescription");
+if (import.meta.hot && !inWebWorker) {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+}
+if (import.meta.hot && !inWebWorker) {
+  RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
+    RefreshRuntime.registerExportsForReactRefresh("D:/source code/Video quiz new/frontend/src/components/ui/sheet.tsx", currentExports);
+    import.meta.hot.accept((nextExports) => {
+      if (!nextExports) return;
+      const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate("D:/source code/Video quiz new/frontend/src/components/ui/sheet.tsx", currentExports, nextExports);
+      if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);
+    });
+  });
+}
+
+//# sourceMappingURL=data:application/json;base64,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QUFBOUIsSUFBQTtBQUFBLGFBQUFJLEtBQUE7QUFBQSxhQUFBWSxLQUFBO0FBQUEsYUFBQUUsS0FBQTtBQUFBLGFBQUFHLEtBQUE7QUFBQSxhQUFBRSxLQUFBO0FBQUEsYUFBQUUsS0FBQTtBQUFBLGFBQUFDLEtBQUE7QUFBQSxhQUFBRyxLQUFBO0FBQUEsYUFBQUMsS0FBQSIsIm5hbWVzIjpbIlJlYWN0IiwiU2hlZXRQcmltaXRpdmUiLCJjdmEiLCJYIiwiY24iLCJTaGVldCIsIlJvb3QiLCJTaGVldFRyaWdnZXIiLCJUcmlnZ2VyIiwiU2hlZXRDbG9zZSIsIkNsb3NlIiwiU2hlZXRQb3J0YWwiLCJQb3J0YWwiLCJTaGVldE92ZXJsYXkiLCJmb3J3YXJkUmVmIiwiX2MiLCJjbGFzc05hbWUiLCJwcm9wcyIsInJlZiIsIl9jMiIsImRpc3BsYXlOYW1lIiwiT3ZlcmxheSIsInNoZWV0VmFyaWFudHMiLCJ2YXJpYW50cyIsInNpZGUiLCJ0b3AiLCJib3R0b20iLCJsZWZ0IiwicmlnaHQiLCJkZWZhdWx0VmFyaWFudHMiLCJTaGVldENvbnRlbnQiLCJfYzMiLCJjaGlsZHJlbiIsIl9jNCIsIkNvbnRlbnQiLCJTaGVldEhlYWRlciIsIl9jNSIsIlNoZWV0Rm9vdGVyIiwiX2M2IiwiU2hlZXRUaXRsZSIsIl9jNyIsIl9jOCIsIlRpdGxlIiwiU2hlZXREZXNjcmlwdGlvbiIsIl9jOSIsIl9jMCIsIkRlc2NyaXB0aW9uIl0sImlnbm9yZUxpc3QiOltdLCJzb3VyY2VzIjpbInNoZWV0LnRzeCJdLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgKiBhcyBSZWFjdCBmcm9tICdyZWFjdCc7XG5pbXBvcnQgKiBhcyBTaGVldFByaW1pdGl2ZSBmcm9tICdAcmFkaXgtdWkvcmVhY3QtZGlhbG9nJztcbmltcG9ydCB7IGN2YSwgdHlwZSBWYXJpYW50UHJvcHMgfSBmcm9tICdjbGFzcy12YXJpYW5jZS1hdXRob3JpdHknO1xuaW1wb3J0IHsgWCB9IGZyb20gJ2x1Y2lkZS1yZWFjdCc7XG5pbXBvcnQgeyBjbiB9IGZyb20gJy4uLy4uL2xpYi91dGlscyc7XG5cbmNvbnN0IFNoZWV0ID0gU2hlZXRQcmltaXRpdmUuUm9vdDtcbmNvbnN0IFNoZWV0VHJpZ2dlciA9IFNoZWV0UHJpbWl0aXZlLlRyaWdnZXI7XG5jb25zdCBTaGVldENsb3NlID0gU2hlZXRQcmltaXRpdmUuQ2xvc2U7XG5jb25zdCBTaGVldFBvcnRhbCA9IFNoZWV0UHJpbWl0aXZlLlBvcnRhbDtcblxuY29uc3QgU2hlZXRPdmVybGF5ID0gUmVhY3QuZm9yd2FyZFJlZjxcbiAgUmVhY3QuRWxlbWVudFJlZjx0eXBlb2YgU2hlZXRQcmltaXRpdmUuT3ZlcmxheT4sXG4gIFJlYWN0LkNvbXBvbmVudFByb3BzV2l0aG91dFJlZjx0eXBlb2YgU2hlZXRQcmltaXRpdmUuT3ZlcmxheT5cbj4oKHsgY2xhc3NOYW1lLCAuLi5wcm9wcyB9LCByZWYpID0+IChcbiAgPFNoZWV0UHJpbWl0aXZlLk92ZXJsYXlcbiAgICBjbGFzc05hbWU9e2NuKFxuICAgICAgJ2ZpeGVkIGluc2V0LTAgei01MCBiZy1zbGF0ZS05NTAvNDAgYmFja2Ryb3AtYmx1ci14cyBkYXRhLVtzdGF0ZT1vcGVuXTphbmltYXRlLWluIGRhdGEtW3N0YXRlPWNsb3NlZF06YW5pbWF0ZS1vdXQgZGF0YS1bc3RhdGU9Y2xvc2VkXTpmYWRlLW91dC0wIGRhdGEtW3N0YXRlPW9wZW5dOmZhZGUtaW4tMCcsXG4gICAgICBjbGFzc05hbWVcbiAgICApfVxuICAgIHsuLi5wcm9wc31cbiAgICByZWY9e3JlZn1cbiAgLz5cbikpO1xuU2hlZXRPdmVybGF5LmRpc3BsYXlOYW1lID0gU2hlZXRQcmltaXRpdmUuT3ZlcmxheS5kaXNwbGF5TmFtZTtcblxuY29uc3Qgc2hlZXRWYXJpYW50cyA9IGN2YShcbiAgJ2ZpeGVkIHotNTAgZ2FwLTQgYmctc2xhdGUtOTAwIGJvcmRlci1zbGF0ZS04MDAgdGV4dC1zbGF0ZS0xMDAgcC00IHNtOnAtNiBzaGFkb3ctMnhsIHRyYW5zaXRpb24gZWFzZS1pbi1vdXQgZGF0YS1bc3RhdGU9Y2xvc2VkXTpkdXJhdGlvbi0zMDAgZGF0YS1bc3RhdGU9b3Blbl06ZHVyYXRpb24tMzAwIGRhdGEtW3N0YXRlPW9wZW5dOmFuaW1hdGUtaW4gZGF0YS1bc3RhdGU9Y2xvc2VkXTphbmltYXRlLW91dCcsXG4gIHtcbiAgICB2YXJpYW50czoge1xuICAgICAgc2lkZToge1xuICAgICAgICB0b3A6ICdpbnNldC14LTAgdG9wLTAgYm9yZGVyLWIgYm9yZGVyLXNsYXRlLTgwMCBkYXRhLVtzdGF0ZT1jbG9zZWRdOnNsaWRlLW91dC10by10b3AgZGF0YS1bc3RhdGU9b3Blbl06c2xpZGUtaW4tZnJvbS10b3AnLFxuICAgICAgICBib3R0b206XG4gICAgICAgICAgJ2luc2V0LXgtMCBib3R0b20tMCBib3JkZXItdCBib3JkZXItc2xhdGUtODAwIHJvdW5kZWQtdC0zeGwgbWF4LWgtWzg4dmhdIG92ZXJmbG93LXktYXV0byBkYXRhLVtzdGF0ZT1jbG9zZWRdOnNsaWRlLW91dC10by1ib3R0b20gZGF0YS1bc3RhdGU9b3Blbl06c2xpZGUtaW4tZnJvbS1ib3R0b20nLFxuICAgICAgICBsZWZ0OiAnaW5zZXQteS0wIGxlZnQtMCBoLWZ1bGwgdy0zLzQgYm9yZGVyLXIgYm9yZGVyLXNsYXRlLTgwMCBkYXRhLVtzdGF0ZT1jbG9zZWRdOnNsaWRlLW91dC10by1sZWZ0IGRhdGEtW3N0YXRlPW9wZW5dOnNsaWRlLWluLWZyb20tbGVmdCBzbTptYXgtdy1zbScsXG4gICAgICAgIHJpZ2h0OlxuICAgICAgICAgICdpbnNldC15LTAgcmlnaHQtMCBoLWZ1bGwgdy0zLzQgYm9yZGVyLWwgYm9yZGVyLXNsYXRlLTgwMCBkYXRhLVtzdGF0ZT1jbG9zZWRdOnNsaWRlLW91dC10by1yaWdodCBkYXRhLVtzdGF0ZT1vcGVuXTpzbGlkZS1pbi1mcm9tLXJpZ2h0IHNtOm1heC13LW1kJ1xuICAgICAgfVxuICAgIH0sXG4gICAgZGVmYXVsdFZhcmlhbnRzOiB7XG4gICAgICBzaWRlOiAnYm90dG9tJ1xuICAgIH1cbiAgfVxuKTtcblxuaW50ZXJmYWNlIFNoZWV0Q29udGVudFByb3BzXG4gIGV4dGVuZHMgUmVhY3QuQ29tcG9uZW50UHJvcHNXaXRob3V0UmVmPHR5cGVvZiBTaGVldFByaW1pdGl2ZS5Db250ZW50PixcbiAgICBWYXJpYW50UHJvcHM8dHlwZW9mIHNoZWV0VmFyaWFudHM+IHt9XG5cbmNvbnN0IFNoZWV0Q29udGVudCA9IFJlYWN0LmZvcndhcmRSZWY8XG4gIFJlYWN0LkVsZW1lbnRSZWY8dHlwZW9mIFNoZWV0UHJpbWl0aXZlLkNvbnRlbnQ+LFxuICBTaGVldENvbnRlbnRQcm9wc1xuPigoeyBzaWRlID0gJ2JvdHRvbScsIGNsYXNzTmFtZSwgY2hpbGRyZW4sIC4uLnByb3BzIH0sIHJlZikgPT4gKFxuICA8U2hlZXRQb3J0YWw+XG4gICAgPFNoZWV0T3ZlcmxheSAvPlxuICAgIDxTaGVldFByaW1pdGl2ZS5Db250ZW50XG4gICAgICByZWY9e3JlZn1cbiAgICAgIGNsYXNzTmFtZT17Y24oc2hlZXRWYXJpYW50cyh7IHNpZGUgfSksIGNsYXNzTmFtZSl9XG4gICAgICB7Li4ucHJvcHN9XG4gICAgPlxuICAgICAgey8qIFZpc3VhbCBkcmFnIGhhbmRsZSBwaWxsIGZvciBib3R0b20gc2hlZXQgb24gbW9iaWxlICovfVxuICAgICAge3NpZGUgPT09ICdib3R0b20nICYmIChcbiAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJ3LTEyIGgtMS41IGJnLXNsYXRlLTcwMCByb3VuZGVkLWZ1bGwgbXgtYXV0byAtbXQtMSBtYi0zIHNocmluay0wXCIgLz5cbiAgICAgICl9XG4gICAgICB7Y2hpbGRyZW59XG4gICAgICA8U2hlZXRQcmltaXRpdmUuQ2xvc2UgY2xhc3NOYW1lPVwiYWJzb2x1dGUgcmlnaHQtNCB0b3AtNCByb3VuZGVkLXhsIHAtMS41IHRleHQtc2xhdGUtNDAwIG9wYWNpdHktNzAgdHJhbnNpdGlvbi1vcGFjaXR5IGhvdmVyOm9wYWNpdHktMTAwIGhvdmVyOnRleHQtc2xhdGUtMTAwIGhvdmVyOmJnLXNsYXRlLTgwMCBmb2N1czpvdXRsaW5lLW5vbmUgZGlzYWJsZWQ6cG9pbnRlci1ldmVudHMtbm9uZVwiPlxuICAgICAgICA8WCBjbGFzc05hbWU9XCJoLTQgdy00XCIgLz5cbiAgICAgICAgPHNwYW4gY2xhc3NOYW1lPVwic3Itb25seVwiPkNsb3NlPC9zcGFuPlxuICAgICAgPC9TaGVldFByaW1pdGl2ZS5DbG9zZT5cbiAgICA8L1NoZWV0UHJpbWl0aXZlLkNvbnRlbnQ+XG4gIDwvU2hlZXRQb3J0YWw+XG4pKTtcblNoZWV0Q29udGVudC5kaXNwbGF5TmFtZSA9IFNoZWV0UHJpbWl0aXZlLkNvbnRlbnQuZGlzcGxheU5hbWU7XG5cbmNvbnN0IFNoZWV0SGVhZGVyID0gKHtcbiAgY2xhc3NOYW1lLFxuICAuLi5wcm9wc1xufTogUmVhY3QuSFRNTEF0dHJpYnV0ZXM8SFRNTERpdkVsZW1lbnQ+KSA9PiAoXG4gIDxkaXZcbiAgICBjbGFzc05hbWU9e2NuKFxuICAgICAgJ2ZsZXggZmxleC1jb2wgc3BhY2UteS0xLjUgdGV4dC1sZWZ0IHBiLTMgYm9yZGVyLWIgYm9yZGVyLXNsYXRlLTgwMCcsXG4gICAgICBjbGFzc05hbWVcbiAgICApfVxuICAgIHsuLi5wcm9wc31cbiAgLz5cbik7XG5TaGVldEhlYWRlci5kaXNwbGF5TmFtZSA9ICdTaGVldEhlYWRlcic7XG5cbmNvbnN0IFNoZWV0Rm9vdGVyID0gKHtcbiAgY2xhc3NOYW1lLFxuICAuLi5wcm9wc1xufTogUmVhY3QuSFRNTEF0dHJpYnV0ZXM8SFRNTERpdkVsZW1lbnQ+KSA9PiAoXG4gIDxkaXZcbiAgICBjbGFzc05hbWU9e2NuKFxuICAgICAgJ2ZsZXggZmxleC1jb2wtcmV2ZXJzZSBzbTpmbGV4LXJvdyBzbTpqdXN0aWZ5LWVuZCBzbTpzcGFjZS14LTIgcHQtMyBib3JkZXItdCBib3JkZXItc2xhdGUtODAwJyxcbiAgICAgIGNsYXNzTmFtZVxuICAgICl9XG4gICAgey4uLnByb3BzfVxuICAvPlxuKTtcblNoZWV0Rm9vdGVyLmRpc3BsYXlOYW1lID0gJ1NoZWV0Rm9vdGVyJztcblxuY29uc3QgU2hlZXRUaXRsZSA9IFJlYWN0LmZvcndhcmRSZWY8XG4gIFJlYWN0LkVsZW1lbnRSZWY8dHlwZW9mIFNoZWV0UHJpbWl0aXZlLlRpdGxlPixcbiAgUmVhY3QuQ29tcG9uZW50UHJvcHNXaXRob3V0UmVmPHR5cGVvZiBTaGVldFByaW1pdGl2ZS5UaXRsZT5cbj4oKHsgY2xhc3NOYW1lLCAuLi5wcm9wcyB9LCByZWYpID0+IChcbiAgPFNoZWV0UHJpbWl0aXZlLlRpdGxlXG4gICAgcmVmPXtyZWZ9XG4gICAgY2xhc3NOYW1lPXtjbigndGV4dC1iYXNlIGZvbnQtYm9sZCB0ZXh0LXNsYXRlLTEwMCcsIGNsYXNzTmFtZSl9XG4gICAgey4uLnByb3BzfVxuICAvPlxuKSk7XG5TaGVldFRpdGxlLmRpc3BsYXlOYW1lID0gU2hlZXRQcmltaXRpdmUuVGl0bGUuZGlzcGxheU5hbWU7XG5cbmNvbnN0IFNoZWV0RGVzY3JpcHRpb24gPSBSZWFjdC5mb3J3YXJkUmVmPFxuICBSZWFjdC5FbGVtZW50UmVmPHR5cGVvZiBTaGVldFByaW1pdGl2ZS5EZXNjcmlwdGlvbj4sXG4gIFJlYWN0LkNvbXBvbmVudFByb3BzV2l0aG91dFJlZjx0eXBlb2YgU2hlZXRQcmltaXRpdmUuRGVzY3JpcHRpb24+XG4+KCh7IGNsYXNzTmFtZSwgLi4ucHJvcHMgfSwgcmVmKSA9PiAoXG4gIDxTaGVldFByaW1pdGl2ZS5EZXNjcmlwdGlvblxuICAgIHJlZj17cmVmfVxuICAgIGNsYXNzTmFtZT17Y24oJ3RleHQteHMgdGV4dC1zbGF0ZS01MDAnLCBjbGFzc05hbWUpfVxuICAgIHsuLi5wcm9wc31cbiAgLz5cbikpO1xuU2hlZXREZXNjcmlwdGlvbi5kaXNwbGF5TmFtZSA9IFNoZWV0UHJpbWl0aXZlLkRlc2NyaXB0aW9uLmRpc3BsYXlOYW1lO1xuXG5leHBvcnQge1xuICBTaGVldCxcbiAgU2hlZXRQb3J0YWwsXG4gIFNoZWV0T3ZlcmxheSxcbiAgU2hlZXRUcmlnZ2VyLFxuICBTaGVldENsb3NlLFxuICBTaGVldENvbnRlbnQsXG4gIFNoZWV0SGVhZGVyLFxuICBTaGVldEZvb3RlcixcbiAgU2hlZXRUaXRsZSxcbiAgU2hlZXREZXNjcmlwdGlvblxufTtcbiJdLCJmaWxlIjoiRDovc291cmNlIGNvZGUvVmlkZW8gcXVpeiBuZXcvZnJvbnRlbmQvc3JjL2NvbXBvbmVudHMvdWkvc2hlZXQudHN4In0=

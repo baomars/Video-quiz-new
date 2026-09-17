@@ -1,28 +1,22 @@
 {
   "identity": {
     "channelName": "TECH VIBRANT",
-    "description": "Đột phá công nghệ tương lai",
-    "avatarUrl": "/assets/default_avatar_cyber.svg",
-    "logoUrl": "/assets/default_logo_cyber.svg",
-    "watermarkUrl": "",
-    "watermarkOpacity": 0.85,
-    "watermarkPosition": "top-right",
-    "showWatermark": true,
     "showLogo": false,
-    "showChannelName": false
+    "showChannelName": false,
+    "watermarkOpacity": 0.85,
+    "logoUrl": "/assets/default_logo_cyber.svg",
+    "avatarUrl": "/assets/default_avatar_cyber.svg"
   },
   "colors": {
-    "primary": "#d97706",
-    "secondary": "#fffbeb",
-    "accent": "#0284c7",
+    "primary": "#ffde59",
+    "secondary": "#2563eb",
+    "accent": "#ff007f",
     "background": "#fffbeb",
     "cardBg": "#ffffff",
-    "text": "#1e293b",
-    "textMuted": "#64748b",
+    "text": "#111827",
     "correct": "#15803d",
-    "wrong": "#e11d48",
-    "buttonBg": "#ffffff",
-    "border": "#fde68a"
+    "wrong": "#dc2626",
+    "textMuted": "#64748b"
   },
   "fonts": {
     "primary": "Be Vietnam Pro",
@@ -34,5 +28,10 @@
     "shadowStyle": "subtle",
     "borderRadius": 16,
     "glassmorphism": false
+  },
+  "typography": {
+    "headingFont": "Montserrat, sans-serif",
+    "bodyFont": "Montserrat, sans-serif",
+    "scaleRatio": 1.3
   }
 }

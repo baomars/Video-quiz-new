@@ -1,0 +1,1229 @@
+import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/@fs/D:/source code/Video quiz new/remotion/components/NeonBackground.tsx");import __vite__cjsImport0_react_jsxDevRuntime from "/@fs/D:/source code/Video quiz new/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=234e6012"; const jsxDEV = __vite__cjsImport0_react_jsxDevRuntime["jsxDEV"];
+import * as RefreshRuntime from "/@react-refresh";
+const inWebWorker = typeof WorkerGlobalScope !== "undefined" && self instanceof WorkerGlobalScope;
+let prevRefreshReg;
+let prevRefreshSig;
+if (import.meta.hot && !inWebWorker) {
+  if (!window.$RefreshReg$) {
+    throw new Error(
+      "@vitejs/plugin-react can't detect preamble. Something is wrong."
+    );
+  }
+  prevRefreshReg = window.$RefreshReg$;
+  prevRefreshSig = window.$RefreshSig$;
+  window.$RefreshReg$ = RefreshRuntime.getRefreshReg("D:/source code/Video quiz new/remotion/components/NeonBackground.tsx");
+  window.$RefreshSig$ = RefreshRuntime.createSignatureFunctionForTransform;
+}
+var _s = $RefreshSig$();
+import { useCurrentFrame } from "/@fs/D:/source code/Video quiz new/node_modules/.vite/deps/remotion.js?v=1feb0051";
+const STATIC_STREAKS = Array.from({ length: 16 }).map(_c = (_, i) => ({
+  x: (i * 6.2 + 2.5) % 96,
+  speedMult: 1.5 + i % 4 * 0.6,
+  length: 120 + i % 5 * 45,
+  width: 2 + i % 3,
+  colorIndex: i % 5,
+  offsetY: i * 137 % 1280
+}));
+_c2 = STATIC_STREAKS;
+const STATIC_PARTICLES = Array.from({ length: 28 }).map(_c3 = (_, i) => ({
+  baseX: (i * 13.5 + 4) % 94,
+  baseY: i * 47 % 1280,
+  radius: 12 + i % 5 * 8,
+  driftSpeed: 0.6 + i % 4 * 0.35,
+  phase: i * 1.3,
+  colorIndex: i % 4
+}));
+_c4 = STATIC_PARTICLES;
+function generateSmoothWave(t, baseY, amp1, amp2, speedMult) {
+  const points = [];
+  for (let i = 0; i <= 8; i++) {
+    const x = i / 8 * 720;
+    const y = baseY + Math.sin(t * speedMult + i * 0.8) * amp1 + Math.cos(t * 0.6 + i * 0.5) * amp2;
+    points.push({ x, y });
+  }
+  let d = `M ${points[0].x.toFixed(1)},${points[0].y.toFixed(1)}`;
+  for (let i = 0; i < points.length - 1; i++) {
+    const p1 = points[i];
+    const p2 = points[i + 1];
+    const midX = (p1.x + p2.x) / 2;
+    const midY = (p1.y + p2.y) / 2;
+    d += ` Q ${p1.x.toFixed(1)},${p1.y.toFixed(1)} ${midX.toFixed(1)},${midY.toFixed(1)}`;
+  }
+  const last = points[points.length - 1];
+  d += ` L ${last.x.toFixed(1)},${last.y.toFixed(1)}`;
+  return d;
+}
+export const NeonBackground = ({
+  presetId = "neon-gradient",
+  speed = 1,
+  intensity = 1,
+  color1,
+  color2,
+  color3,
+  direction = "down",
+  movement = 25
+}) => {
+  _s();
+  const frame = useCurrentFrame();
+  const effectiveSpeed = Math.max(0.2, speed);
+  const effectiveIntensity = Math.max(0.2, intensity);
+  let effectivePreset = presetId;
+  if (effectivePreset === "particles") effectivePreset = "light-particles";
+  if (effectivePreset === "light-streaks") effectivePreset = "energy-lines";
+  if (effectivePreset === "gradient-motion") {
+    const c1 = color1 || "#3b82f6";
+    const c2 = color2 || "#8b5cf6";
+    const c3 = color3 || "#ec4899";
+    const angle = frame * 1.5 * effectiveSpeed % 360;
+    return /* @__PURE__ */ jsxDEV(
+      "div",
+      {
+        style: {
+          position: "absolute",
+          inset: 0,
+          background: `linear-gradient(${angle}deg, ${c1} 0%, ${c2} 50%, ${c3} 100%)`,
+          filter: `brightness(${effectiveIntensity})`,
+          overflow: "hidden"
+        }
+      },
+      void 0,
+      false,
+      {
+        fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+        lineNumber: 101,
+        columnNumber: 7
+      },
+      this
+    );
+  }
+  if (effectivePreset === "neon-gradient") {
+    const c1 = color1 || "#00f0ff";
+    const c2 = color2 || "#ff007f";
+    const c3 = color3 || "#7928ca";
+    const angle = (135 + Math.sin(frame * 0.025 * effectiveSpeed) * 45) % 360;
+    const shift1 = 20 + Math.sin(frame * 0.03 * effectiveSpeed) * 15;
+    const shift2 = 75 + Math.cos(frame * 0.025 * effectiveSpeed) * 15;
+    const fx1 = 50 + Math.sin(frame * 0.035 * effectiveSpeed) * 30;
+    const fy1 = 35 + Math.cos(frame * 0.03 * effectiveSpeed) * 25;
+    const fx2 = 50 - Math.sin(frame * 0.025 * effectiveSpeed) * 30;
+    const fy2 = 70 - Math.cos(frame * 0.035 * effectiveSpeed) * 20;
+    return /* @__PURE__ */ jsxDEV(
+      "div",
+      {
+        style: {
+          position: "absolute",
+          inset: 0,
+          backgroundColor: "#050512",
+          backgroundImage: `
+            radial-gradient(circle at ${fx1}% ${fy1}%, ${c1}cc 0%, transparent 55%),
+            radial-gradient(circle at ${fx2}% ${fy2}%, ${c2}b3 0%, transparent 60%),
+            linear-gradient(${angle}deg, ${c3} 0%, #050515 ${shift1}%, #0a001a ${shift2}%, ${c2}88 100%)
+          `,
+          filter: `brightness(${effectiveIntensity})`,
+          overflow: "hidden"
+        },
+        children: /* @__PURE__ */ jsxDEV(
+          "div",
+          {
+            style: {
+              position: "absolute",
+              inset: 0,
+              background: `radial-gradient(ellipse at 50% 50%, ${c1}33 0%, transparent 70%)`,
+              opacity: 0.5 + 0.3 * Math.sin(frame * 0.05 * effectiveSpeed),
+              mixBlendMode: "screen"
+            }
+          },
+          void 0,
+          false,
+          {
+            fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+            lineNumber: 144,
+            columnNumber: 9
+          },
+          this
+        )
+      },
+      void 0,
+      false,
+      {
+        fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+        lineNumber: 129,
+        columnNumber: 7
+      },
+      this
+    );
+  }
+  if (effectivePreset === "cyber-glow") {
+    const c1 = color1 || "#00f2fe";
+    const c2 = color2 || "#f72585";
+    const c3 = color3 || "#7209b7";
+    const orb1X = 35 + Math.sin(frame * 0.028 * effectiveSpeed) * 22;
+    const orb1Y = 30 + Math.cos(frame * 0.032 * effectiveSpeed) * 20;
+    const orb1Scale = 1 + 0.18 * Math.sin(frame * 0.04 * effectiveSpeed);
+    const orb2X = 65 + Math.cos(frame * 0.024 * effectiveSpeed) * 22;
+    const orb2Y = 65 + Math.sin(frame * 0.035 * effectiveSpeed) * 18;
+    const orb2Scale = 1 + 0.15 * Math.cos(frame * 0.045 * effectiveSpeed);
+    const orb3X = 50 + Math.sin(frame * 0.02 * effectiveSpeed + 1) * 25;
+    const orb3Y = 85 + Math.cos(frame * 0.025 * effectiveSpeed + 2) * 15;
+    return /* @__PURE__ */ jsxDEV(
+      "div",
+      {
+        style: {
+          position: "absolute",
+          inset: 0,
+          backgroundColor: "#04040d",
+          overflow: "hidden",
+          filter: `brightness(${effectiveIntensity})`
+        },
+        children: [
+          /* @__PURE__ */ jsxDEV(
+            "div",
+            {
+              style: {
+                position: "absolute",
+                left: `${orb1X}%`,
+                top: `${orb1Y}%`,
+                width: "380px",
+                height: "380px",
+                transform: `translate(-50%, -50%) scale(${orb1Scale})`,
+                borderRadius: "50%",
+                background: `radial-gradient(circle, ${c1}ee 0%, ${c1}44 45%, transparent 70%)`,
+                filter: "blur(50px)",
+                mixBlendMode: "screen"
+              }
+            },
+            void 0,
+            false,
+            {
+              fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+              lineNumber: 185,
+              columnNumber: 9
+            },
+            this
+          ),
+          /* @__PURE__ */ jsxDEV(
+            "div",
+            {
+              style: {
+                position: "absolute",
+                left: `${orb2X}%`,
+                top: `${orb2Y}%`,
+                width: "420px",
+                height: "420px",
+                transform: `translate(-50%, -50%) scale(${orb2Scale})`,
+                borderRadius: "50%",
+                background: `radial-gradient(circle, ${c2}dd 0%, ${c2}44 50%, transparent 75%)`,
+                filter: "blur(55px)",
+                mixBlendMode: "screen"
+              }
+            },
+            void 0,
+            false,
+            {
+              fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+              lineNumber: 200,
+              columnNumber: 9
+            },
+            this
+          ),
+          /* @__PURE__ */ jsxDEV(
+            "div",
+            {
+              style: {
+                position: "absolute",
+                left: `${orb3X}%`,
+                top: `${orb3Y}%`,
+                width: "340px",
+                height: "340px",
+                transform: "translate(-50%, -50%)",
+                borderRadius: "50%",
+                background: `radial-gradient(circle, ${c3}ee 0%, ${c3}44 50%, transparent 75%)`,
+                filter: "blur(45px)",
+                mixBlendMode: "screen"
+              }
+            },
+            void 0,
+            false,
+            {
+              fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+              lineNumber: 215,
+              columnNumber: 9
+            },
+            this
+          ),
+          /* @__PURE__ */ jsxDEV(
+            "div",
+            {
+              style: {
+                position: "absolute",
+                inset: 0,
+                background: "radial-gradient(circle at 50% 50%, transparent 40%, rgba(4, 4, 13, 0.8) 100%)",
+                pointerEvents: "none"
+              }
+            },
+            void 0,
+            false,
+            {
+              fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+              lineNumber: 230,
+              columnNumber: 9
+            },
+            this
+          )
+        ]
+      },
+      void 0,
+      true,
+      {
+        fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+        lineNumber: 175,
+        columnNumber: 7
+      },
+      this
+    );
+  }
+  if (effectivePreset === "light-waves") {
+    const c1 = color1 || "#00f0ff";
+    const c2 = color2 || "#ff007f";
+    const c3 = color3 || "#8b5cf6";
+    const t = frame * 0.04 * effectiveSpeed;
+    const pathD1 = generateSmoothWave(t, 600, 90, 45, 1);
+    const pathD2 = generateSmoothWave(t, 720, 110, 50, 1.2);
+    const pathD3 = generateSmoothWave(t, 440, 80, 40, 0.8);
+    return /* @__PURE__ */ jsxDEV(
+      "div",
+      {
+        style: {
+          position: "absolute",
+          inset: 0,
+          backgroundColor: "#020617",
+          overflow: "hidden",
+          filter: `brightness(${effectiveIntensity})`
+        },
+        children: [
+          /* @__PURE__ */ jsxDEV(
+            "div",
+            {
+              style: {
+                position: "absolute",
+                inset: 0,
+                background: `radial-gradient(circle at 50% 55%, ${c3}33 0%, transparent 60%)`
+              }
+            },
+            void 0,
+            false,
+            {
+              fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+              lineNumber: 263,
+              columnNumber: 9
+            },
+            this
+          ),
+          /* @__PURE__ */ jsxDEV(
+            "svg",
+            {
+              viewBox: "0 0 720 1280",
+              style: {
+                position: "absolute",
+                inset: 0,
+                width: "100%",
+                height: "100%"
+              },
+              children: [
+                /* @__PURE__ */ jsxDEV("defs", { children: [
+                  /* @__PURE__ */ jsxDEV("linearGradient", { id: "waveGrad1", x1: "0%", y1: "0%", x2: "100%", y2: "0%", children: [
+                    /* @__PURE__ */ jsxDEV("stop", { offset: "0%", stopColor: c1, stopOpacity: "0.8" }, void 0, false, {
+                      fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+                      lineNumber: 282,
+                      columnNumber: 15
+                    }, this),
+                    /* @__PURE__ */ jsxDEV("stop", { offset: "50%", stopColor: c3, stopOpacity: "1" }, void 0, false, {
+                      fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+                      lineNumber: 283,
+                      columnNumber: 15
+                    }, this),
+                    /* @__PURE__ */ jsxDEV("stop", { offset: "100%", stopColor: c2, stopOpacity: "0.8" }, void 0, false, {
+                      fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+                      lineNumber: 284,
+                      columnNumber: 15
+                    }, this)
+                  ] }, void 0, true, {
+                    fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+                    lineNumber: 281,
+                    columnNumber: 13
+                  }, this),
+                  /* @__PURE__ */ jsxDEV("linearGradient", { id: "waveGrad2", x1: "0%", y1: "0%", x2: "100%", y2: "0%", children: [
+                    /* @__PURE__ */ jsxDEV("stop", { offset: "0%", stopColor: c2, stopOpacity: "0.7" }, void 0, false, {
+                      fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+                      lineNumber: 287,
+                      columnNumber: 15
+                    }, this),
+                    /* @__PURE__ */ jsxDEV("stop", { offset: "60%", stopColor: c1, stopOpacity: "1" }, void 0, false, {
+                      fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+                      lineNumber: 288,
+                      columnNumber: 15
+                    }, this),
+                    /* @__PURE__ */ jsxDEV("stop", { offset: "100%", stopColor: c3, stopOpacity: "0.9" }, void 0, false, {
+                      fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+                      lineNumber: 289,
+                      columnNumber: 15
+                    }, this)
+                  ] }, void 0, true, {
+                    fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+                    lineNumber: 286,
+                    columnNumber: 13
+                  }, this),
+                  /* @__PURE__ */ jsxDEV("linearGradient", { id: "waveGrad3", x1: "0%", y1: "0%", x2: "100%", y2: "0%", children: [
+                    /* @__PURE__ */ jsxDEV("stop", { offset: "0%", stopColor: c3, stopOpacity: "0.6" }, void 0, false, {
+                      fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+                      lineNumber: 292,
+                      columnNumber: 15
+                    }, this),
+                    /* @__PURE__ */ jsxDEV("stop", { offset: "50%", stopColor: c1, stopOpacity: "0.9" }, void 0, false, {
+                      fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+                      lineNumber: 293,
+                      columnNumber: 15
+                    }, this),
+                    /* @__PURE__ */ jsxDEV("stop", { offset: "100%", stopColor: c2, stopOpacity: "0.6" }, void 0, false, {
+                      fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+                      lineNumber: 294,
+                      columnNumber: 15
+                    }, this)
+                  ] }, void 0, true, {
+                    fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+                    lineNumber: 291,
+                    columnNumber: 13
+                  }, this),
+                  /* @__PURE__ */ jsxDEV("filter", { id: "neonWaveGlow", x: "-20%", y: "-20%", width: "140%", height: "140%", children: [
+                    /* @__PURE__ */ jsxDEV("feGaussianBlur", { stdDeviation: "8", result: "blur1" }, void 0, false, {
+                      fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+                      lineNumber: 297,
+                      columnNumber: 15
+                    }, this),
+                    /* @__PURE__ */ jsxDEV("feGaussianBlur", { stdDeviation: "18", result: "blur2" }, void 0, false, {
+                      fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+                      lineNumber: 298,
+                      columnNumber: 15
+                    }, this),
+                    /* @__PURE__ */ jsxDEV("feMerge", { children: [
+                      /* @__PURE__ */ jsxDEV("feMergeNode", { in: "blur2" }, void 0, false, {
+                        fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+                        lineNumber: 300,
+                        columnNumber: 17
+                      }, this),
+                      /* @__PURE__ */ jsxDEV("feMergeNode", { in: "blur1" }, void 0, false, {
+                        fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+                        lineNumber: 301,
+                        columnNumber: 17
+                      }, this),
+                      /* @__PURE__ */ jsxDEV("feMergeNode", { in: "SourceGraphic" }, void 0, false, {
+                        fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+                        lineNumber: 302,
+                        columnNumber: 17
+                      }, this)
+                    ] }, void 0, true, {
+                      fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+                      lineNumber: 299,
+                      columnNumber: 15
+                    }, this)
+                  ] }, void 0, true, {
+                    fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+                    lineNumber: 296,
+                    columnNumber: 13
+                  }, this)
+                ] }, void 0, true, {
+                  fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+                  lineNumber: 280,
+                  columnNumber: 11
+                }, this),
+                /* @__PURE__ */ jsxDEV(
+                  "path",
+                  {
+                    d: pathD3,
+                    fill: "none",
+                    stroke: "url(#waveGrad3)",
+                    strokeWidth: "8",
+                    filter: "url(#neonWaveGlow)",
+                    opacity: "0.65"
+                  },
+                  void 0,
+                  false,
+                  {
+                    fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+                    lineNumber: 308,
+                    columnNumber: 11
+                  },
+                  this
+                ),
+                /* @__PURE__ */ jsxDEV(
+                  "path",
+                  {
+                    d: pathD1,
+                    fill: "none",
+                    stroke: "url(#waveGrad1)",
+                    strokeWidth: "12",
+                    filter: "url(#neonWaveGlow)",
+                    opacity: "0.9"
+                  },
+                  void 0,
+                  false,
+                  {
+                    fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+                    lineNumber: 318,
+                    columnNumber: 11
+                  },
+                  this
+                ),
+                /* @__PURE__ */ jsxDEV(
+                  "path",
+                  {
+                    d: pathD2,
+                    fill: "none",
+                    stroke: "url(#waveGrad2)",
+                    strokeWidth: "10",
+                    filter: "url(#neonWaveGlow)",
+                    opacity: "0.8"
+                  },
+                  void 0,
+                  false,
+                  {
+                    fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+                    lineNumber: 328,
+                    columnNumber: 11
+                  },
+                  this
+                )
+              ]
+            },
+            void 0,
+            true,
+            {
+              fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+              lineNumber: 271,
+              columnNumber: 9
+            },
+            this
+          )
+        ]
+      },
+      void 0,
+      true,
+      {
+        fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+        lineNumber: 254,
+        columnNumber: 7
+      },
+      this
+    );
+  }
+  if (effectivePreset === "neon-grid") {
+    const c1 = color1 || "#00f0ff";
+    const c2 = color2 || "#ff007f";
+    const horizon = 42;
+    const gridY = frame * 1.8 * effectiveSpeed % 50;
+    return /* @__PURE__ */ jsxDEV(
+      "div",
+      {
+        style: {
+          position: "absolute",
+          inset: 0,
+          backgroundColor: "#030014",
+          overflow: "hidden",
+          filter: `brightness(${effectiveIntensity})`
+        },
+        children: [
+          /* @__PURE__ */ jsxDEV(
+            "div",
+            {
+              style: {
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "100%",
+                height: `${horizon}%`,
+                background: `radial-gradient(ellipse at 50% 100%, ${c2}99 0%, ${c2}33 35%, #030014 85%)`
+              },
+              children: /* @__PURE__ */ jsxDEV(
+                "div",
+                {
+                  style: {
+                    position: "absolute",
+                    bottom: "-80px",
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    width: "240px",
+                    height: "240px",
+                    borderRadius: "50%",
+                    background: `linear-gradient(to top, #ffe600 0%, ${c2} 70%)`,
+                    boxShadow: `0 0 50px ${c2}cc, 0 0 100px ${c2}66`,
+                    filter: "blur(2px)"
+                  }
+                },
+                void 0,
+                false,
+                {
+                  fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+                  lineNumber: 371,
+                  columnNumber: 11
+                },
+                this
+              )
+            },
+            void 0,
+            false,
+            {
+              fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+              lineNumber: 360,
+              columnNumber: 9
+            },
+            this
+          ),
+          /* @__PURE__ */ jsxDEV(
+            "div",
+            {
+              style: {
+                position: "absolute",
+                top: `${horizon}%`,
+                left: 0,
+                width: "100%",
+                height: "3px",
+                backgroundColor: "#ffffff",
+                boxShadow: `0 0 15px #ffffff, 0 0 30px ${c1}`,
+                zIndex: 2
+              }
+            },
+            void 0,
+            false,
+            {
+              fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+              lineNumber: 388,
+              columnNumber: 9
+            },
+            this
+          ),
+          /* @__PURE__ */ jsxDEV(
+            "div",
+            {
+              style: {
+                position: "absolute",
+                top: `${horizon}%`,
+                left: "-50%",
+                width: "200%",
+                height: `${100 - horizon + 20}%`,
+                perspective: "350px",
+                transformOrigin: "top center",
+                overflow: "hidden"
+              },
+              children: /* @__PURE__ */ jsxDEV(
+                "div",
+                {
+                  style: {
+                    width: "100%",
+                    height: "100%",
+                    transform: "rotateX(72deg)",
+                    transformOrigin: "top center",
+                    backgroundImage: `
+                linear-gradient(to right, ${c1}66 1.5px, transparent 1.5px),
+                linear-gradient(to bottom, ${c1}66 1.5px, transparent 1.5px)
+              `,
+                    backgroundSize: "50px 50px",
+                    backgroundPosition: `0px ${gridY}px`,
+                    maskImage: "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.1) 95%)",
+                    WebkitMaskImage: "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.1) 95%)"
+                  }
+                },
+                void 0,
+                false,
+                {
+                  fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+                  lineNumber: 414,
+                  columnNumber: 11
+                },
+                this
+              )
+            },
+            void 0,
+            false,
+            {
+              fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+              lineNumber: 402,
+              columnNumber: 9
+            },
+            this
+          ),
+          /* @__PURE__ */ jsxDEV(
+            "div",
+            {
+              style: {
+                position: "absolute",
+                bottom: 0,
+                left: 0,
+                width: "100%",
+                height: "30%",
+                background: "linear-gradient(to top, #030014 0%, transparent 100%)",
+                pointerEvents: "none"
+              }
+            },
+            void 0,
+            false,
+            {
+              fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+              lineNumber: 433,
+              columnNumber: 9
+            },
+            this
+          )
+        ]
+      },
+      void 0,
+      true,
+      {
+        fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+        lineNumber: 350,
+        columnNumber: 7
+      },
+      this
+    );
+  }
+  if (effectivePreset === "energy-lines") {
+    const c1 = color1 || "#00f5d4";
+    const c2 = color2 || "#7b2cbf";
+    const c3 = color3 || "#4cc9f0";
+    const colors = [c1, c2, c3, "#ffffff", "#ffe600"];
+    return /* @__PURE__ */ jsxDEV(
+      "div",
+      {
+        style: {
+          position: "absolute",
+          inset: 0,
+          backgroundColor: "#020617",
+          overflow: "hidden",
+          filter: `brightness(${effectiveIntensity})`
+        },
+        children: [
+          /* @__PURE__ */ jsxDEV(
+            "div",
+            {
+              style: {
+                position: "absolute",
+                inset: 0,
+                background: `radial-gradient(circle at 50% 50%, ${c2}25 0%, transparent 70%)`
+              }
+            },
+            void 0,
+            false,
+            {
+              fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+              lineNumber: 465,
+              columnNumber: 9
+            },
+            this
+          ),
+          STATIC_STREAKS.map((s, idx) => {
+            const y = (frame * 14 * s.speedMult * effectiveSpeed + s.offsetY) % (1280 + s.length) - s.length;
+            const clr = colors[s.colorIndex];
+            return /* @__PURE__ */ jsxDEV(
+              "div",
+              {
+                style: {
+                  position: "absolute",
+                  left: `${s.x}%`,
+                  top: `${y}px`,
+                  width: `${s.width}px`,
+                  height: `${s.length}px`,
+                  background: `linear-gradient(to bottom, transparent 0%, ${clr} 60%, #ffffff 100%)`,
+                  borderRadius: "999px",
+                  boxShadow: `0 0 10px ${clr}, 0 0 20px ${clr}`,
+                  opacity: 0.75 + 0.25 * Math.sin(frame * 0.1 + idx)
+                }
+              },
+              idx,
+              false,
+              {
+                fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+                lineNumber: 477,
+                columnNumber: 13
+              },
+              this
+            );
+          })
+        ]
+      },
+      void 0,
+      true,
+      {
+        fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+        lineNumber: 456,
+        columnNumber: 7
+      },
+      this
+    );
+  }
+  if (effectivePreset === "light-particles") {
+    const c1 = color1 || "#38bdf8";
+    const c2 = color2 || "#ec4899";
+    const c3 = color3 || "#a855f7";
+    const colors = [c1, c2, c3, "#67e8f9"];
+    return /* @__PURE__ */ jsxDEV(
+      "div",
+      {
+        style: {
+          position: "absolute",
+          inset: 0,
+          backgroundColor: "#050515",
+          overflow: "hidden",
+          filter: `brightness(${effectiveIntensity})`
+        },
+        children: [
+          /* @__PURE__ */ jsxDEV(
+            "div",
+            {
+              style: {
+                position: "absolute",
+                inset: 0,
+                background: `radial-gradient(circle at 50% 60%, ${c3}22 0%, transparent 65%)`
+              }
+            },
+            void 0,
+            false,
+            {
+              fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+              lineNumber: 514,
+              columnNumber: 9
+            },
+            this
+          ),
+          STATIC_PARTICLES.map((p, idx) => {
+            const swayX = Math.sin(frame * 0.03 * effectiveSpeed + p.phase) * 35;
+            const currentY = (p.baseY - frame * 1.5 * p.driftSpeed * effectiveSpeed) % (1280 + p.radius * 2);
+            const y = currentY < -p.radius * 2 ? 1280 + currentY : currentY;
+            const opacity = 0.35 + 0.45 * Math.sin(frame * 0.04 * effectiveSpeed + p.phase);
+            const clr = colors[p.colorIndex];
+            return /* @__PURE__ */ jsxDEV(
+              "div",
+              {
+                style: {
+                  position: "absolute",
+                  left: `calc(${p.baseX}% + ${swayX}px)`,
+                  top: `${y}px`,
+                  width: `${p.radius * 2}px`,
+                  height: `${p.radius * 2}px`,
+                  borderRadius: "50%",
+                  background: `radial-gradient(circle, #ffffff 15%, ${clr} 55%, transparent 75%)`,
+                  boxShadow: `0 0 ${p.radius}px ${clr}`,
+                  opacity,
+                  transform: "translate(-50%, -50%)",
+                  filter: "blur(1.5px)"
+                }
+              },
+              idx,
+              false,
+              {
+                fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+                lineNumber: 530,
+                columnNumber: 13
+              },
+              this
+            );
+          })
+        ]
+      },
+      void 0,
+      true,
+      {
+        fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+        lineNumber: 505,
+        columnNumber: 7
+      },
+      this
+    );
+  }
+  if (effectivePreset === "geometric-neon") {
+    const c1 = color1 || "#00f0ff";
+    const c2 = color2 || "#a855f7";
+    const rot1 = frame * 0.4 * effectiveSpeed % 360;
+    const rot2 = -frame * 0.6 * effectiveSpeed % 360;
+    const rot3 = frame * 0.8 * effectiveSpeed % 360;
+    const pulse = 1 + 0.05 * Math.sin(frame * 0.06 * effectiveSpeed);
+    return /* @__PURE__ */ jsxDEV(
+      "div",
+      {
+        style: {
+          position: "absolute",
+          inset: 0,
+          backgroundColor: "#050714",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          overflow: "hidden",
+          filter: `brightness(${effectiveIntensity})`
+        },
+        children: [
+          /* @__PURE__ */ jsxDEV(
+            "div",
+            {
+              style: {
+                position: "absolute",
+                inset: 0,
+                backgroundImage: `radial-gradient(rgba(0, 240, 255, 0.12) 1.5px, transparent 1.5px)`,
+                backgroundSize: "36px 36px"
+              }
+            },
+            void 0,
+            false,
+            {
+              fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+              lineNumber: 575,
+              columnNumber: 9
+            },
+            this
+          ),
+          /* @__PURE__ */ jsxDEV(
+            "div",
+            {
+              style: {
+                position: "absolute",
+                width: "450px",
+                height: "450px",
+                borderRadius: "50%",
+                background: `radial-gradient(circle, ${c1}33 0%, ${c2}22 45%, transparent 70%)`,
+                filter: "blur(40px)"
+              }
+            },
+            void 0,
+            false,
+            {
+              fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+              lineNumber: 584,
+              columnNumber: 9
+            },
+            this
+          ),
+          /* @__PURE__ */ jsxDEV(
+            "svg",
+            {
+              viewBox: "0 0 600 600",
+              style: {
+                width: "580px",
+                height: "580px",
+                transform: `scale(${pulse})`
+              },
+              children: [
+                /* @__PURE__ */ jsxDEV("defs", { children: /* @__PURE__ */ jsxDEV("filter", { id: "geoGlow", x: "-30%", y: "-30%", width: "160%", height: "160%", children: [
+                  /* @__PURE__ */ jsxDEV("feGaussianBlur", { stdDeviation: "6", result: "blur" }, void 0, false, {
+                    fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+                    lineNumber: 605,
+                    columnNumber: 15
+                  }, this),
+                  /* @__PURE__ */ jsxDEV("feMerge", { children: [
+                    /* @__PURE__ */ jsxDEV("feMergeNode", { in: "blur" }, void 0, false, {
+                      fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+                      lineNumber: 607,
+                      columnNumber: 17
+                    }, this),
+                    /* @__PURE__ */ jsxDEV("feMergeNode", { in: "SourceGraphic" }, void 0, false, {
+                      fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+                      lineNumber: 608,
+                      columnNumber: 17
+                    }, this)
+                  ] }, void 0, true, {
+                    fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+                    lineNumber: 606,
+                    columnNumber: 15
+                  }, this)
+                ] }, void 0, true, {
+                  fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+                  lineNumber: 604,
+                  columnNumber: 13
+                }, this) }, void 0, false, {
+                  fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+                  lineNumber: 603,
+                  columnNumber: 11
+                }, this),
+                /* @__PURE__ */ jsxDEV("g", { transform: `rotate(${rot1} 300 300)`, filter: "url(#geoGlow)", children: /* @__PURE__ */ jsxDEV(
+                  "polygon",
+                  {
+                    points: "300,50 516,175 516,425 300,550 84,425 84,175",
+                    fill: "none",
+                    stroke: c1,
+                    strokeWidth: "2.5",
+                    strokeDasharray: "20, 10",
+                    opacity: "0.85"
+                  },
+                  void 0,
+                  false,
+                  {
+                    fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+                    lineNumber: 615,
+                    columnNumber: 13
+                  },
+                  this
+                ) }, void 0, false, {
+                  fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+                  lineNumber: 614,
+                  columnNumber: 11
+                }, this),
+                /* @__PURE__ */ jsxDEV("g", { transform: `rotate(${rot2} 300 300)`, filter: "url(#geoGlow)", children: /* @__PURE__ */ jsxDEV(
+                  "rect",
+                  {
+                    x: "135",
+                    y: "135",
+                    width: "330",
+                    height: "330",
+                    fill: "none",
+                    stroke: c2,
+                    strokeWidth: "2.5",
+                    opacity: "0.75"
+                  },
+                  void 0,
+                  false,
+                  {
+                    fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+                    lineNumber: 627,
+                    columnNumber: 13
+                  },
+                  this
+                ) }, void 0, false, {
+                  fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+                  lineNumber: 626,
+                  columnNumber: 11
+                }, this),
+                /* @__PURE__ */ jsxDEV("g", { transform: `rotate(${rot3} 300 300)`, filter: "url(#geoGlow)", children: /* @__PURE__ */ jsxDEV(
+                  "circle",
+                  {
+                    cx: "300",
+                    cy: "300",
+                    r: "110",
+                    fill: "none",
+                    stroke: c1,
+                    strokeWidth: "2",
+                    strokeDasharray: "8, 6",
+                    opacity: "0.9"
+                  },
+                  void 0,
+                  false,
+                  {
+                    fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+                    lineNumber: 641,
+                    columnNumber: 13
+                  },
+                  this
+                ) }, void 0, false, {
+                  fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+                  lineNumber: 640,
+                  columnNumber: 11
+                }, this),
+                /* @__PURE__ */ jsxDEV("circle", { cx: "300", cy: "300", r: "15", fill: c1, filter: "url(#geoGlow)", opacity: "0.95" }, void 0, false, {
+                  fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+                  lineNumber: 654,
+                  columnNumber: 11
+                }, this),
+                /* @__PURE__ */ jsxDEV("line", { x1: "260", y1: "300", x2: "340", y2: "300", stroke: "#ffffff", strokeWidth: "2" }, void 0, false, {
+                  fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+                  lineNumber: 655,
+                  columnNumber: 11
+                }, this),
+                /* @__PURE__ */ jsxDEV("line", { x1: "300", y1: "260", x2: "300", y2: "340", stroke: "#ffffff", strokeWidth: "2" }, void 0, false, {
+                  fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+                  lineNumber: 656,
+                  columnNumber: 11
+                }, this)
+              ]
+            },
+            void 0,
+            true,
+            {
+              fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+              lineNumber: 595,
+              columnNumber: 9
+            },
+            this
+          )
+        ]
+      },
+      void 0,
+      true,
+      {
+        fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+        lineNumber: 563,
+        columnNumber: 7
+      },
+      this
+    );
+  }
+  if (effectivePreset === "aurora-neon") {
+    const c1 = color1 || "#10b981";
+    const c2 = color2 || "#06b6d4";
+    const c3 = color3 || "#d946ef";
+    const t = frame * 0.02 * effectiveSpeed;
+    const wave1 = Math.sin(t) * 45;
+    const wave2 = Math.cos(t * 1.3) * 55;
+    const wave3 = Math.sin(t * 0.8 + 1) * 60;
+    return /* @__PURE__ */ jsxDEV(
+      "div",
+      {
+        style: {
+          position: "absolute",
+          inset: 0,
+          backgroundColor: "#020510",
+          overflow: "hidden",
+          filter: `brightness(${effectiveIntensity})`
+        },
+        children: [
+          /* @__PURE__ */ jsxDEV(
+            "div",
+            {
+              style: {
+                position: "absolute",
+                inset: 0,
+                backgroundImage: "radial-gradient(rgba(255, 255, 255, 0.25) 1px, transparent 1px)",
+                backgroundSize: "48px 48px"
+              }
+            },
+            void 0,
+            false,
+            {
+              fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+              lineNumber: 683,
+              columnNumber: 9
+            },
+            this
+          ),
+          /* @__PURE__ */ jsxDEV(
+            "div",
+            {
+              style: {
+                position: "absolute",
+                top: "-15%",
+                left: `${15 + wave1 * 0.2}%`,
+                width: "80%",
+                height: "110%",
+                background: `radial-gradient(ellipse at 40% 45%, ${c1}99 0%, ${c1}33 50%, transparent 75%)`,
+                transform: `rotate(${15 + wave1 * 0.1}deg) scaleX(${1 + wave1 * 5e-3})`,
+                filter: "blur(45px)",
+                mixBlendMode: "screen",
+                opacity: 0.85
+              }
+            },
+            void 0,
+            false,
+            {
+              fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+              lineNumber: 693,
+              columnNumber: 9
+            },
+            this
+          ),
+          /* @__PURE__ */ jsxDEV(
+            "div",
+            {
+              style: {
+                position: "absolute",
+                top: "5%",
+                left: `${35 + wave2 * 0.2}%`,
+                width: "75%",
+                height: "100%",
+                background: `radial-gradient(ellipse at 50% 50%, ${c2}88 0%, ${c2}22 55%, transparent 75%)`,
+                transform: `rotate(${-18 + wave2 * 0.08}deg)`,
+                filter: "blur(50px)",
+                mixBlendMode: "screen",
+                opacity: 0.8
+              }
+            },
+            void 0,
+            false,
+            {
+              fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+              lineNumber: 709,
+              columnNumber: 9
+            },
+            this
+          ),
+          /* @__PURE__ */ jsxDEV(
+            "div",
+            {
+              style: {
+                position: "absolute",
+                top: "25%",
+                left: `${20 + wave3 * 0.15}%`,
+                width: "70%",
+                height: "85%",
+                background: `radial-gradient(ellipse at 50% 50%, ${c3}77 0%, ${c3}22 50%, transparent 70%)`,
+                transform: `rotate(${8 + wave3 * 0.06}deg)`,
+                filter: "blur(55px)",
+                mixBlendMode: "screen",
+                opacity: 0.75
+              }
+            },
+            void 0,
+            false,
+            {
+              fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+              lineNumber: 725,
+              columnNumber: 9
+            },
+            this
+          ),
+          /* @__PURE__ */ jsxDEV(
+            "div",
+            {
+              style: {
+                position: "absolute",
+                inset: 0,
+                background: "linear-gradient(to bottom, rgba(2, 5, 16, 0.7) 0%, transparent 30%, transparent 70%, rgba(2, 5, 16, 0.85) 100%)",
+                pointerEvents: "none"
+              }
+            },
+            void 0,
+            false,
+            {
+              fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+              lineNumber: 740,
+              columnNumber: 9
+            },
+            this
+          )
+        ]
+      },
+      void 0,
+      true,
+      {
+        fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+        lineNumber: 674,
+        columnNumber: 7
+      },
+      this
+    );
+  }
+  return /* @__PURE__ */ jsxDEV("div", { style: { position: "absolute", inset: 0, backgroundColor: "#050515" } }, void 0, false, {
+    fileName: "D:/source code/Video quiz new/remotion/components/NeonBackground.tsx",
+    lineNumber: 753,
+    columnNumber: 10
+  }, this);
+};
+_s(NeonBackground, "EBlYT7CdbQuFPXYHiCgSv05eJg0=", false, function() {
+  return [useCurrentFrame];
+});
+_c5 = NeonBackground;
+var _c, _c2, _c3, _c4, _c5;
+$RefreshReg$(_c, "STATIC_STREAKS$Array.from({ length: 16 }).map");
+$RefreshReg$(_c2, "STATIC_STREAKS");
+$RefreshReg$(_c3, "STATIC_PARTICLES$Array.from({ length: 28 }).map");
+$RefreshReg$(_c4, "STATIC_PARTICLES");
+$RefreshReg$(_c5, "NeonBackground");
+if (import.meta.hot && !inWebWorker) {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+}
+if (import.meta.hot && !inWebWorker) {
+  RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
+    RefreshRuntime.registerExportsForReactRefresh("D:/source code/Video quiz new/remotion/components/NeonBackground.tsx", currentExports);
+    import.meta.hot.accept((nextExports) => {
+      if (!nextExports) return;
+      const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate("D:/source code/Video quiz new/remotion/components/NeonBackground.tsx", currentExports, nextExports);
+      if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);
+    });
+  });
+}
+
+//# sourceMappingURL=data:application/json;base64,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QyxlQUFlO0FBQUE7QUFBQSxNQVZsQndDO0FBQTZDLElBQUFsQyxJQUFBUSxLQUFBRSxLQUFBTSxLQUFBaUc7QUFBQSxhQUFBakgsSUFBQTtBQUFBLGFBQUFRLEtBQUE7QUFBQSxhQUFBRSxLQUFBO0FBQUEsYUFBQU0sS0FBQTtBQUFBLGFBQUFpRyxLQUFBIiwibmFtZXMiOlsidXNlQ3VycmVudEZyYW1lIiwiU1RBVElDX1NUUkVBS1MiLCJBcnJheSIsImZyb20iLCJsZW5ndGgiLCJtYXAiLCJfYyIsIl8iLCJpIiwieCIsInNwZWVkTXVsdCIsIndpZHRoIiwiY29sb3JJbmRleCIsIm9mZnNldFkiLCJfYzIiLCJTVEFUSUNfUEFSVElDTEVTIiwiX2MzIiwiYmFzZVgiLCJiYXNlWSIsInJhZGl1cyIsImRyaWZ0U3BlZWQiLCJwaGFzZSIsIl9jNCIsImdlbmVyYXRlU21vb3RoV2F2ZSIsInQiLCJhbXAxIiwiYW1wMiIsInBvaW50cyIsInkiLCJNYXRoIiwic2luIiwiY29zIiwicHVzaCIsImQiLCJ0b0ZpeGVkIiwicDEiLCJwMiIsIm1pZFgiLCJtaWRZIiwibGFzdCIsIk5lb25CYWNrZ3JvdW5kIiwicHJlc2V0SWQiLCJzcGVlZCIsImludGVuc2l0eSIsImNvbG9yMSIsImNvbG9yMiIsImNvbG9yMyIsImRpcmVjdGlvbiIsIm1vdmVtZW50IiwiX3MiLCJmcmFtZSIsImVmZmVjdGl2ZVNwZWVkIiwibWF4IiwiZWZmZWN0aXZlSW50ZW5zaXR5IiwiZWZmZWN0aXZlUHJlc2V0IiwiYzEiLCJjMiIsImMzIiwiYW5nbGUiLCJwb3NpdGlvbiIsImluc2V0IiwiYmFja2dyb3VuZCIsImZpbHRlciIsIm92ZXJmbG93Iiwic2hpZnQxIiwic2hpZnQyIiwiZngxIiwiZnkxIiwiZngyIiwiZnkyIiwiYmFja2dyb3VuZENvbG9yIiwiYmFja2dyb3VuZEltYWdlIiwib3BhY2l0eSIsIm1peEJsZW5kTW9kZSIsIm9yYjFYIiwib3JiMVkiLCJvcmIxU2NhbGUiLCJvcmIyWCIsIm9yYjJZIiwib3JiMlNjYWxlIiwib3JiM1giLCJvcmIzWSIsImxlZnQiLCJ0b3AiLCJoZWlnaHQiLCJ0cmFuc2Zvcm0iLCJib3JkZXJSYWRpdXMiLCJwb2ludGVyRXZlbnRzIiwicGF0aEQxIiwicGF0aEQyIiwicGF0aEQzIiwiaG9yaXpvbiIsImdyaWRZIiwiYm90dG9tIiwiYm94U2hhZG93IiwiekluZGV4IiwicGVyc3BlY3RpdmUiLCJ0cmFuc2Zvcm1PcmlnaW4iLCJiYWNrZ3JvdW5kU2l6ZSIsImJhY2tncm91bmRQb3NpdGlvbiIsIm1hc2tJbWFnZSIsIldlYmtpdE1hc2tJbWFnZSIsImNvbG9ycyIsInMiLCJpZHgiLCJjbHIiLCJwIiwic3dheVgiLCJjdXJyZW50WSIsInJvdDEiLCJyb3QyIiwicm90MyIsInB1bHNlIiwiZGlzcGxheSIsImFsaWduSXRlbXMiLCJqdXN0aWZ5Q29udGVudCIsIndhdmUxIiwid2F2ZTIiLCJ3YXZlMyIsIl9jNSJdLCJpZ25vcmVMaXN0IjpbXSwic291cmNlcyI6WyJOZW9uQmFja2dyb3VuZC50c3giXSwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IFJlYWN0IGZyb20gJ3JlYWN0JztcbmltcG9ydCB7IHVzZUN1cnJlbnRGcmFtZSB9IGZyb20gJ3JlbW90aW9uJztcbmltcG9ydCB7IE5lb25QcmVzZXRJZCB9IGZyb20gJy4uL3R5cGVzL2luZGV4JztcblxuaW50ZXJmYWNlIE5lb25CYWNrZ3JvdW5kUHJvcHMge1xuICBwcmVzZXRJZD86IE5lb25QcmVzZXRJZDtcbiAgc3BlZWQ/OiBudW1iZXI7XG4gIGludGVuc2l0eT86IG51bWJlcjtcbiAgY29sb3IxPzogc3RyaW5nO1xuICBjb2xvcjI/OiBzdHJpbmc7XG4gIGNvbG9yMz86IHN0cmluZztcbiAgZGlyZWN0aW9uPzogc3RyaW5nO1xuICBtb3ZlbWVudD86IG51bWJlcjtcbn1cblxuLy8gUHJlY29tcHV0ZWQgc3RhdGljIHBhcmFtZXRlcnMgdG8gYXZvaWQgcnVudGltZSBhbGxvY2F0aW9ucyBvciBob29rIG9yZGVyaW5nXG5jb25zdCBTVEFUSUNfU1RSRUFLUyA9IEFycmF5LmZyb20oeyBsZW5ndGg6IDE2IH0pLm1hcCgoXywgaSkgPT4gKHtcbiAgeDogKGkgKiA2LjIgKyAyLjUpICUgOTYsXG4gIHNwZWVkTXVsdDogMS41ICsgKGkgJSA0KSAqIDAuNixcbiAgbGVuZ3RoOiAxMjAgKyAoaSAlIDUpICogNDUsXG4gIHdpZHRoOiAyICsgKGkgJSAzKSxcbiAgY29sb3JJbmRleDogaSAlIDUsXG4gIG9mZnNldFk6IChpICogMTM3KSAlIDEyODBcbn0pKTtcblxuY29uc3QgU1RBVElDX1BBUlRJQ0xFUyA9IEFycmF5LmZyb20oeyBsZW5ndGg6IDI4IH0pLm1hcCgoXywgaSkgPT4gKHtcbiAgYmFzZVg6IChpICogMTMuNSArIDQpICUgOTQsXG4gIGJhc2VZOiAoaSAqIDQ3KSAlIDEyODAsXG4gIHJhZGl1czogMTIgKyAoaSAlIDUpICogOCxcbiAgZHJpZnRTcGVlZDogMC42ICsgKGkgJSA0KSAqIDAuMzUsXG4gIHBoYXNlOiBpICogMS4zLFxuICBjb2xvckluZGV4OiBpICUgNFxufSkpO1xuXG5mdW5jdGlvbiBnZW5lcmF0ZVNtb290aFdhdmUodDogbnVtYmVyLCBiYXNlWTogbnVtYmVyLCBhbXAxOiBudW1iZXIsIGFtcDI6IG51bWJlciwgc3BlZWRNdWx0OiBudW1iZXIpOiBzdHJpbmcge1xuICBjb25zdCBwb2ludHM6IEFycmF5PHsgeDogbnVtYmVyOyB5OiBudW1iZXIgfT4gPSBbXTtcbiAgZm9yIChsZXQgaSA9IDA7IGkgPD0gODsgaSsrKSB7XG4gICAgY29uc3QgeCA9IChpIC8gOCkgKiA3MjA7XG4gICAgY29uc3QgeSA9IGJhc2VZICsgTWF0aC5zaW4odCAqIHNwZWVkTXVsdCArIGkgKiAwLjgpICogYW1wMSArIE1hdGguY29zKHQgKiAwLjYgKyBpICogMC41KSAqIGFtcDI7XG4gICAgcG9pbnRzLnB1c2goeyB4LCB5IH0pO1xuICB9XG5cbiAgbGV0IGQgPSBgTSAke3BvaW50c1swXS54LnRvRml4ZWQoMSl9LCR7cG9pbnRzWzBdLnkudG9GaXhlZCgxKX1gO1xuICBmb3IgKGxldCBpID0gMDsgaSA8IHBvaW50cy5sZW5ndGggLSAxOyBpKyspIHtcbiAgICBjb25zdCBwMSA9IHBvaW50c1tpXTtcbiAgICBjb25zdCBwMiA9IHBvaW50c1tpICsgMV07XG4gICAgY29uc3QgbWlkWCA9IChwMS54ICsgcDIueCkgLyAyO1xuICAgIGNvbnN0IG1pZFkgPSAocDEueSArIHAyLnkpIC8gMjtcbiAgICBkICs9IGAgUSAke3AxLngudG9GaXhlZCgxKX0sJHtwMS55LnRvRml4ZWQoMSl9ICR7bWlkWC50b0ZpeGVkKDEpfSwke21pZFkudG9GaXhlZCgxKX1gO1xuICB9XG4gIGNvbnN0IGxhc3QgPSBwb2ludHNbcG9pbnRzLmxlbmd0aCAtIDFdO1xuICBkICs9IGAgTCAke2xhc3QueC50b0ZpeGVkKDEpfSwke2xhc3QueS50b0ZpeGVkKDEpfWA7XG4gIHJldHVybiBkO1xufVxuXG5leHBvcnQgY29uc3QgTmVvbkJhY2tncm91bmQ6IFJlYWN0LkZDPE5lb25CYWNrZ3JvdW5kUHJvcHM+ID0gKHtcbiAgcHJlc2V0SWQgPSAnbmVvbi1ncmFkaWVudCcsXG4gIHNwZWVkID0gMS4wLFxuICBpbnRlbnNpdHkgPSAxLjAsXG4gIGNvbG9yMSxcbiAgY29sb3IyLFxuICBjb2xvcjMsXG4gIGRpcmVjdGlvbiA9ICdkb3duJyxcbiAgbW92ZW1lbnQgPSAyNVxufSkgPT4ge1xuICBjb25zdCBmcmFtZSA9IHVzZUN1cnJlbnRGcmFtZSgpO1xuXG4gIGNvbnN0IGVmZmVjdGl2ZVNwZWVkID0gTWF0aC5tYXgoMC4yLCBzcGVlZCk7XG4gIGNvbnN0IGVmZmVjdGl2ZUludGVuc2l0eSA9IE1hdGgubWF4KDAuMiwgaW50ZW5zaXR5KTtcblxuICBsZXQgZWZmZWN0aXZlUHJlc2V0ID0gcHJlc2V0SWQ7XG4gIGlmIChlZmZlY3RpdmVQcmVzZXQgPT09ICdwYXJ0aWNsZXMnKSBlZmZlY3RpdmVQcmVzZXQgPSAnbGlnaHQtcGFydGljbGVzJztcbiAgaWYgKGVmZmVjdGl2ZVByZXNldCA9PT0gJ2xpZ2h0LXN0cmVha3MnKSBlZmZlY3RpdmVQcmVzZXQgPSAnZW5lcmd5LWxpbmVzJztcblxuICAvLyAwLiBHUkFESUVOVCBNT1RJT04gKFJvdGF0aW5nIGFuZ2xlIHdpdGggYnJlYXRoaW5nIG11bHRpLWNvbG9ycylcbiAgaWYgKGVmZmVjdGl2ZVByZXNldCA9PT0gJ2dyYWRpZW50LW1vdGlvbicpIHtcbiAgICBjb25zdCBjMSA9IGNvbG9yMSB8fCAnIzNiODJmNic7XG4gICAgY29uc3QgYzIgPSBjb2xvcjIgfHwgJyM4YjVjZjYnO1xuICAgIGNvbnN0IGMzID0gY29sb3IzIHx8ICcjZWM0ODk5JztcbiAgICBjb25zdCBhbmdsZSA9IChmcmFtZSAqIDEuNSAqIGVmZmVjdGl2ZVNwZWVkKSAlIDM2MDtcbiAgICByZXR1cm4gKFxuICAgICAgPGRpdlxuICAgICAgICBzdHlsZT17e1xuICAgICAgICAgIHBvc2l0aW9uOiAnYWJzb2x1dGUnLFxuICAgICAgICAgIGluc2V0OiAwLFxuICAgICAgICAgIGJhY2tncm91bmQ6IGBsaW5lYXItZ3JhZGllbnQoJHthbmdsZX1kZWcsICR7YzF9IDAlLCAke2MyfSA1MCUsICR7YzN9IDEwMCUpYCxcbiAgICAgICAgICBmaWx0ZXI6IGBicmlnaHRuZXNzKCR7ZWZmZWN0aXZlSW50ZW5zaXR5fSlgLFxuICAgICAgICAgIG92ZXJmbG93OiAnaGlkZGVuJ1xuICAgICAgICB9fVxuICAgICAgLz5cbiAgICApO1xuICB9XG5cbiAgLy8gMS4gTkVPTiBHUkFESUVOVCAoRHluYW1pYyBtdWx0aS1zdG9wIGFuZ2xlICYgZm9jYWwgcG9pbnQgc2hpZnRpbmcpXG4gIGlmIChlZmZlY3RpdmVQcmVzZXQgPT09ICduZW9uLWdyYWRpZW50Jykge1xuICAgIGNvbnN0IGMxID0gY29sb3IxIHx8ICcjMDBmMGZmJzsgLy8gY3lhblxuICAgIGNvbnN0IGMyID0gY29sb3IyIHx8ICcjZmYwMDdmJzsgLy8gbWFnZW50YVxuICAgIGNvbnN0IGMzID0gY29sb3IzIHx8ICcjNzkyOGNhJzsgLy8gcHVycGxlXG4gICAgY29uc3QgYW5nbGUgPSAoMTM1ICsgTWF0aC5zaW4oZnJhbWUgKiAwLjAyNSAqIGVmZmVjdGl2ZVNwZWVkKSAqIDQ1KSAlIDM2MDtcbiAgICBjb25zdCBzaGlmdDEgPSAyMCArIE1hdGguc2luKGZyYW1lICogMC4wMyAqIGVmZmVjdGl2ZVNwZWVkKSAqIDE1O1xuICAgIGNvbnN0IHNoaWZ0MiA9IDc1ICsgTWF0aC5jb3MoZnJhbWUgKiAwLjAyNSAqIGVmZmVjdGl2ZVNwZWVkKSAqIDE1O1xuXG4gICAgLy8gTW92aW5nIHJhZGlhbCBmb2NhbCBzcG90bGlnaHRzXG4gICAgY29uc3QgZngxID0gNTAgKyBNYXRoLnNpbihmcmFtZSAqIDAuMDM1ICogZWZmZWN0aXZlU3BlZWQpICogMzA7XG4gICAgY29uc3QgZnkxID0gMzUgKyBNYXRoLmNvcyhmcmFtZSAqIDAuMDMgKiBlZmZlY3RpdmVTcGVlZCkgKiAyNTtcbiAgICBjb25zdCBmeDIgPSA1MCAtIE1hdGguc2luKGZyYW1lICogMC4wMjUgKiBlZmZlY3RpdmVTcGVlZCkgKiAzMDtcbiAgICBjb25zdCBmeTIgPSA3MCAtIE1hdGguY29zKGZyYW1lICogMC4wMzUgKiBlZmZlY3RpdmVTcGVlZCkgKiAyMDtcblxuICAgIHJldHVybiAoXG4gICAgICA8ZGl2XG4gICAgICAgIHN0eWxlPXt7XG4gICAgICAgICAgcG9zaXRpb246ICdhYnNvbHV0ZScsXG4gICAgICAgICAgaW5zZXQ6IDAsXG4gICAgICAgICAgYmFja2dyb3VuZENvbG9yOiAnIzA1MDUxMicsXG4gICAgICAgICAgYmFja2dyb3VuZEltYWdlOiBgXG4gICAgICAgICAgICByYWRpYWwtZ3JhZGllbnQoY2lyY2xlIGF0ICR7ZngxfSUgJHtmeTF9JSwgJHtjMX1jYyAwJSwgdHJhbnNwYXJlbnQgNTUlKSxcbiAgICAgICAgICAgIHJhZGlhbC1ncmFkaWVudChjaXJjbGUgYXQgJHtmeDJ9JSAke2Z5Mn0lLCAke2MyfWIzIDAlLCB0cmFuc3BhcmVudCA2MCUpLFxuICAgICAgICAgICAgbGluZWFyLWdyYWRpZW50KCR7YW5nbGV9ZGVnLCAke2MzfSAwJSwgIzA1MDUxNSAke3NoaWZ0MX0lLCAjMGEwMDFhICR7c2hpZnQyfSUsICR7YzJ9ODggMTAwJSlcbiAgICAgICAgICBgLFxuICAgICAgICAgIGZpbHRlcjogYGJyaWdodG5lc3MoJHtlZmZlY3RpdmVJbnRlbnNpdHl9KWAsXG4gICAgICAgICAgb3ZlcmZsb3c6ICdoaWRkZW4nXG4gICAgICAgIH19XG4gICAgICA+XG4gICAgICAgIHsvKiBTb2Z0IHB1bHNpbmcgZ2xvdyB2ZWlsICovfVxuICAgICAgICA8ZGl2XG4gICAgICAgICAgc3R5bGU9e3tcbiAgICAgICAgICAgIHBvc2l0aW9uOiAnYWJzb2x1dGUnLFxuICAgICAgICAgICAgaW5zZXQ6IDAsXG4gICAgICAgICAgICBiYWNrZ3JvdW5kOiBgcmFkaWFsLWdyYWRpZW50KGVsbGlwc2UgYXQgNTAlIDUwJSwgJHtjMX0zMyAwJSwgdHJhbnNwYXJlbnQgNzAlKWAsXG4gICAgICAgICAgICBvcGFjaXR5OiAwLjUgKyAwLjMgKiBNYXRoLnNpbihmcmFtZSAqIDAuMDUgKiBlZmZlY3RpdmVTcGVlZCksXG4gICAgICAgICAgICBtaXhCbGVuZE1vZGU6ICdzY3JlZW4nXG4gICAgICAgICAgfX1cbiAgICAgICAgLz5cbiAgICAgIDwvZGl2PlxuICAgICk7XG4gIH1cblxuICAvLyAyLiBDWUJFUiBHTE9XIChQdWxzaW5nIHBsYXNtYSBsaWdodCBvcmJzIHdpdGggY2hyb21hdGljIGFiZXJyYXRpb24pXG4gIGlmIChlZmZlY3RpdmVQcmVzZXQgPT09ICdjeWJlci1nbG93Jykge1xuICAgIGNvbnN0IGMxID0gY29sb3IxIHx8ICcjMDBmMmZlJztcbiAgICBjb25zdCBjMiA9IGNvbG9yMiB8fCAnI2Y3MjU4NSc7XG4gICAgY29uc3QgYzMgPSBjb2xvcjMgfHwgJyM3MjA5YjcnO1xuXG4gICAgY29uc3Qgb3JiMVggPSAzNSArIE1hdGguc2luKGZyYW1lICogMC4wMjggKiBlZmZlY3RpdmVTcGVlZCkgKiAyMjtcbiAgICBjb25zdCBvcmIxWSA9IDMwICsgTWF0aC5jb3MoZnJhbWUgKiAwLjAzMiAqIGVmZmVjdGl2ZVNwZWVkKSAqIDIwO1xuICAgIGNvbnN0IG9yYjFTY2FsZSA9IDEgKyAwLjE4ICogTWF0aC5zaW4oZnJhbWUgKiAwLjA0ICogZWZmZWN0aXZlU3BlZWQpO1xuXG4gICAgY29uc3Qgb3JiMlggPSA2NSArIE1hdGguY29zKGZyYW1lICogMC4wMjQgKiBlZmZlY3RpdmVTcGVlZCkgKiAyMjtcbiAgICBjb25zdCBvcmIyWSA9IDY1ICsgTWF0aC5zaW4oZnJhbWUgKiAwLjAzNSAqIGVmZmVjdGl2ZVNwZWVkKSAqIDE4O1xuICAgIGNvbnN0IG9yYjJTY2FsZSA9IDEgKyAwLjE1ICogTWF0aC5jb3MoZnJhbWUgKiAwLjA0NSAqIGVmZmVjdGl2ZVNwZWVkKTtcblxuICAgIGNvbnN0IG9yYjNYID0gNTAgKyBNYXRoLnNpbihmcmFtZSAqIDAuMDIgKiBlZmZlY3RpdmVTcGVlZCArIDEpICogMjU7XG4gICAgY29uc3Qgb3JiM1kgPSA4NSArIE1hdGguY29zKGZyYW1lICogMC4wMjUgKiBlZmZlY3RpdmVTcGVlZCArIDIpICogMTU7XG5cbiAgICByZXR1cm4gKFxuICAgICAgPGRpdlxuICAgICAgICBzdHlsZT17e1xuICAgICAgICAgIHBvc2l0aW9uOiAnYWJzb2x1dGUnLFxuICAgICAgICAgIGluc2V0OiAwLFxuICAgICAgICAgIGJhY2tncm91bmRDb2xvcjogJyMwNDA0MGQnLFxuICAgICAgICAgIG92ZXJmbG93OiAnaGlkZGVuJyxcbiAgICAgICAgICBmaWx0ZXI6IGBicmlnaHRuZXNzKCR7ZWZmZWN0aXZlSW50ZW5zaXR5fSlgXG4gICAgICAgIH19XG4gICAgICA+XG4gICAgICAgIHsvKiBPcmIgMSAqL31cbiAgICAgICAgPGRpdlxuICAgICAgICAgIHN0eWxlPXt7XG4gICAgICAgICAgICBwb3NpdGlvbjogJ2Fic29sdXRlJyxcbiAgICAgICAgICAgIGxlZnQ6IGAke29yYjFYfSVgLFxuICAgICAgICAgICAgdG9wOiBgJHtvcmIxWX0lYCxcbiAgICAgICAgICAgIHdpZHRoOiAnMzgwcHgnLFxuICAgICAgICAgICAgaGVpZ2h0OiAnMzgwcHgnLFxuICAgICAgICAgICAgdHJhbnNmb3JtOiBgdHJhbnNsYXRlKC01MCUsIC01MCUpIHNjYWxlKCR7b3JiMVNjYWxlfSlgLFxuICAgICAgICAgICAgYm9yZGVyUmFkaXVzOiAnNTAlJyxcbiAgICAgICAgICAgIGJhY2tncm91bmQ6IGByYWRpYWwtZ3JhZGllbnQoY2lyY2xlLCAke2MxfWVlIDAlLCAke2MxfTQ0IDQ1JSwgdHJhbnNwYXJlbnQgNzAlKWAsXG4gICAgICAgICAgICBmaWx0ZXI6ICdibHVyKDUwcHgpJyxcbiAgICAgICAgICAgIG1peEJsZW5kTW9kZTogJ3NjcmVlbidcbiAgICAgICAgICB9fVxuICAgICAgICAvPlxuICAgICAgICB7LyogT3JiIDIgKi99XG4gICAgICAgIDxkaXZcbiAgICAgICAgICBzdHlsZT17e1xuICAgICAgICAgICAgcG9zaXRpb246ICdhYnNvbHV0ZScsXG4gICAgICAgICAgICBsZWZ0OiBgJHtvcmIyWH0lYCxcbiAgICAgICAgICAgIHRvcDogYCR7b3JiMll9JWAsXG4gICAgICAgICAgICB3aWR0aDogJzQyMHB4JyxcbiAgICAgICAgICAgIGhlaWdodDogJzQyMHB4JyxcbiAgICAgICAgICAgIHRyYW5zZm9ybTogYHRyYW5zbGF0ZSgtNTAlLCAtNTAlKSBzY2FsZSgke29yYjJTY2FsZX0pYCxcbiAgICAgICAgICAgIGJvcmRlclJhZGl1czogJzUwJScsXG4gICAgICAgICAgICBiYWNrZ3JvdW5kOiBgcmFkaWFsLWdyYWRpZW50KGNpcmNsZSwgJHtjMn1kZCAwJSwgJHtjMn00NCA1MCUsIHRyYW5zcGFyZW50IDc1JSlgLFxuICAgICAgICAgICAgZmlsdGVyOiAnYmx1cig1NXB4KScsXG4gICAgICAgICAgICBtaXhCbGVuZE1vZGU6ICdzY3JlZW4nXG4gICAgICAgICAgfX1cbiAgICAgICAgLz5cbiAgICAgICAgey8qIE9yYiAzICovfVxuICAgICAgICA8ZGl2XG4gICAgICAgICAgc3R5bGU9e3tcbiAgICAgICAgICAgIHBvc2l0aW9uOiAnYWJzb2x1dGUnLFxuICAgICAgICAgICAgbGVmdDogYCR7b3JiM1h9JWAsXG4gICAgICAgICAgICB0b3A6IGAke29yYjNZfSVgLFxuICAgICAgICAgICAgd2lkdGg6ICczNDBweCcsXG4gICAgICAgICAgICBoZWlnaHQ6ICczNDBweCcsXG4gICAgICAgICAgICB0cmFuc2Zvcm06ICd0cmFuc2xhdGUoLTUwJSwgLTUwJSknLFxuICAgICAgICAgICAgYm9yZGVyUmFkaXVzOiAnNTAlJyxcbiAgICAgICAgICAgIGJhY2tncm91bmQ6IGByYWRpYWwtZ3JhZGllbnQoY2lyY2xlLCAke2MzfWVlIDAlLCAke2MzfTQ0IDUwJSwgdHJhbnNwYXJlbnQgNzUlKWAsXG4gICAgICAgICAgICBmaWx0ZXI6ICdibHVyKDQ1cHgpJyxcbiAgICAgICAgICAgIG1peEJsZW5kTW9kZTogJ3NjcmVlbidcbiAgICAgICAgICB9fVxuICAgICAgICAvPlxuICAgICAgICB7LyogT3V0ZXIgRGFyayBWaWduZXR0ZSBmb3IgY29udHJhc3QgKi99XG4gICAgICAgIDxkaXZcbiAgICAgICAgICBzdHlsZT17e1xuICAgICAgICAgICAgcG9zaXRpb246ICdhYnNvbHV0ZScsXG4gICAgICAgICAgICBpbnNldDogMCxcbiAgICAgICAgICAgIGJhY2tncm91bmQ6ICdyYWRpYWwtZ3JhZGllbnQoY2lyY2xlIGF0IDUwJSA1MCUsIHRyYW5zcGFyZW50IDQwJSwgcmdiYSg0LCA0LCAxMywgMC44KSAxMDAlKScsXG4gICAgICAgICAgICBwb2ludGVyRXZlbnRzOiAnbm9uZSdcbiAgICAgICAgICB9fVxuICAgICAgICAvPlxuICAgICAgPC9kaXY+XG4gICAgKTtcbiAgfVxuXG4gIC8vIDMuIEFCU1RSQUNUIExJR0hUIFdBVkVTIChNdWx0aS1sYXllcmVkIHNpbnVzb2lkYWwgZ2xvd2luZyBjdXJ2ZXMpXG4gIGlmIChlZmZlY3RpdmVQcmVzZXQgPT09ICdsaWdodC13YXZlcycpIHtcbiAgICBjb25zdCBjMSA9IGNvbG9yMSB8fCAnIzAwZjBmZic7XG4gICAgY29uc3QgYzIgPSBjb2xvcjIgfHwgJyNmZjAwN2YnO1xuICAgIGNvbnN0IGMzID0gY29sb3IzIHx8ICcjOGI1Y2Y2JztcblxuICAgIGNvbnN0IHQgPSBmcmFtZSAqIDAuMDQgKiBlZmZlY3RpdmVTcGVlZDtcbiAgICBjb25zdCBwYXRoRDEgPSBnZW5lcmF0ZVNtb290aFdhdmUodCwgNjAwLCA5MCwgNDUsIDEuMCk7XG4gICAgY29uc3QgcGF0aEQyID0gZ2VuZXJhdGVTbW9vdGhXYXZlKHQsIDcyMCwgMTEwLCA1MCwgMS4yKTtcbiAgICBjb25zdCBwYXRoRDMgPSBnZW5lcmF0ZVNtb290aFdhdmUodCwgNDQwLCA4MCwgNDAsIDAuOCk7XG5cbiAgICByZXR1cm4gKFxuICAgICAgPGRpdlxuICAgICAgICBzdHlsZT17e1xuICAgICAgICAgIHBvc2l0aW9uOiAnYWJzb2x1dGUnLFxuICAgICAgICAgIGluc2V0OiAwLFxuICAgICAgICAgIGJhY2tncm91bmRDb2xvcjogJyMwMjA2MTcnLFxuICAgICAgICAgIG92ZXJmbG93OiAnaGlkZGVuJyxcbiAgICAgICAgICBmaWx0ZXI6IGBicmlnaHRuZXNzKCR7ZWZmZWN0aXZlSW50ZW5zaXR5fSlgXG4gICAgICAgIH19XG4gICAgICA+XG4gICAgICAgIDxkaXZcbiAgICAgICAgICBzdHlsZT17e1xuICAgICAgICAgICAgcG9zaXRpb246ICdhYnNvbHV0ZScsXG4gICAgICAgICAgICBpbnNldDogMCxcbiAgICAgICAgICAgIGJhY2tncm91bmQ6IGByYWRpYWwtZ3JhZGllbnQoY2lyY2xlIGF0IDUwJSA1NSUsICR7YzN9MzMgMCUsIHRyYW5zcGFyZW50IDYwJSlgXG4gICAgICAgICAgfX1cbiAgICAgICAgLz5cblxuICAgICAgICA8c3ZnXG4gICAgICAgICAgdmlld0JveD1cIjAgMCA3MjAgMTI4MFwiXG4gICAgICAgICAgc3R5bGU9e3tcbiAgICAgICAgICAgIHBvc2l0aW9uOiAnYWJzb2x1dGUnLFxuICAgICAgICAgICAgaW5zZXQ6IDAsXG4gICAgICAgICAgICB3aWR0aDogJzEwMCUnLFxuICAgICAgICAgICAgaGVpZ2h0OiAnMTAwJSdcbiAgICAgICAgICB9fVxuICAgICAgICA+XG4gICAgICAgICAgPGRlZnM+XG4gICAgICAgICAgICA8bGluZWFyR3JhZGllbnQgaWQ9XCJ3YXZlR3JhZDFcIiB4MT1cIjAlXCIgeTE9XCIwJVwiIHgyPVwiMTAwJVwiIHkyPVwiMCVcIj5cbiAgICAgICAgICAgICAgPHN0b3Agb2Zmc2V0PVwiMCVcIiBzdG9wQ29sb3I9e2MxfSBzdG9wT3BhY2l0eT1cIjAuOFwiIC8+XG4gICAgICAgICAgICAgIDxzdG9wIG9mZnNldD1cIjUwJVwiIHN0b3BDb2xvcj17YzN9IHN0b3BPcGFjaXR5PVwiMVwiIC8+XG4gICAgICAgICAgICAgIDxzdG9wIG9mZnNldD1cIjEwMCVcIiBzdG9wQ29sb3I9e2MyfSBzdG9wT3BhY2l0eT1cIjAuOFwiIC8+XG4gICAgICAgICAgICA8L2xpbmVhckdyYWRpZW50PlxuICAgICAgICAgICAgPGxpbmVhckdyYWRpZW50IGlkPVwid2F2ZUdyYWQyXCIgeDE9XCIwJVwiIHkxPVwiMCVcIiB4Mj1cIjEwMCVcIiB5Mj1cIjAlXCI+XG4gICAgICAgICAgICAgIDxzdG9wIG9mZnNldD1cIjAlXCIgc3RvcENvbG9yPXtjMn0gc3RvcE9wYWNpdHk9XCIwLjdcIiAvPlxuICAgICAgICAgICAgICA8c3RvcCBvZmZzZXQ9XCI2MCVcIiBzdG9wQ29sb3I9e2MxfSBzdG9wT3BhY2l0eT1cIjFcIiAvPlxuICAgICAgICAgICAgICA8c3RvcCBvZmZzZXQ9XCIxMDAlXCIgc3RvcENvbG9yPXtjM30gc3RvcE9wYWNpdHk9XCIwLjlcIiAvPlxuICAgICAgICAgICAgPC9saW5lYXJHcmFkaWVudD5cbiAgICAgICAgICAgIDxsaW5lYXJHcmFkaWVudCBpZD1cIndhdmVHcmFkM1wiIHgxPVwiMCVcIiB5MT1cIjAlXCIgeDI9XCIxMDAlXCIgeTI9XCIwJVwiPlxuICAgICAgICAgICAgICA8c3RvcCBvZmZzZXQ9XCIwJVwiIHN0b3BDb2xvcj17YzN9IHN0b3BPcGFjaXR5PVwiMC42XCIgLz5cbiAgICAgICAgICAgICAgPHN0b3Agb2Zmc2V0PVwiNTAlXCIgc3RvcENvbG9yPXtjMX0gc3RvcE9wYWNpdHk9XCIwLjlcIiAvPlxuICAgICAgICAgICAgICA8c3RvcCBvZmZzZXQ9XCIxMDAlXCIgc3RvcENvbG9yPXtjMn0gc3RvcE9wYWNpdHk9XCIwLjZcIiAvPlxuICAgICAgICAgICAgPC9saW5lYXJHcmFkaWVudD5cbiAgICAgICAgICAgIDxmaWx0ZXIgaWQ9XCJuZW9uV2F2ZUdsb3dcIiB4PVwiLTIwJVwiIHk9XCItMjAlXCIgd2lkdGg9XCIxNDAlXCIgaGVpZ2h0PVwiMTQwJVwiPlxuICAgICAgICAgICAgICA8ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPVwiOFwiIHJlc3VsdD1cImJsdXIxXCIgLz5cbiAgICAgICAgICAgICAgPGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj1cIjE4XCIgcmVzdWx0PVwiYmx1cjJcIiAvPlxuICAgICAgICAgICAgICA8ZmVNZXJnZT5cbiAgICAgICAgICAgICAgICA8ZmVNZXJnZU5vZGUgaW49XCJibHVyMlwiIC8+XG4gICAgICAgICAgICAgICAgPGZlTWVyZ2VOb2RlIGluPVwiYmx1cjFcIiAvPlxuICAgICAgICAgICAgICAgIDxmZU1lcmdlTm9kZSBpbj1cIlNvdXJjZUdyYXBoaWNcIiAvPlxuICAgICAgICAgICAgICA8L2ZlTWVyZ2U+XG4gICAgICAgICAgICA8L2ZpbHRlcj5cbiAgICAgICAgICA8L2RlZnM+XG5cbiAgICAgICAgICB7LyogV2F2ZSAzIChCYWNrKSAqL31cbiAgICAgICAgICA8cGF0aFxuICAgICAgICAgICAgZD17cGF0aEQzfVxuICAgICAgICAgICAgZmlsbD1cIm5vbmVcIlxuICAgICAgICAgICAgc3Ryb2tlPVwidXJsKCN3YXZlR3JhZDMpXCJcbiAgICAgICAgICAgIHN0cm9rZVdpZHRoPVwiOFwiXG4gICAgICAgICAgICBmaWx0ZXI9XCJ1cmwoI25lb25XYXZlR2xvdylcIlxuICAgICAgICAgICAgb3BhY2l0eT1cIjAuNjVcIlxuICAgICAgICAgIC8+XG5cbiAgICAgICAgICB7LyogV2F2ZSAxIChNaWQpICovfVxuICAgICAgICAgIDxwYXRoXG4gICAgICAgICAgICBkPXtwYXRoRDF9XG4gICAgICAgICAgICBmaWxsPVwibm9uZVwiXG4gICAgICAgICAgICBzdHJva2U9XCJ1cmwoI3dhdmVHcmFkMSlcIlxuICAgICAgICAgICAgc3Ryb2tlV2lkdGg9XCIxMlwiXG4gICAgICAgICAgICBmaWx0ZXI9XCJ1cmwoI25lb25XYXZlR2xvdylcIlxuICAgICAgICAgICAgb3BhY2l0eT1cIjAuOVwiXG4gICAgICAgICAgLz5cblxuICAgICAgICAgIHsvKiBXYXZlIDIgKEZyb250KSAqL31cbiAgICAgICAgICA8cGF0aFxuICAgICAgICAgICAgZD17cGF0aEQyfVxuICAgICAgICAgICAgZmlsbD1cIm5vbmVcIlxuICAgICAgICAgICAgc3Ryb2tlPVwidXJsKCN3YXZlR3JhZDIpXCJcbiAgICAgICAgICAgIHN0cm9rZVdpZHRoPVwiMTBcIlxuICAgICAgICAgICAgZmlsdGVyPVwidXJsKCNuZW9uV2F2ZUdsb3cpXCJcbiAgICAgICAgICAgIG9wYWNpdHk9XCIwLjhcIlxuICAgICAgICAgIC8+XG4gICAgICAgIDwvc3ZnPlxuICAgICAgPC9kaXY+XG4gICAgKTtcbiAgfVxuXG4gIC8vIDQuIE5FT04gR1JJRCAoU3ludGh3YXZlIC8gQ3liZXIgM0QgUGVyc3BlY3RpdmUgUGxhbmUpXG4gIGlmIChlZmZlY3RpdmVQcmVzZXQgPT09ICduZW9uLWdyaWQnKSB7XG4gICAgY29uc3QgYzEgPSBjb2xvcjEgfHwgJyMwMGYwZmYnO1xuICAgIGNvbnN0IGMyID0gY29sb3IyIHx8ICcjZmYwMDdmJztcbiAgICBjb25zdCBob3Jpem9uID0gNDI7XG5cbiAgICBjb25zdCBncmlkWSA9IChmcmFtZSAqIDEuOCAqIGVmZmVjdGl2ZVNwZWVkKSAlIDUwO1xuXG4gICAgcmV0dXJuIChcbiAgICAgIDxkaXZcbiAgICAgICAgc3R5bGU9e3tcbiAgICAgICAgICBwb3NpdGlvbjogJ2Fic29sdXRlJyxcbiAgICAgICAgICBpbnNldDogMCxcbiAgICAgICAgICBiYWNrZ3JvdW5kQ29sb3I6ICcjMDMwMDE0JyxcbiAgICAgICAgICBvdmVyZmxvdzogJ2hpZGRlbicsXG4gICAgICAgICAgZmlsdGVyOiBgYnJpZ2h0bmVzcygke2VmZmVjdGl2ZUludGVuc2l0eX0pYFxuICAgICAgICB9fVxuICAgICAgPlxuICAgICAgICB7LyogU2t5IFNlY3Rpb24gd2l0aCBHbG93aW5nIEhvcml6b24gU3VuICovfVxuICAgICAgICA8ZGl2XG4gICAgICAgICAgc3R5bGU9e3tcbiAgICAgICAgICAgIHBvc2l0aW9uOiAnYWJzb2x1dGUnLFxuICAgICAgICAgICAgdG9wOiAwLFxuICAgICAgICAgICAgbGVmdDogMCxcbiAgICAgICAgICAgIHdpZHRoOiAnMTAwJScsXG4gICAgICAgICAgICBoZWlnaHQ6IGAke2hvcml6b259JWAsXG4gICAgICAgICAgICBiYWNrZ3JvdW5kOiBgcmFkaWFsLWdyYWRpZW50KGVsbGlwc2UgYXQgNTAlIDEwMCUsICR7YzJ9OTkgMCUsICR7YzJ9MzMgMzUlLCAjMDMwMDE0IDg1JSlgXG4gICAgICAgICAgfX1cbiAgICAgICAgPlxuICAgICAgICAgIHsvKiBDeWJlciBTdW4gKi99XG4gICAgICAgICAgPGRpdlxuICAgICAgICAgICAgc3R5bGU9e3tcbiAgICAgICAgICAgICAgcG9zaXRpb246ICdhYnNvbHV0ZScsXG4gICAgICAgICAgICAgIGJvdHRvbTogJy04MHB4JyxcbiAgICAgICAgICAgICAgbGVmdDogJzUwJScsXG4gICAgICAgICAgICAgIHRyYW5zZm9ybTogJ3RyYW5zbGF0ZVgoLTUwJSknLFxuICAgICAgICAgICAgICB3aWR0aDogJzI0MHB4JyxcbiAgICAgICAgICAgICAgaGVpZ2h0OiAnMjQwcHgnLFxuICAgICAgICAgICAgICBib3JkZXJSYWRpdXM6ICc1MCUnLFxuICAgICAgICAgICAgICBiYWNrZ3JvdW5kOiBgbGluZWFyLWdyYWRpZW50KHRvIHRvcCwgI2ZmZTYwMCAwJSwgJHtjMn0gNzAlKWAsXG4gICAgICAgICAgICAgIGJveFNoYWRvdzogYDAgMCA1MHB4ICR7YzJ9Y2MsIDAgMCAxMDBweCAke2MyfTY2YCxcbiAgICAgICAgICAgICAgZmlsdGVyOiAnYmx1cigycHgpJ1xuICAgICAgICAgICAgfX1cbiAgICAgICAgICAvPlxuICAgICAgICA8L2Rpdj5cblxuICAgICAgICB7LyogSG9yaXpvbiBMYXNlciBMaW5lICovfVxuICAgICAgICA8ZGl2XG4gICAgICAgICAgc3R5bGU9e3tcbiAgICAgICAgICAgIHBvc2l0aW9uOiAnYWJzb2x1dGUnLFxuICAgICAgICAgICAgdG9wOiBgJHtob3Jpem9ufSVgLFxuICAgICAgICAgICAgbGVmdDogMCxcbiAgICAgICAgICAgIHdpZHRoOiAnMTAwJScsXG4gICAgICAgICAgICBoZWlnaHQ6ICczcHgnLFxuICAgICAgICAgICAgYmFja2dyb3VuZENvbG9yOiAnI2ZmZmZmZicsXG4gICAgICAgICAgICBib3hTaGFkb3c6IGAwIDAgMTVweCAjZmZmZmZmLCAwIDAgMzBweCAke2MxfWAsXG4gICAgICAgICAgICB6SW5kZXg6IDJcbiAgICAgICAgICB9fVxuICAgICAgICAvPlxuXG4gICAgICAgIHsvKiAzRCBQZXJzcGVjdGl2ZSBHcm91bmQgR3JpZCAqL31cbiAgICAgICAgPGRpdlxuICAgICAgICAgIHN0eWxlPXt7XG4gICAgICAgICAgICBwb3NpdGlvbjogJ2Fic29sdXRlJyxcbiAgICAgICAgICAgIHRvcDogYCR7aG9yaXpvbn0lYCxcbiAgICAgICAgICAgIGxlZnQ6ICctNTAlJyxcbiAgICAgICAgICAgIHdpZHRoOiAnMjAwJScsXG4gICAgICAgICAgICBoZWlnaHQ6IGAkezEwMCAtIGhvcml6b24gKyAyMH0lYCxcbiAgICAgICAgICAgIHBlcnNwZWN0aXZlOiAnMzUwcHgnLFxuICAgICAgICAgICAgdHJhbnNmb3JtT3JpZ2luOiAndG9wIGNlbnRlcicsXG4gICAgICAgICAgICBvdmVyZmxvdzogJ2hpZGRlbidcbiAgICAgICAgICB9fVxuICAgICAgICA+XG4gICAgICAgICAgPGRpdlxuICAgICAgICAgICAgc3R5bGU9e3tcbiAgICAgICAgICAgICAgd2lkdGg6ICcxMDAlJyxcbiAgICAgICAgICAgICAgaGVpZ2h0OiAnMTAwJScsXG4gICAgICAgICAgICAgIHRyYW5zZm9ybTogJ3JvdGF0ZVgoNzJkZWcpJyxcbiAgICAgICAgICAgICAgdHJhbnNmb3JtT3JpZ2luOiAndG9wIGNlbnRlcicsXG4gICAgICAgICAgICAgIGJhY2tncm91bmRJbWFnZTogYFxuICAgICAgICAgICAgICAgIGxpbmVhci1ncmFkaWVudCh0byByaWdodCwgJHtjMX02NiAxLjVweCwgdHJhbnNwYXJlbnQgMS41cHgpLFxuICAgICAgICAgICAgICAgIGxpbmVhci1ncmFkaWVudCh0byBib3R0b20sICR7YzF9NjYgMS41cHgsIHRyYW5zcGFyZW50IDEuNXB4KVxuICAgICAgICAgICAgICBgLFxuICAgICAgICAgICAgICBiYWNrZ3JvdW5kU2l6ZTogJzUwcHggNTBweCcsXG4gICAgICAgICAgICAgIGJhY2tncm91bmRQb3NpdGlvbjogYDBweCAke2dyaWRZfXB4YCxcbiAgICAgICAgICAgICAgbWFza0ltYWdlOiAnbGluZWFyLWdyYWRpZW50KHRvIGJvdHRvbSwgcmdiYSgwLDAsMCwxKSAwJSwgcmdiYSgwLDAsMCwwLjEpIDk1JSknLFxuICAgICAgICAgICAgICBXZWJraXRNYXNrSW1hZ2U6ICdsaW5lYXItZ3JhZGllbnQodG8gYm90dG9tLCByZ2JhKDAsMCwwLDEpIDAlLCByZ2JhKDAsMCwwLDAuMSkgOTUlKSdcbiAgICAgICAgICAgIH19XG4gICAgICAgICAgLz5cbiAgICAgICAgPC9kaXY+XG5cbiAgICAgICAgey8qIERhcmsgVmlnbmV0dGUgQm90dG9tICovfVxuICAgICAgICA8ZGl2XG4gICAgICAgICAgc3R5bGU9e3tcbiAgICAgICAgICAgIHBvc2l0aW9uOiAnYWJzb2x1dGUnLFxuICAgICAgICAgICAgYm90dG9tOiAwLFxuICAgICAgICAgICAgbGVmdDogMCxcbiAgICAgICAgICAgIHdpZHRoOiAnMTAwJScsXG4gICAgICAgICAgICBoZWlnaHQ6ICczMCUnLFxuICAgICAgICAgICAgYmFja2dyb3VuZDogJ2xpbmVhci1ncmFkaWVudCh0byB0b3AsICMwMzAwMTQgMCUsIHRyYW5zcGFyZW50IDEwMCUpJyxcbiAgICAgICAgICAgIHBvaW50ZXJFdmVudHM6ICdub25lJ1xuICAgICAgICAgIH19XG4gICAgICAgIC8+XG4gICAgICA8L2Rpdj5cbiAgICApO1xuICB9XG5cbiAgLy8gNS4gRU5FUkdZIExJTkVTIChIaWdoLXNwZWVkIHZlcnRpY2FsIGxhc2VyIHN0cmVha3MpXG4gIGlmIChlZmZlY3RpdmVQcmVzZXQgPT09ICdlbmVyZ3ktbGluZXMnKSB7XG4gICAgY29uc3QgYzEgPSBjb2xvcjEgfHwgJyMwMGY1ZDQnO1xuICAgIGNvbnN0IGMyID0gY29sb3IyIHx8ICcjN2IyY2JmJztcbiAgICBjb25zdCBjMyA9IGNvbG9yMyB8fCAnIzRjYzlmMCc7XG4gICAgY29uc3QgY29sb3JzID0gW2MxLCBjMiwgYzMsICcjZmZmZmZmJywgJyNmZmU2MDAnXTtcblxuICAgIHJldHVybiAoXG4gICAgICA8ZGl2XG4gICAgICAgIHN0eWxlPXt7XG4gICAgICAgICAgcG9zaXRpb246ICdhYnNvbHV0ZScsXG4gICAgICAgICAgaW5zZXQ6IDAsXG4gICAgICAgICAgYmFja2dyb3VuZENvbG9yOiAnIzAyMDYxNycsXG4gICAgICAgICAgb3ZlcmZsb3c6ICdoaWRkZW4nLFxuICAgICAgICAgIGZpbHRlcjogYGJyaWdodG5lc3MoJHtlZmZlY3RpdmVJbnRlbnNpdHl9KWBcbiAgICAgICAgfX1cbiAgICAgID5cbiAgICAgICAgPGRpdlxuICAgICAgICAgIHN0eWxlPXt7XG4gICAgICAgICAgICBwb3NpdGlvbjogJ2Fic29sdXRlJyxcbiAgICAgICAgICAgIGluc2V0OiAwLFxuICAgICAgICAgICAgYmFja2dyb3VuZDogYHJhZGlhbC1ncmFkaWVudChjaXJjbGUgYXQgNTAlIDUwJSwgJHtjMn0yNSAwJSwgdHJhbnNwYXJlbnQgNzAlKWBcbiAgICAgICAgICB9fVxuICAgICAgICAvPlxuXG4gICAgICAgIHtTVEFUSUNfU1RSRUFLUy5tYXAoKHMsIGlkeCkgPT4ge1xuICAgICAgICAgIGNvbnN0IHkgPSAoZnJhbWUgKiAxNCAqIHMuc3BlZWRNdWx0ICogZWZmZWN0aXZlU3BlZWQgKyBzLm9mZnNldFkpICUgKDEyODAgKyBzLmxlbmd0aCkgLSBzLmxlbmd0aDtcbiAgICAgICAgICBjb25zdCBjbHIgPSBjb2xvcnNbcy5jb2xvckluZGV4XTtcbiAgICAgICAgICByZXR1cm4gKFxuICAgICAgICAgICAgPGRpdlxuICAgICAgICAgICAgICBrZXk9e2lkeH1cbiAgICAgICAgICAgICAgc3R5bGU9e3tcbiAgICAgICAgICAgICAgICBwb3NpdGlvbjogJ2Fic29sdXRlJyxcbiAgICAgICAgICAgICAgICBsZWZ0OiBgJHtzLnh9JWAsXG4gICAgICAgICAgICAgICAgdG9wOiBgJHt5fXB4YCxcbiAgICAgICAgICAgICAgICB3aWR0aDogYCR7cy53aWR0aH1weGAsXG4gICAgICAgICAgICAgICAgaGVpZ2h0OiBgJHtzLmxlbmd0aH1weGAsXG4gICAgICAgICAgICAgICAgYmFja2dyb3VuZDogYGxpbmVhci1ncmFkaWVudCh0byBib3R0b20sIHRyYW5zcGFyZW50IDAlLCAke2Nscn0gNjAlLCAjZmZmZmZmIDEwMCUpYCxcbiAgICAgICAgICAgICAgICBib3JkZXJSYWRpdXM6ICc5OTlweCcsXG4gICAgICAgICAgICAgICAgYm94U2hhZG93OiBgMCAwIDEwcHggJHtjbHJ9LCAwIDAgMjBweCAke2Nscn1gLFxuICAgICAgICAgICAgICAgIG9wYWNpdHk6IDAuNzUgKyAwLjI1ICogTWF0aC5zaW4oZnJhbWUgKiAwLjEgKyBpZHgpXG4gICAgICAgICAgICAgIH19XG4gICAgICAgICAgICAvPlxuICAgICAgICAgICk7XG4gICAgICAgIH0pfVxuICAgICAgPC9kaXY+XG4gICAgKTtcbiAgfVxuXG4gIC8vIDYuIExJR0hUIFBBUlRJQ0xFUyAvIEZMVUlEIEJPS0VIXG4gIGlmIChlZmZlY3RpdmVQcmVzZXQgPT09ICdsaWdodC1wYXJ0aWNsZXMnKSB7XG4gICAgY29uc3QgYzEgPSBjb2xvcjEgfHwgJyMzOGJkZjgnO1xuICAgIGNvbnN0IGMyID0gY29sb3IyIHx8ICcjZWM0ODk5JztcbiAgICBjb25zdCBjMyA9IGNvbG9yMyB8fCAnI2E4NTVmNyc7XG4gICAgY29uc3QgY29sb3JzID0gW2MxLCBjMiwgYzMsICcjNjdlOGY5J107XG5cbiAgICByZXR1cm4gKFxuICAgICAgPGRpdlxuICAgICAgICBzdHlsZT17e1xuICAgICAgICAgIHBvc2l0aW9uOiAnYWJzb2x1dGUnLFxuICAgICAgICAgIGluc2V0OiAwLFxuICAgICAgICAgIGJhY2tncm91bmRDb2xvcjogJyMwNTA1MTUnLFxuICAgICAgICAgIG92ZXJmbG93OiAnaGlkZGVuJyxcbiAgICAgICAgICBmaWx0ZXI6IGBicmlnaHRuZXNzKCR7ZWZmZWN0aXZlSW50ZW5zaXR5fSlgXG4gICAgICAgIH19XG4gICAgICA+XG4gICAgICAgIDxkaXZcbiAgICAgICAgICBzdHlsZT17e1xuICAgICAgICAgICAgcG9zaXRpb246ICdhYnNvbHV0ZScsXG4gICAgICAgICAgICBpbnNldDogMCxcbiAgICAgICAgICAgIGJhY2tncm91bmQ6IGByYWRpYWwtZ3JhZGllbnQoY2lyY2xlIGF0IDUwJSA2MCUsICR7YzN9MjIgMCUsIHRyYW5zcGFyZW50IDY1JSlgXG4gICAgICAgICAgfX1cbiAgICAgICAgLz5cblxuICAgICAgICB7U1RBVElDX1BBUlRJQ0xFUy5tYXAoKHAsIGlkeCkgPT4ge1xuICAgICAgICAgIGNvbnN0IHN3YXlYID0gTWF0aC5zaW4oZnJhbWUgKiAwLjAzICogZWZmZWN0aXZlU3BlZWQgKyBwLnBoYXNlKSAqIDM1O1xuICAgICAgICAgIGNvbnN0IGN1cnJlbnRZID0gKHAuYmFzZVkgLSBmcmFtZSAqIDEuNSAqIHAuZHJpZnRTcGVlZCAqIGVmZmVjdGl2ZVNwZWVkKSAlICgxMjgwICsgcC5yYWRpdXMgKiAyKTtcbiAgICAgICAgICBjb25zdCB5ID0gY3VycmVudFkgPCAtcC5yYWRpdXMgKiAyID8gMTI4MCArIGN1cnJlbnRZIDogY3VycmVudFk7XG4gICAgICAgICAgY29uc3Qgb3BhY2l0eSA9IDAuMzUgKyAwLjQ1ICogTWF0aC5zaW4oZnJhbWUgKiAwLjA0ICogZWZmZWN0aXZlU3BlZWQgKyBwLnBoYXNlKTtcbiAgICAgICAgICBjb25zdCBjbHIgPSBjb2xvcnNbcC5jb2xvckluZGV4XTtcblxuICAgICAgICAgIHJldHVybiAoXG4gICAgICAgICAgICA8ZGl2XG4gICAgICAgICAgICAgIGtleT17aWR4fVxuICAgICAgICAgICAgICBzdHlsZT17e1xuICAgICAgICAgICAgICAgIHBvc2l0aW9uOiAnYWJzb2x1dGUnLFxuICAgICAgICAgICAgICAgIGxlZnQ6IGBjYWxjKCR7cC5iYXNlWH0lICsgJHtzd2F5WH1weClgLFxuICAgICAgICAgICAgICAgIHRvcDogYCR7eX1weGAsXG4gICAgICAgICAgICAgICAgd2lkdGg6IGAke3AucmFkaXVzICogMn1weGAsXG4gICAgICAgICAgICAgICAgaGVpZ2h0OiBgJHtwLnJhZGl1cyAqIDJ9cHhgLFxuICAgICAgICAgICAgICAgIGJvcmRlclJhZGl1czogJzUwJScsXG4gICAgICAgICAgICAgICAgYmFja2dyb3VuZDogYHJhZGlhbC1ncmFkaWVudChjaXJjbGUsICNmZmZmZmYgMTUlLCAke2Nscn0gNTUlLCB0cmFuc3BhcmVudCA3NSUpYCxcbiAgICAgICAgICAgICAgICBib3hTaGFkb3c6IGAwIDAgJHtwLnJhZGl1c31weCAke2Nscn1gLFxuICAgICAgICAgICAgICAgIG9wYWNpdHksXG4gICAgICAgICAgICAgICAgdHJhbnNmb3JtOiAndHJhbnNsYXRlKC01MCUsIC01MCUpJyxcbiAgICAgICAgICAgICAgICBmaWx0ZXI6ICdibHVyKDEuNXB4KSdcbiAgICAgICAgICAgICAgfX1cbiAgICAgICAgICAgIC8+XG4gICAgICAgICAgKTtcbiAgICAgICAgfSl9XG4gICAgICA8L2Rpdj5cbiAgICApO1xuICB9XG5cbiAgLy8gNy4gR0VPTUVUUklDIE5FT04gKFJvdGF0aW5nIGNvbmNlbnRyaWMgdGVjaCB3aXJlZnJhbWVzKVxuICBpZiAoZWZmZWN0aXZlUHJlc2V0ID09PSAnZ2VvbWV0cmljLW5lb24nKSB7XG4gICAgY29uc3QgYzEgPSBjb2xvcjEgfHwgJyMwMGYwZmYnO1xuICAgIGNvbnN0IGMyID0gY29sb3IyIHx8ICcjYTg1NWY3JztcblxuICAgIGNvbnN0IHJvdDEgPSAoZnJhbWUgKiAwLjQgKiBlZmZlY3RpdmVTcGVlZCkgJSAzNjA7XG4gICAgY29uc3Qgcm90MiA9ICgtZnJhbWUgKiAwLjYgKiBlZmZlY3RpdmVTcGVlZCkgJSAzNjA7XG4gICAgY29uc3Qgcm90MyA9IChmcmFtZSAqIDAuOCAqIGVmZmVjdGl2ZVNwZWVkKSAlIDM2MDtcbiAgICBjb25zdCBwdWxzZSA9IDEgKyAwLjA1ICogTWF0aC5zaW4oZnJhbWUgKiAwLjA2ICogZWZmZWN0aXZlU3BlZWQpO1xuXG4gICAgcmV0dXJuIChcbiAgICAgIDxkaXZcbiAgICAgICAgc3R5bGU9e3tcbiAgICAgICAgICBwb3NpdGlvbjogJ2Fic29sdXRlJyxcbiAgICAgICAgICBpbnNldDogMCxcbiAgICAgICAgICBiYWNrZ3JvdW5kQ29sb3I6ICcjMDUwNzE0JyxcbiAgICAgICAgICBkaXNwbGF5OiAnZmxleCcsXG4gICAgICAgICAgYWxpZ25JdGVtczogJ2NlbnRlcicsXG4gICAgICAgICAganVzdGlmeUNvbnRlbnQ6ICdjZW50ZXInLFxuICAgICAgICAgIG92ZXJmbG93OiAnaGlkZGVuJyxcbiAgICAgICAgICBmaWx0ZXI6IGBicmlnaHRuZXNzKCR7ZWZmZWN0aXZlSW50ZW5zaXR5fSlgXG4gICAgICAgIH19XG4gICAgICA+XG4gICAgICAgIDxkaXZcbiAgICAgICAgICBzdHlsZT17e1xuICAgICAgICAgICAgcG9zaXRpb246ICdhYnNvbHV0ZScsXG4gICAgICAgICAgICBpbnNldDogMCxcbiAgICAgICAgICAgIGJhY2tncm91bmRJbWFnZTogYHJhZGlhbC1ncmFkaWVudChyZ2JhKDAsIDI0MCwgMjU1LCAwLjEyKSAxLjVweCwgdHJhbnNwYXJlbnQgMS41cHgpYCxcbiAgICAgICAgICAgIGJhY2tncm91bmRTaXplOiAnMzZweCAzNnB4J1xuICAgICAgICAgIH19XG4gICAgICAgIC8+XG5cbiAgICAgICAgPGRpdlxuICAgICAgICAgIHN0eWxlPXt7XG4gICAgICAgICAgICBwb3NpdGlvbjogJ2Fic29sdXRlJyxcbiAgICAgICAgICAgIHdpZHRoOiAnNDUwcHgnLFxuICAgICAgICAgICAgaGVpZ2h0OiAnNDUwcHgnLFxuICAgICAgICAgICAgYm9yZGVyUmFkaXVzOiAnNTAlJyxcbiAgICAgICAgICAgIGJhY2tncm91bmQ6IGByYWRpYWwtZ3JhZGllbnQoY2lyY2xlLCAke2MxfTMzIDAlLCAke2MyfTIyIDQ1JSwgdHJhbnNwYXJlbnQgNzAlKWAsXG4gICAgICAgICAgICBmaWx0ZXI6ICdibHVyKDQwcHgpJ1xuICAgICAgICAgIH19XG4gICAgICAgIC8+XG5cbiAgICAgICAgPHN2Z1xuICAgICAgICAgIHZpZXdCb3g9XCIwIDAgNjAwIDYwMFwiXG4gICAgICAgICAgc3R5bGU9e3tcbiAgICAgICAgICAgIHdpZHRoOiAnNTgwcHgnLFxuICAgICAgICAgICAgaGVpZ2h0OiAnNTgwcHgnLFxuICAgICAgICAgICAgdHJhbnNmb3JtOiBgc2NhbGUoJHtwdWxzZX0pYFxuICAgICAgICAgIH19XG4gICAgICAgID5cbiAgICAgICAgICA8ZGVmcz5cbiAgICAgICAgICAgIDxmaWx0ZXIgaWQ9XCJnZW9HbG93XCIgeD1cIi0zMCVcIiB5PVwiLTMwJVwiIHdpZHRoPVwiMTYwJVwiIGhlaWdodD1cIjE2MCVcIj5cbiAgICAgICAgICAgICAgPGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj1cIjZcIiByZXN1bHQ9XCJibHVyXCIgLz5cbiAgICAgICAgICAgICAgPGZlTWVyZ2U+XG4gICAgICAgICAgICAgICAgPGZlTWVyZ2VOb2RlIGluPVwiYmx1clwiIC8+XG4gICAgICAgICAgICAgICAgPGZlTWVyZ2VOb2RlIGluPVwiU291cmNlR3JhcGhpY1wiIC8+XG4gICAgICAgICAgICAgIDwvZmVNZXJnZT5cbiAgICAgICAgICAgIDwvZmlsdGVyPlxuICAgICAgICAgIDwvZGVmcz5cblxuICAgICAgICAgIHsvKiBPdXRlciBSb3RhdGluZyBIZXhhZ29uICovfVxuICAgICAgICAgIDxnIHRyYW5zZm9ybT17YHJvdGF0ZSgke3JvdDF9IDMwMCAzMDApYH0gZmlsdGVyPVwidXJsKCNnZW9HbG93KVwiPlxuICAgICAgICAgICAgPHBvbHlnb25cbiAgICAgICAgICAgICAgcG9pbnRzPVwiMzAwLDUwIDUxNiwxNzUgNTE2LDQyNSAzMDAsNTUwIDg0LDQyNSA4NCwxNzVcIlxuICAgICAgICAgICAgICBmaWxsPVwibm9uZVwiXG4gICAgICAgICAgICAgIHN0cm9rZT17YzF9XG4gICAgICAgICAgICAgIHN0cm9rZVdpZHRoPVwiMi41XCJcbiAgICAgICAgICAgICAgc3Ryb2tlRGFzaGFycmF5PVwiMjAsIDEwXCJcbiAgICAgICAgICAgICAgb3BhY2l0eT1cIjAuODVcIlxuICAgICAgICAgICAgLz5cbiAgICAgICAgICA8L2c+XG5cbiAgICAgICAgICB7LyogTWlkZGxlIFJvdGF0aW5nIERpYW1vbmQgKi99XG4gICAgICAgICAgPGcgdHJhbnNmb3JtPXtgcm90YXRlKCR7cm90Mn0gMzAwIDMwMClgfSBmaWx0ZXI9XCJ1cmwoI2dlb0dsb3cpXCI+XG4gICAgICAgICAgICA8cmVjdFxuICAgICAgICAgICAgICB4PVwiMTM1XCJcbiAgICAgICAgICAgICAgeT1cIjEzNVwiXG4gICAgICAgICAgICAgIHdpZHRoPVwiMzMwXCJcbiAgICAgICAgICAgICAgaGVpZ2h0PVwiMzMwXCJcbiAgICAgICAgICAgICAgZmlsbD1cIm5vbmVcIlxuICAgICAgICAgICAgICBzdHJva2U9e2MyfVxuICAgICAgICAgICAgICBzdHJva2VXaWR0aD1cIjIuNVwiXG4gICAgICAgICAgICAgIG9wYWNpdHk9XCIwLjc1XCJcbiAgICAgICAgICAgIC8+XG4gICAgICAgICAgPC9nPlxuXG4gICAgICAgICAgey8qIElubmVyIERhc2hlZCBSYWRhciBDaXJjbGUgKi99XG4gICAgICAgICAgPGcgdHJhbnNmb3JtPXtgcm90YXRlKCR7cm90M30gMzAwIDMwMClgfSBmaWx0ZXI9XCJ1cmwoI2dlb0dsb3cpXCI+XG4gICAgICAgICAgICA8Y2lyY2xlXG4gICAgICAgICAgICAgIGN4PVwiMzAwXCJcbiAgICAgICAgICAgICAgY3k9XCIzMDBcIlxuICAgICAgICAgICAgICByPVwiMTEwXCJcbiAgICAgICAgICAgICAgZmlsbD1cIm5vbmVcIlxuICAgICAgICAgICAgICBzdHJva2U9e2MxfVxuICAgICAgICAgICAgICBzdHJva2VXaWR0aD1cIjJcIlxuICAgICAgICAgICAgICBzdHJva2VEYXNoYXJyYXk9XCI4LCA2XCJcbiAgICAgICAgICAgICAgb3BhY2l0eT1cIjAuOVwiXG4gICAgICAgICAgICAvPlxuICAgICAgICAgIDwvZz5cblxuICAgICAgICAgIHsvKiBDZW50ZXIgVGFyZ2V0IENvcmUgKi99XG4gICAgICAgICAgPGNpcmNsZSBjeD1cIjMwMFwiIGN5PVwiMzAwXCIgcj1cIjE1XCIgZmlsbD17YzF9IGZpbHRlcj1cInVybCgjZ2VvR2xvdylcIiBvcGFjaXR5PVwiMC45NVwiIC8+XG4gICAgICAgICAgPGxpbmUgeDE9XCIyNjBcIiB5MT1cIjMwMFwiIHgyPVwiMzQwXCIgeTI9XCIzMDBcIiBzdHJva2U9XCIjZmZmZmZmXCIgc3Ryb2tlV2lkdGg9XCIyXCIgLz5cbiAgICAgICAgICA8bGluZSB4MT1cIjMwMFwiIHkxPVwiMjYwXCIgeDI9XCIzMDBcIiB5Mj1cIjM0MFwiIHN0cm9rZT1cIiNmZmZmZmZcIiBzdHJva2VXaWR0aD1cIjJcIiAvPlxuICAgICAgICA8L3N2Zz5cbiAgICAgIDwvZGl2PlxuICAgICk7XG4gIH1cblxuICAvLyA4LiBBVVJPUkEgTkVPTiAoRXRoZXJlYWwgZHJpZnRpbmcgcG9sYXIgY3VydGFpbnMpXG4gIGlmIChlZmZlY3RpdmVQcmVzZXQgPT09ICdhdXJvcmEtbmVvbicpIHtcbiAgICBjb25zdCBjMSA9IGNvbG9yMSB8fCAnIzEwYjk4MSc7XG4gICAgY29uc3QgYzIgPSBjb2xvcjIgfHwgJyMwNmI2ZDQnO1xuICAgIGNvbnN0IGMzID0gY29sb3IzIHx8ICcjZDk0NmVmJztcblxuICAgIGNvbnN0IHQgPSBmcmFtZSAqIDAuMDIgKiBlZmZlY3RpdmVTcGVlZDtcbiAgICBjb25zdCB3YXZlMSA9IE1hdGguc2luKHQpICogNDU7XG4gICAgY29uc3Qgd2F2ZTIgPSBNYXRoLmNvcyh0ICogMS4zKSAqIDU1O1xuICAgIGNvbnN0IHdhdmUzID0gTWF0aC5zaW4odCAqIDAuOCArIDEpICogNjA7XG5cbiAgICByZXR1cm4gKFxuICAgICAgPGRpdlxuICAgICAgICBzdHlsZT17e1xuICAgICAgICAgIHBvc2l0aW9uOiAnYWJzb2x1dGUnLFxuICAgICAgICAgIGluc2V0OiAwLFxuICAgICAgICAgIGJhY2tncm91bmRDb2xvcjogJyMwMjA1MTAnLFxuICAgICAgICAgIG92ZXJmbG93OiAnaGlkZGVuJyxcbiAgICAgICAgICBmaWx0ZXI6IGBicmlnaHRuZXNzKCR7ZWZmZWN0aXZlSW50ZW5zaXR5fSlgXG4gICAgICAgIH19XG4gICAgICA+XG4gICAgICAgIDxkaXZcbiAgICAgICAgICBzdHlsZT17e1xuICAgICAgICAgICAgcG9zaXRpb246ICdhYnNvbHV0ZScsXG4gICAgICAgICAgICBpbnNldDogMCxcbiAgICAgICAgICAgIGJhY2tncm91bmRJbWFnZTogJ3JhZGlhbC1ncmFkaWVudChyZ2JhKDI1NSwgMjU1LCAyNTUsIDAuMjUpIDFweCwgdHJhbnNwYXJlbnQgMXB4KScsXG4gICAgICAgICAgICBiYWNrZ3JvdW5kU2l6ZTogJzQ4cHggNDhweCdcbiAgICAgICAgICB9fVxuICAgICAgICAvPlxuXG4gICAgICAgIHsvKiBBdXJvcmEgQ3VydGFpbiAxIChFbWVyYWxkKSAqL31cbiAgICAgICAgPGRpdlxuICAgICAgICAgIHN0eWxlPXt7XG4gICAgICAgICAgICBwb3NpdGlvbjogJ2Fic29sdXRlJyxcbiAgICAgICAgICAgIHRvcDogJy0xNSUnLFxuICAgICAgICAgICAgbGVmdDogYCR7MTUgKyB3YXZlMSAqIDAuMn0lYCxcbiAgICAgICAgICAgIHdpZHRoOiAnODAlJyxcbiAgICAgICAgICAgIGhlaWdodDogJzExMCUnLFxuICAgICAgICAgICAgYmFja2dyb3VuZDogYHJhZGlhbC1ncmFkaWVudChlbGxpcHNlIGF0IDQwJSA0NSUsICR7YzF9OTkgMCUsICR7YzF9MzMgNTAlLCB0cmFuc3BhcmVudCA3NSUpYCxcbiAgICAgICAgICAgIHRyYW5zZm9ybTogYHJvdGF0ZSgkezE1ICsgd2F2ZTEgKiAwLjF9ZGVnKSBzY2FsZVgoJHsxICsgd2F2ZTEgKiAwLjAwNX0pYCxcbiAgICAgICAgICAgIGZpbHRlcjogJ2JsdXIoNDVweCknLFxuICAgICAgICAgICAgbWl4QmxlbmRNb2RlOiAnc2NyZWVuJyxcbiAgICAgICAgICAgIG9wYWNpdHk6IDAuODVcbiAgICAgICAgICB9fVxuICAgICAgICAvPlxuXG4gICAgICAgIHsvKiBBdXJvcmEgQ3VydGFpbiAyIChDeWFuKSAqL31cbiAgICAgICAgPGRpdlxuICAgICAgICAgIHN0eWxlPXt7XG4gICAgICAgICAgICBwb3NpdGlvbjogJ2Fic29sdXRlJyxcbiAgICAgICAgICAgIHRvcDogJzUlJyxcbiAgICAgICAgICAgIGxlZnQ6IGAkezM1ICsgd2F2ZTIgKiAwLjJ9JWAsXG4gICAgICAgICAgICB3aWR0aDogJzc1JScsXG4gICAgICAgICAgICBoZWlnaHQ6ICcxMDAlJyxcbiAgICAgICAgICAgIGJhY2tncm91bmQ6IGByYWRpYWwtZ3JhZGllbnQoZWxsaXBzZSBhdCA1MCUgNTAlLCAke2MyfTg4IDAlLCAke2MyfTIyIDU1JSwgdHJhbnNwYXJlbnQgNzUlKWAsXG4gICAgICAgICAgICB0cmFuc2Zvcm06IGByb3RhdGUoJHstMTggKyB3YXZlMiAqIDAuMDh9ZGVnKWAsXG4gICAgICAgICAgICBmaWx0ZXI6ICdibHVyKDUwcHgpJyxcbiAgICAgICAgICAgIG1peEJsZW5kTW9kZTogJ3NjcmVlbicsXG4gICAgICAgICAgICBvcGFjaXR5OiAwLjhcbiAgICAgICAgICB9fVxuICAgICAgICAvPlxuXG4gICAgICAgIHsvKiBBdXJvcmEgQ3VydGFpbiAzIChNYWdlbnRhIC8gVmlvbGV0KSAqL31cbiAgICAgICAgPGRpdlxuICAgICAgICAgIHN0eWxlPXt7XG4gICAgICAgICAgICBwb3NpdGlvbjogJ2Fic29sdXRlJyxcbiAgICAgICAgICAgIHRvcDogJzI1JScsXG4gICAgICAgICAgICBsZWZ0OiBgJHsyMCArIHdhdmUzICogMC4xNX0lYCxcbiAgICAgICAgICAgIHdpZHRoOiAnNzAlJyxcbiAgICAgICAgICAgIGhlaWdodDogJzg1JScsXG4gICAgICAgICAgICBiYWNrZ3JvdW5kOiBgcmFkaWFsLWdyYWRpZW50KGVsbGlwc2UgYXQgNTAlIDUwJSwgJHtjM303NyAwJSwgJHtjM30yMiA1MCUsIHRyYW5zcGFyZW50IDcwJSlgLFxuICAgICAgICAgICAgdHJhbnNmb3JtOiBgcm90YXRlKCR7OCArIHdhdmUzICogMC4wNn1kZWcpYCxcbiAgICAgICAgICAgIGZpbHRlcjogJ2JsdXIoNTVweCknLFxuICAgICAgICAgICAgbWl4QmxlbmRNb2RlOiAnc2NyZWVuJyxcbiAgICAgICAgICAgIG9wYWNpdHk6IDAuNzVcbiAgICAgICAgICB9fVxuICAgICAgICAvPlxuXG4gICAgICAgIDxkaXZcbiAgICAgICAgICBzdHlsZT17e1xuICAgICAgICAgICAgcG9zaXRpb246ICdhYnNvbHV0ZScsXG4gICAgICAgICAgICBpbnNldDogMCxcbiAgICAgICAgICAgIGJhY2tncm91bmQ6ICdsaW5lYXItZ3JhZGllbnQodG8gYm90dG9tLCByZ2JhKDIsIDUsIDE2LCAwLjcpIDAlLCB0cmFuc3BhcmVudCAzMCUsIHRyYW5zcGFyZW50IDcwJSwgcmdiYSgyLCA1LCAxNiwgMC44NSkgMTAwJSknLFxuICAgICAgICAgICAgcG9pbnRlckV2ZW50czogJ25vbmUnXG4gICAgICAgICAgfX1cbiAgICAgICAgLz5cbiAgICAgIDwvZGl2PlxuICAgICk7XG4gIH1cblxuICAvLyBGYWxsYmFja1xuICByZXR1cm4gPGRpdiBzdHlsZT17eyBwb3NpdGlvbjogJ2Fic29sdXRlJywgaW5zZXQ6IDAsIGJhY2tncm91bmRDb2xvcjogJyMwNTA1MTUnIH19IC8+O1xufTtcbiJdLCJmaWxlIjoiRDovc291cmNlIGNvZGUvVmlkZW8gcXVpeiBuZXcvcmVtb3Rpb24vY29tcG9uZW50cy9OZW9uQmFja2dyb3VuZC50c3gifQ==

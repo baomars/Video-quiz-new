@@ -96,6 +96,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
             setActiveBatchId={setActiveBatchId}
             batchState={batchState}
             setBatchState={setBatchState}
+            onRenderStarted={onClose}
           />
         </div>
       </DialogContent>

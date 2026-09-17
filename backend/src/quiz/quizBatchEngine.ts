@@ -57,42 +57,51 @@ export function estimateBatch(
  */
 export function shuffleQuestionAnswers(question: QuizQuestion): QuizQuestion {
   const cloned: QuizQuestion = JSON.parse(JSON.stringify(question));
-  const keys: OptionKey[] = ['A', 'B', 'C'];
-
-  // Identify original correct text
-  const originalCorrectKey = (question.correctAnswer || 'A').toUpperCase() as OptionKey;
-  const originalCorrectText = question.options[originalCorrectKey] || '';
-
-  // Collect option texts
-  const optionEntries = keys.map(k => ({
-    text: question.options[k] || ''
-  }));
-
-  // Fisher-Yates shuffle
-  for (let i = optionEntries.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    const temp = optionEntries[i];
-    optionEntries[i] = optionEntries[j];
-    optionEntries[j] = temp;
+  
+  // Extract all existing option keys dynamically (handles A,B,C or A,B,C,D)
+  const availableKeys = (Object.keys(question.options || {}) as OptionKey[])
+    .filter(k => question.options[k] !== undefined)
+    .sort();
+  
+  if (availableKeys.length <= 1) {
+    return cloned;
   }
 
-  // Assign shuffled texts to A, B, C
-  const newOptions: { A: string; B: string; C: string } = {
-    A: optionEntries[0].text,
-    B: optionEntries[1].text,
-    C: optionEntries[2].text
-  };
+  // Normalize original correct key
+  const originalCorrectKey = (question.correctAnswer || 'A')
+    .toString()
+    .trim()
+    .toUpperCase()
+    .slice(0, 1) as OptionKey;
 
-  // Find which key now holds the original correct text
-  let newCorrectKey: OptionKey = 'A';
-  for (const k of keys) {
-    if (newOptions[k] === originalCorrectText) {
-      newCorrectKey = k;
-      break;
+  // Track isCorrect status directly on the entry BEFORE shuffling
+  const entries = availableKeys.map(k => ({
+    originalKey: k,
+    text: question.options[k] || '',
+    isCorrect: k === originalCorrectKey
+  }));
+
+  // Fisher-Yates array shuffle
+  for (let i = entries.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const temp = entries[i];
+    entries[i] = entries[j];
+    entries[j] = temp;
+  }
+
+  // Reassign to keys and track the new correct key
+  const newOptions: Record<string, string> = {};
+  let newCorrectKey: OptionKey = availableKeys[0];
+
+  for (let i = 0; i < availableKeys.length; i++) {
+    const newKey = availableKeys[i];
+    newOptions[newKey] = entries[i].text;
+    if (entries[i].isCorrect) {
+      newCorrectKey = newKey;
     }
   }
 
-  cloned.options = newOptions;
+  cloned.options = newOptions as any;
   cloned.correctAnswer = newCorrectKey;
 
   return cloned;

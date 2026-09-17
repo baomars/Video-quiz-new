@@ -1,0 +1,774 @@
+import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/src/components/editor/MultiTrackTimeline.tsx");import __vite__cjsImport0_react_jsxDevRuntime from "/@fs/D:/source code/Video quiz new/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=234e6012"; const jsxDEV = __vite__cjsImport0_react_jsxDevRuntime["jsxDEV"];
+import * as RefreshRuntime from "/@react-refresh";
+const inWebWorker = typeof WorkerGlobalScope !== "undefined" && self instanceof WorkerGlobalScope;
+let prevRefreshReg;
+let prevRefreshSig;
+if (import.meta.hot && !inWebWorker) {
+  if (!window.$RefreshReg$) {
+    throw new Error(
+      "@vitejs/plugin-react can't detect preamble. Something is wrong."
+    );
+  }
+  prevRefreshReg = window.$RefreshReg$;
+  prevRefreshSig = window.$RefreshSig$;
+  window.$RefreshReg$ = RefreshRuntime.getRefreshReg("D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx");
+  window.$RefreshSig$ = RefreshRuntime.createSignatureFunctionForTransform;
+}
+var _s = $RefreshSig$();
+import __vite__cjsImport3_react from "/@fs/D:/source code/Video quiz new/node_modules/.vite/deps/react.js?v=234e6012"; const useRef = __vite__cjsImport3_react["useRef"]; const useState = __vite__cjsImport3_react["useState"]; const useEffect = __vite__cjsImport3_react["useEffect"]; const useCallback = __vite__cjsImport3_react["useCallback"];
+import {
+  Play,
+  Pause,
+  RotateCcw,
+  SkipBack,
+  SkipForward,
+  ChevronDown,
+  ChevronUp,
+  Volume2,
+  Clock,
+  CheckCircle2,
+  Split
+} from "/@fs/D:/source code/Video quiz new/node_modules/.vite/deps/lucide-react.js?v=e1a71809";
+import { Button } from "/src/components/ui/button.tsx";
+export const MultiTrackTimeline = ({
+  cues,
+  totalFrames,
+  currentFrame,
+  isPlaying,
+  fps = 30,
+  onSeekTo,
+  onTogglePlay,
+  onRestart,
+  isCollapsed = false,
+  onToggleCollapse
+}) => {
+  _s();
+  const [isScrubbing, setIsScrubbing] = useState(false);
+  const trackContainerRef = useRef(null);
+  const safeTotalFrames = Math.max(1, totalFrames);
+  const totalDurationSec = safeTotalFrames / fps;
+  const formatTime = (f) => {
+    const totalSec = Math.max(0, f) / fps;
+    const m = Math.floor(totalSec / 60);
+    const s = Math.floor(totalSec % 60);
+    const ms = Math.floor(totalSec % 1 * 10);
+    return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}.${ms}`;
+  };
+  const clientXToFrame = useCallback(
+    (clientX) => {
+      if (!trackContainerRef.current) return 0;
+      const rect = trackContainerRef.current.getBoundingClientRect();
+      const clickRatio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+      return Math.round(clickRatio * (safeTotalFrames - 1));
+    },
+    [safeTotalFrames]
+  );
+  const handleMouseDown = (e) => {
+    const frame = clientXToFrame(e.clientX);
+    onSeekTo(frame);
+    setIsScrubbing(true);
+  };
+  useEffect(() => {
+    if (!isScrubbing) return;
+    const handleMouseMove = (e) => {
+      const frame = clientXToFrame(e.clientX);
+      onSeekTo(frame);
+    };
+    const handleMouseUp = () => {
+      setIsScrubbing(false);
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [isScrubbing, clientXToFrame, onSeekTo]);
+  const activeCueIdx = cues.findIndex(
+    (c) => currentFrame >= c.startFrame && currentFrame < c.endFrame
+  );
+  const handlePrevQuestion = () => {
+    if (activeCueIdx > 0) {
+      onSeekTo(cues[activeCueIdx - 1].startFrame);
+    } else {
+      onSeekTo(0);
+    }
+  };
+  const handleNextQuestion = () => {
+    if (activeCueIdx >= 0 && activeCueIdx < cues.length - 1) {
+      onSeekTo(cues[activeCueIdx + 1].startFrame);
+    }
+  };
+  const playheadPct = Math.max(0, Math.min(100, currentFrame / safeTotalFrames * 100));
+  if (isCollapsed) {
+    return /* @__PURE__ */ jsxDEV("div", { className: "h-8 bg-slate-950 border-t border-slate-800 px-3 flex items-center justify-between text-xs text-slate-400 select-none shrink-0 z-20", children: [
+      /* @__PURE__ */ jsxDEV("div", { className: "flex items-center gap-3", children: [
+        /* @__PURE__ */ jsxDEV(
+          "button",
+          {
+            onClick: onToggleCollapse,
+            className: "flex items-center gap-1.5 font-bold text-slate-300 hover:text-amber-400 transition",
+            children: [
+              /* @__PURE__ */ jsxDEV(ChevronUp, { size: 14, className: "text-amber-400" }, void 0, false, {
+                fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+                lineNumber: 145,
+                columnNumber: 13
+              }, this),
+              /* @__PURE__ */ jsxDEV("span", { children: [
+                "Timeline (",
+                cues.length,
+                " câu • ",
+                formatTime(safeTotalFrames),
+                ")"
+              ] }, void 0, true, {
+                fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+                lineNumber: 146,
+                columnNumber: 13
+              }, this)
+            ]
+          },
+          void 0,
+          true,
+          {
+            fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+            lineNumber: 141,
+            columnNumber: 11
+          },
+          this
+        ),
+        /* @__PURE__ */ jsxDEV("span", { className: "font-mono text-amber-400 font-bold text-[11px]", children: formatTime(currentFrame) }, void 0, false, {
+          fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+          lineNumber: 148,
+          columnNumber: 11
+        }, this),
+        /* @__PURE__ */ jsxDEV("span", { className: "text-[10px] text-slate-500", children: [
+          "| F ",
+          currentFrame
+        ] }, void 0, true, {
+          fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+          lineNumber: 149,
+          columnNumber: 11
+        }, this)
+      ] }, void 0, true, {
+        fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+        lineNumber: 140,
+        columnNumber: 9
+      }, this),
+      /* @__PURE__ */ jsxDEV(
+        "div",
+        {
+          onClick: (e) => {
+            const rect = e.currentTarget.getBoundingClientRect();
+            const pct = (e.clientX - rect.left) / rect.width;
+            onSeekTo(Math.round(pct * (safeTotalFrames - 1)));
+          },
+          className: "flex-1 max-w-xs mx-4 h-1.5 bg-slate-800 rounded-full cursor-pointer overflow-hidden relative",
+          children: /* @__PURE__ */ jsxDEV(
+            "div",
+            {
+              className: "h-full bg-amber-500 rounded-full",
+              style: { width: `${playheadPct}%` }
+            },
+            void 0,
+            false,
+            {
+              fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+              lineNumber: 161,
+              columnNumber: 11
+            },
+            this
+          )
+        },
+        void 0,
+        false,
+        {
+          fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+          lineNumber: 153,
+          columnNumber: 9
+        },
+        this
+      ),
+      /* @__PURE__ */ jsxDEV("div", { className: "flex items-center gap-2", children: [
+        /* @__PURE__ */ jsxDEV(
+          "button",
+          {
+            onClick: onTogglePlay,
+            className: "p-1 text-slate-300 hover:text-white",
+            children: isPlaying ? /* @__PURE__ */ jsxDEV(Pause, { size: 13 }, void 0, false, {
+              fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+              lineNumber: 172,
+              columnNumber: 26
+            }, this) : /* @__PURE__ */ jsxDEV(Play, { size: 13 }, void 0, false, {
+              fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+              lineNumber: 172,
+              columnNumber: 48
+            }, this)
+          },
+          void 0,
+          false,
+          {
+            fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+            lineNumber: 168,
+            columnNumber: 11
+          },
+          this
+        ),
+        /* @__PURE__ */ jsxDEV(
+          Button,
+          {
+            size: "iconSm",
+            variant: "ghost",
+            onClick: onToggleCollapse,
+            className: "h-6 w-6 text-slate-400 hover:text-white",
+            title: "Mở rộng timeline",
+            children: /* @__PURE__ */ jsxDEV(ChevronUp, { size: 14 }, void 0, false, {
+              fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+              lineNumber: 181,
+              columnNumber: 13
+            }, this)
+          },
+          void 0,
+          false,
+          {
+            fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+            lineNumber: 174,
+            columnNumber: 11
+          },
+          this
+        )
+      ] }, void 0, true, {
+        fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+        lineNumber: 167,
+        columnNumber: 9
+      }, this)
+    ] }, void 0, true, {
+      fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+      lineNumber: 139,
+      columnNumber: 7
+    }, this);
+  }
+  return /* @__PURE__ */ jsxDEV("div", { className: "bg-slate-950 border-t border-slate-800 flex flex-col select-none shrink-0 z-20 shadow-2xl h-[78px]", children: [
+    /* @__PURE__ */ jsxDEV("div", { className: "h-7 bg-slate-900 border-b border-slate-800/80 px-2.5 flex items-center justify-between shrink-0", children: [
+      /* @__PURE__ */ jsxDEV("div", { className: "flex items-center gap-1.5", children: [
+        /* @__PURE__ */ jsxDEV(
+          Button,
+          {
+            size: "iconSm",
+            variant: "ghost",
+            onClick: handlePrevQuestion,
+            className: "h-6 w-6 text-slate-400 hover:text-white p-0",
+            title: "Về câu trước",
+            children: /* @__PURE__ */ jsxDEV(SkipBack, { size: 12 }, void 0, false, {
+              fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+              lineNumber: 202,
+              columnNumber: 13
+            }, this)
+          },
+          void 0,
+          false,
+          {
+            fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+            lineNumber: 195,
+            columnNumber: 11
+          },
+          this
+        ),
+        /* @__PURE__ */ jsxDEV(
+          "button",
+          {
+            onClick: onTogglePlay,
+            className: "w-6 h-6 rounded-md bg-amber-500 hover:bg-amber-400 text-slate-950 flex items-center justify-center font-bold transition shadow-xs active:scale-95",
+            title: isPlaying ? "Tạm dừng (Space)" : "Phát (Space)",
+            children: isPlaying ? /* @__PURE__ */ jsxDEV(Pause, { size: 12 }, void 0, false, {
+              fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+              lineNumber: 210,
+              columnNumber: 26
+            }, this) : /* @__PURE__ */ jsxDEV(Play, { size: 12, className: "ml-0.5" }, void 0, false, {
+              fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+              lineNumber: 210,
+              columnNumber: 48
+            }, this)
+          },
+          void 0,
+          false,
+          {
+            fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+            lineNumber: 205,
+            columnNumber: 11
+          },
+          this
+        ),
+        /* @__PURE__ */ jsxDEV(
+          Button,
+          {
+            size: "iconSm",
+            variant: "ghost",
+            onClick: handleNextQuestion,
+            className: "h-6 w-6 text-slate-400 hover:text-white p-0",
+            title: "Sang câu tiếp",
+            children: /* @__PURE__ */ jsxDEV(SkipForward, { size: 12 }, void 0, false, {
+              fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+              lineNumber: 220,
+              columnNumber: 13
+            }, this)
+          },
+          void 0,
+          false,
+          {
+            fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+            lineNumber: 213,
+            columnNumber: 11
+          },
+          this
+        ),
+        /* @__PURE__ */ jsxDEV(
+          Button,
+          {
+            size: "iconSm",
+            variant: "ghost",
+            onClick: onRestart,
+            className: "h-6 w-6 text-slate-400 hover:text-white p-0",
+            title: "Về đầu video",
+            children: /* @__PURE__ */ jsxDEV(RotateCcw, { size: 11 }, void 0, false, {
+              fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+              lineNumber: 230,
+              columnNumber: 13
+            }, this)
+          },
+          void 0,
+          false,
+          {
+            fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+            lineNumber: 223,
+            columnNumber: 11
+          },
+          this
+        ),
+        /* @__PURE__ */ jsxDEV("div", { className: "flex items-center gap-1 font-mono text-[11px] bg-slate-950/80 border border-slate-800 px-1.5 py-0.5 rounded ml-1", children: [
+          /* @__PURE__ */ jsxDEV("span", { className: "text-amber-400 font-bold", children: formatTime(currentFrame) }, void 0, false, {
+            fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+            lineNumber: 235,
+            columnNumber: 13
+          }, this),
+          /* @__PURE__ */ jsxDEV("span", { className: "text-slate-600", children: "/" }, void 0, false, {
+            fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+            lineNumber: 236,
+            columnNumber: 13
+          }, this),
+          /* @__PURE__ */ jsxDEV("span", { className: "text-slate-400", children: formatTime(safeTotalFrames) }, void 0, false, {
+            fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+            lineNumber: 237,
+            columnNumber: 13
+          }, this),
+          /* @__PURE__ */ jsxDEV("span", { className: "text-slate-500 text-[10px]", children: [
+            "| F ",
+            currentFrame
+          ] }, void 0, true, {
+            fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+            lineNumber: 238,
+            columnNumber: 13
+          }, this)
+        ] }, void 0, true, {
+          fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+          lineNumber: 234,
+          columnNumber: 11
+        }, this)
+      ] }, void 0, true, {
+        fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+        lineNumber: 194,
+        columnNumber: 9
+      }, this),
+      /* @__PURE__ */ jsxDEV("div", { className: "flex items-center gap-1 overflow-x-auto max-w-sm py-0.5", children: cues.map(
+        (c, i) => /* @__PURE__ */ jsxDEV(
+          "button",
+          {
+            onClick: () => onSeekTo(c.startFrame),
+            className: `px-1.5 py-0.5 rounded text-[10px] font-bold border transition shrink-0 ${activeCueIdx === i ? "bg-amber-500 text-slate-950 border-amber-400 shadow-xs" : "bg-slate-800/80 text-slate-400 border-slate-700/60 hover:text-slate-200"}`,
+            children: [
+              "Q",
+              i + 1
+            ]
+          },
+          c.questionIndex,
+          true,
+          {
+            fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+            lineNumber: 245,
+            columnNumber: 11
+          },
+          this
+        )
+      ) }, void 0, false, {
+        fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+        lineNumber: 243,
+        columnNumber: 9
+      }, this),
+      /* @__PURE__ */ jsxDEV("div", { className: "flex items-center gap-2 text-[10px]", children: [
+        /* @__PURE__ */ jsxDEV("div", { className: "hidden sm:flex items-center gap-2 text-slate-400", children: [
+          /* @__PURE__ */ jsxDEV("span", { className: "flex items-center gap-1", children: [
+            /* @__PURE__ */ jsxDEV("span", { className: "w-2 h-2 rounded-full bg-indigo-500 inline-block" }, void 0, false, {
+              fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+              lineNumber: 263,
+              columnNumber: 15
+            }, this),
+            /* @__PURE__ */ jsxDEV("span", { children: "Hỏi (TTS)" }, void 0, false, {
+              fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+              lineNumber: 264,
+              columnNumber: 15
+            }, this)
+          ] }, void 0, true, {
+            fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+            lineNumber: 262,
+            columnNumber: 13
+          }, this),
+          /* @__PURE__ */ jsxDEV("span", { className: "flex items-center gap-1", children: [
+            /* @__PURE__ */ jsxDEV("span", { className: "w-2 h-2 rounded-full bg-amber-500 inline-block" }, void 0, false, {
+              fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+              lineNumber: 267,
+              columnNumber: 15
+            }, this),
+            /* @__PURE__ */ jsxDEV("span", { children: "Đếm" }, void 0, false, {
+              fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+              lineNumber: 268,
+              columnNumber: 15
+            }, this)
+          ] }, void 0, true, {
+            fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+            lineNumber: 266,
+            columnNumber: 13
+          }, this),
+          /* @__PURE__ */ jsxDEV("span", { className: "flex items-center gap-1", children: [
+            /* @__PURE__ */ jsxDEV("span", { className: "w-2 h-2 rounded-full bg-emerald-500 inline-block" }, void 0, false, {
+              fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+              lineNumber: 271,
+              columnNumber: 15
+            }, this),
+            /* @__PURE__ */ jsxDEV("span", { children: "Đáp án" }, void 0, false, {
+              fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+              lineNumber: 272,
+              columnNumber: 15
+            }, this)
+          ] }, void 0, true, {
+            fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+            lineNumber: 270,
+            columnNumber: 13
+          }, this),
+          /* @__PURE__ */ jsxDEV("span", { className: "flex items-center gap-1", children: [
+            /* @__PURE__ */ jsxDEV("span", { className: "w-2 h-2 rounded-full bg-rose-500 inline-block" }, void 0, false, {
+              fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+              lineNumber: 275,
+              columnNumber: 15
+            }, this),
+            /* @__PURE__ */ jsxDEV("span", { children: "Chuyển" }, void 0, false, {
+              fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+              lineNumber: 276,
+              columnNumber: 15
+            }, this)
+          ] }, void 0, true, {
+            fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+            lineNumber: 274,
+            columnNumber: 13
+          }, this)
+        ] }, void 0, true, {
+          fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+          lineNumber: 261,
+          columnNumber: 11
+        }, this),
+        /* @__PURE__ */ jsxDEV("div", { className: "h-3 w-px bg-slate-800 mx-0.5" }, void 0, false, {
+          fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+          lineNumber: 280,
+          columnNumber: 11
+        }, this),
+        onToggleCollapse && /* @__PURE__ */ jsxDEV(
+          Button,
+          {
+            size: "iconSm",
+            variant: "ghost",
+            onClick: onToggleCollapse,
+            className: "h-6 w-6 text-slate-400 hover:text-white p-0",
+            title: "Thu nhỏ timeline",
+            children: /* @__PURE__ */ jsxDEV(ChevronDown, { size: 14 }, void 0, false, {
+              fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+              lineNumber: 290,
+              columnNumber: 15
+            }, this)
+          },
+          void 0,
+          false,
+          {
+            fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+            lineNumber: 283,
+            columnNumber: 11
+          },
+          this
+        )
+      ] }, void 0, true, {
+        fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+        lineNumber: 260,
+        columnNumber: 9
+      }, this)
+    ] }, void 0, true, {
+      fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+      lineNumber: 192,
+      columnNumber: 7
+    }, this),
+    /* @__PURE__ */ jsxDEV(
+      "div",
+      {
+        ref: trackContainerRef,
+        onMouseDown: handleMouseDown,
+        className: "flex-1 relative bg-slate-950 overflow-hidden cursor-pointer select-none px-1 py-1 flex items-center",
+        children: [
+          /* @__PURE__ */ jsxDEV("div", { className: "w-full h-full flex items-center gap-1 relative rounded overflow-hidden bg-slate-900/50 p-0.5 border border-slate-800/70", children: cues.map((cue, idx) => {
+            const cueDuration = Math.max(1, cue.durationFrames || cue.endFrame - cue.startFrame || 30);
+            const cuePct = cueDuration / safeTotalFrames * 100;
+            const p = cue.phases || {
+              introStart: cue.startFrame,
+              questionTtsStart: cue.startFrame,
+              questionTtsEnd: cue.startFrame + Math.round(cueDuration * 0.3),
+              countdownStart: cue.startFrame + Math.round(cueDuration * 0.3),
+              countdownEnd: cue.startFrame + Math.round(cueDuration * 0.7),
+              revealStart: cue.startFrame + Math.round(cueDuration * 0.7),
+              explanationTtsStart: cue.startFrame + Math.round(cueDuration * 0.7),
+              explanationTtsEnd: cue.endFrame
+            };
+            const qTtsDuration = Math.max(0, (p.questionTtsEnd || p.introStart + 90) - p.introStart);
+            const cdDuration = Math.max(0, (p.countdownEnd || p.countdownStart) - p.countdownStart);
+            const expDuration = Math.max(0, (p.explanationTtsEnd || p.revealStart) - p.revealStart);
+            const transDuration = Math.max(0, cueDuration - ((p.explanationTtsEnd || cue.endFrame) - cue.startFrame));
+            const qTtsPct = qTtsDuration / cueDuration * 100;
+            const cdPct = cdDuration / cueDuration * 100;
+            const expPct = expDuration / cueDuration * 100;
+            const transPct = Math.max(0, 100 - (qTtsPct + cdPct + expPct));
+            const isActive = activeCueIdx === idx;
+            return /* @__PURE__ */ jsxDEV(
+              "div",
+              {
+                style: { width: `${cuePct}%` },
+                className: `h-full rounded relative overflow-hidden flex flex-col justify-between border transition-all ${isActive ? "border-amber-400/80 shadow-[0_0_8px_rgba(245,158,11,0.25)]" : "border-slate-700/60 opacity-90 hover:opacity-100"}`,
+                children: [
+                  /* @__PURE__ */ jsxDEV("div", { className: "h-3.5 px-1.5 flex items-center justify-between text-[9px] font-mono font-bold bg-slate-950/70 text-slate-300", children: [
+                    /* @__PURE__ */ jsxDEV("span", { className: "truncate", children: [
+                      "Câu ",
+                      idx + 1
+                    ] }, void 0, true, {
+                      fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+                      lineNumber: 343,
+                      columnNumber: 19
+                    }, this),
+                    /* @__PURE__ */ jsxDEV("span", { className: "text-slate-400 text-[8px]", children: [
+                      (cueDuration / fps).toFixed(1),
+                      "s"
+                    ] }, void 0, true, {
+                      fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+                      lineNumber: 344,
+                      columnNumber: 19
+                    }, this)
+                  ] }, void 0, true, {
+                    fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+                    lineNumber: 342,
+                    columnNumber: 17
+                  }, this),
+                  /* @__PURE__ */ jsxDEV("div", { className: "flex-1 flex items-center overflow-hidden", children: [
+                    /* @__PURE__ */ jsxDEV(
+                      "div",
+                      {
+                        style: { width: `${qTtsPct}%` },
+                        className: "h-full bg-indigo-600/70 hover:bg-indigo-500/90 border-r border-indigo-500/40 flex items-center justify-center text-[9px] font-semibold text-indigo-100 px-0.5 overflow-hidden transition",
+                        title: `Câu ${idx + 1}: Hỏi & Giọng đọc TTS (${(qTtsDuration / fps).toFixed(1)}s)`,
+                        children: /* @__PURE__ */ jsxDEV("span", { className: "truncate flex items-center gap-0.5", children: [
+                          /* @__PURE__ */ jsxDEV(Volume2, { size: 9, className: "shrink-0" }, void 0, false, {
+                            fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+                            lineNumber: 356,
+                            columnNumber: 23
+                          }, this),
+                          /* @__PURE__ */ jsxDEV("span", { className: "hidden md:inline", children: "Hỏi" }, void 0, false, {
+                            fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+                            lineNumber: 357,
+                            columnNumber: 23
+                          }, this)
+                        ] }, void 0, true, {
+                          fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+                          lineNumber: 355,
+                          columnNumber: 21
+                        }, this)
+                      },
+                      void 0,
+                      false,
+                      {
+                        fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+                        lineNumber: 350,
+                        columnNumber: 19
+                      },
+                      this
+                    ),
+                    /* @__PURE__ */ jsxDEV(
+                      "div",
+                      {
+                        style: { width: `${cdPct}%` },
+                        className: "h-full bg-amber-600/70 hover:bg-amber-500/90 border-r border-amber-500/40 flex items-center justify-center text-[9px] font-semibold text-amber-100 px-0.5 overflow-hidden transition",
+                        title: `Câu ${idx + 1}: Đếm ngược (${(cdDuration / fps).toFixed(1)}s)`,
+                        children: /* @__PURE__ */ jsxDEV("span", { className: "truncate flex items-center gap-0.5", children: [
+                          /* @__PURE__ */ jsxDEV(Clock, { size: 9, className: "shrink-0" }, void 0, false, {
+                            fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+                            lineNumber: 368,
+                            columnNumber: 23
+                          }, this),
+                          /* @__PURE__ */ jsxDEV("span", { className: "hidden md:inline", children: "Đếm" }, void 0, false, {
+                            fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+                            lineNumber: 369,
+                            columnNumber: 23
+                          }, this)
+                        ] }, void 0, true, {
+                          fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+                          lineNumber: 367,
+                          columnNumber: 21
+                        }, this)
+                      },
+                      void 0,
+                      false,
+                      {
+                        fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+                        lineNumber: 362,
+                        columnNumber: 19
+                      },
+                      this
+                    ),
+                    /* @__PURE__ */ jsxDEV(
+                      "div",
+                      {
+                        style: { width: `${expPct}%` },
+                        className: "h-full bg-emerald-600/70 hover:bg-emerald-500/90 border-r border-emerald-500/40 flex items-center justify-center text-[9px] font-semibold text-emerald-100 px-0.5 overflow-hidden transition",
+                        title: `Câu ${idx + 1}: Đáp án & Giọng đọc TTS (${(expDuration / fps).toFixed(1)}s)`,
+                        children: /* @__PURE__ */ jsxDEV("span", { className: "truncate flex items-center gap-0.5", children: [
+                          /* @__PURE__ */ jsxDEV(CheckCircle2, { size: 9, className: "shrink-0" }, void 0, false, {
+                            fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+                            lineNumber: 380,
+                            columnNumber: 23
+                          }, this),
+                          /* @__PURE__ */ jsxDEV("span", { className: "hidden md:inline", children: "Đáp án" }, void 0, false, {
+                            fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+                            lineNumber: 381,
+                            columnNumber: 23
+                          }, this)
+                        ] }, void 0, true, {
+                          fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+                          lineNumber: 379,
+                          columnNumber: 21
+                        }, this)
+                      },
+                      void 0,
+                      false,
+                      {
+                        fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+                        lineNumber: 374,
+                        columnNumber: 19
+                      },
+                      this
+                    ),
+                    transPct > 0 && /* @__PURE__ */ jsxDEV(
+                      "div",
+                      {
+                        style: { width: `${transPct}%` },
+                        className: "h-full bg-rose-600/70 hover:bg-rose-500/90 flex items-center justify-center text-[8px] font-semibold text-rose-100 px-0.5 overflow-hidden transition",
+                        title: `Chuyển câu / Đệm kết thúc (${(transDuration / fps).toFixed(1)}s)`,
+                        children: /* @__PURE__ */ jsxDEV(Split, { size: 8, className: "shrink-0" }, void 0, false, {
+                          fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+                          lineNumber: 392,
+                          columnNumber: 23
+                        }, this)
+                      },
+                      void 0,
+                      false,
+                      {
+                        fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+                        lineNumber: 387,
+                        columnNumber: 19
+                      },
+                      this
+                    )
+                  ] }, void 0, true, {
+                    fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+                    lineNumber: 348,
+                    columnNumber: 17
+                  }, this)
+                ]
+              },
+              cue.questionIndex,
+              true,
+              {
+                fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+                lineNumber: 332,
+                columnNumber: 15
+              },
+              this
+            );
+          }) }, void 0, false, {
+            fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+            lineNumber: 303,
+            columnNumber: 9
+          }, this),
+          /* @__PURE__ */ jsxDEV(
+            "div",
+            {
+              className: "absolute top-0 bottom-0 pointer-events-none z-30 transition-[left] duration-75",
+              style: { left: `${playheadPct}%` },
+              children: [
+                /* @__PURE__ */ jsxDEV("div", { className: "w-2.5 h-2.5 -ml-[5px] bg-amber-400 rotate-45 border border-amber-200 shadow-[0_0_6px_rgba(245,158,11,0.8)]" }, void 0, false, {
+                  fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+                  lineNumber: 407,
+                  columnNumber: 11
+                }, this),
+                /* @__PURE__ */ jsxDEV("div", { className: "w-[1.5px] h-full bg-amber-400 shadow-[0_0_4px_rgba(245,158,11,0.9)]" }, void 0, false, {
+                  fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+                  lineNumber: 409,
+                  columnNumber: 11
+                }, this)
+              ]
+            },
+            void 0,
+            true,
+            {
+              fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+              lineNumber: 402,
+              columnNumber: 9
+            },
+            this
+          )
+        ]
+      },
+      void 0,
+      true,
+      {
+        fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+        lineNumber: 297,
+        columnNumber: 7
+      },
+      this
+    )
+  ] }, void 0, true, {
+    fileName: "D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx",
+    lineNumber: 190,
+    columnNumber: 5
+  }, this);
+};
+_s(MultiTrackTimeline, "K14ncgZBovcsgc9DUGyJJRRzOAY=");
+_c = MultiTrackTimeline;
+var _c;
+$RefreshReg$(_c, "MultiTrackTimeline");
+if (import.meta.hot && !inWebWorker) {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+}
+if (import.meta.hot && !inWebWorker) {
+  RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
+    RefreshRuntime.registerExportsForReactRefresh("D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx", currentExports);
+    import.meta.hot.accept((nextExports) => {
+      if (!nextExports) return;
+      const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate("D:/source code/Video quiz new/frontend/src/components/editor/MultiTrackTimeline.tsx", currentExports, nextExports);
+      if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);
+    });
+  });
+}
+
+//# sourceMappingURL=data:application/json;base64,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RDtBQUFBQSxjQURYO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUFBO0FBQUEsWUFnRUE7QUFBQSxVQUVKLENBQUMsS0EvRkg7QUFBQTtBQUFBO0FBQUE7QUFBQSxpQkFnR0E7QUFBQSxVQUdBO0FBQUEsWUFBQztBQUFBO0FBQUEsY0FDQyxXQUFVO0FBQUEsY0FDVixPQUFPLEVBQUV4QixNQUFNLEdBQUdtQixXQUFXLElBQUk7QUFBQSxjQUdqQztBQUFBLHVDQUFDLFNBQUksV0FBVSxnSEFBZjtBQUFBO0FBQUE7QUFBQTtBQUFBLHVCQUEySDtBQUFBLGdCQUUzSCx1QkFBQyxTQUFJLFdBQVUseUVBQWY7QUFBQTtBQUFBO0FBQUE7QUFBQSx1QkFBb0Y7QUFBQTtBQUFBO0FBQUEsWUFQdEY7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUFBLFVBUUE7QUFBQTtBQUFBO0FBQUEsTUFqSEY7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUFBLElBa0hBO0FBQUEsT0E3TkY7QUFBQTtBQUFBO0FBQUE7QUFBQSxTQThOQTtBQUVKO0FBQUUzQyxHQTVXV1gsb0JBQXFEO0FBQUEsS0FBckRBO0FBQXFELElBQUFxRjtBQUFBLGFBQUFBLElBQUEiLCJuYW1lcyI6WyJ1c2VSZWYiLCJ1c2VTdGF0ZSIsInVzZUVmZmVjdCIsInVzZUNhbGxiYWNrIiwiUGxheSIsIlBhdXNlIiwiUm90YXRlQ2N3IiwiU2tpcEJhY2siLCJTa2lwRm9yd2FyZCIsIkNoZXZyb25Eb3duIiwiQ2hldnJvblVwIiwiVm9sdW1lMiIsIkNsb2NrIiwiQ2hlY2tDaXJjbGUyIiwiU3BsaXQiLCJCdXR0b24iLCJNdWx0aVRyYWNrVGltZWxpbmUiLCJjdWVzIiwidG90YWxGcmFtZXMiLCJjdXJyZW50RnJhbWUiLCJpc1BsYXlpbmciLCJmcHMiLCJvblNlZWtUbyIsIm9uVG9nZ2xlUGxheSIsIm9uUmVzdGFydCIsImlzQ29sbGFwc2VkIiwib25Ub2dnbGVDb2xsYXBzZSIsIl9zIiwiaXNTY3J1YmJpbmciLCJzZXRJc1NjcnViYmluZyIsInRyYWNrQ29udGFpbmVyUmVmIiwic2FmZVRvdGFsRnJhbWVzIiwiTWF0aCIsIm1heCIsInRvdGFsRHVyYXRpb25TZWMiLCJmb3JtYXRUaW1lIiwiZiIsInRvdGFsU2VjIiwibSIsImZsb29yIiwicyIsIm1zIiwidG9TdHJpbmciLCJwYWRTdGFydCIsImNsaWVudFhUb0ZyYW1lIiwiY2xpZW50WCIsImN1cnJlbnQiLCJyZWN0IiwiZ2V0Qm91bmRpbmdDbGllbnRSZWN0IiwiY2xpY2tSYXRpbyIsIm1pbiIsImxlZnQiLCJ3aWR0aCIsInJvdW5kIiwiaGFuZGxlTW91c2VEb3duIiwiZSIsImZyYW1lIiwiaGFuZGxlTW91c2VNb3ZlIiwiaGFuZGxlTW91c2VVcCIsIndpbmRvdyIsImFkZEV2ZW50TGlzdGVuZXIiLCJyZW1vdmVFdmVudExpc3RlbmVyIiwiYWN0aXZlQ3VlSWR4IiwiZmluZEluZGV4IiwiYyIsInN0YXJ0RnJhbWUiLCJlbmRGcmFtZSIsImhhbmRsZVByZXZRdWVzdGlvbiIsImhhbmRsZU5leHRRdWVzdGlvbiIsImxlbmd0aCIsInBsYXloZWFkUGN0IiwiY3VycmVudFRhcmdldCIsInBjdCIsIm1hcCIsImkiLCJxdWVzdGlvbkluZGV4IiwiY3VlIiwiaWR4IiwiY3VlRHVyYXRpb24iLCJkdXJhdGlvbkZyYW1lcyIsImN1ZVBjdCIsInAiLCJwaGFzZXMiLCJpbnRyb1N0YXJ0IiwicXVlc3Rpb25UdHNTdGFydCIsInF1ZXN0aW9uVHRzRW5kIiwiY291bnRkb3duU3RhcnQiLCJjb3VudGRvd25FbmQiLCJyZXZlYWxTdGFydCIsImV4cGxhbmF0aW9uVHRzU3RhcnQiLCJleHBsYW5hdGlvblR0c0VuZCIsInFUdHNEdXJhdGlvbiIsImNkRHVyYXRpb24iLCJleHBEdXJhdGlvbiIsInRyYW5zRHVyYXRpb24iLCJxVHRzUGN0IiwiY2RQY3QiLCJleHBQY3QiLCJ0cmFuc1BjdCIsImlzQWN0aXZlIiwidG9GaXhlZCIsIl9jIl0sImlnbm9yZUxpc3QiOltdLCJzb3VyY2VzIjpbIk11bHRpVHJhY2tUaW1lbGluZS50c3giXSwic291cmNlc0NvbnRlbnQiOlsiaW1wb3J0IFJlYWN0LCB7IHVzZVJlZiwgdXNlU3RhdGUsIHVzZUVmZmVjdCwgdXNlTWVtbywgdXNlQ2FsbGJhY2sgfSBmcm9tICdyZWFjdCc7XG5pbXBvcnQgeyBUaW1lbGluZVF1ZXN0aW9uQ3VlIH0gZnJvbSAnLi4vLi4vLi4vLi4vcmVtb3Rpb24vdHlwZXMvaW5kZXgnO1xuaW1wb3J0IHtcbiAgUGxheSxcbiAgUGF1c2UsXG4gIFJvdGF0ZUNjdyxcbiAgU2tpcEJhY2ssXG4gIFNraXBGb3J3YXJkLFxuICBDaGV2cm9uRG93bixcbiAgQ2hldnJvblVwLFxuICBWb2x1bWUyLFxuICBDbG9jayxcbiAgQ2hlY2tDaXJjbGUyLFxuICBTcGxpdFxufSBmcm9tICdsdWNpZGUtcmVhY3QnO1xuaW1wb3J0IHsgQnV0dG9uIH0gZnJvbSAnLi4vdWkvYnV0dG9uJztcblxuaW50ZXJmYWNlIE11bHRpVHJhY2tUaW1lbGluZVByb3BzIHtcbiAgY3VlczogVGltZWxpbmVRdWVzdGlvbkN1ZVtdO1xuICB0b3RhbEZyYW1lczogbnVtYmVyO1xuICBjdXJyZW50RnJhbWU6IG51bWJlcjtcbiAgaXNQbGF5aW5nOiBib29sZWFuO1xuICBmcHM/OiBudW1iZXI7XG4gIG9uU2Vla1RvOiAoZnJhbWU6IG51bWJlcikgPT4gdm9pZDtcbiAgb25Ub2dnbGVQbGF5OiAoKSA9PiB2b2lkO1xuICBvblJlc3RhcnQ6ICgpID0+IHZvaWQ7XG4gIGlzQ29sbGFwc2VkPzogYm9vbGVhbjtcbiAgb25Ub2dnbGVDb2xsYXBzZT86ICgpID0+IHZvaWQ7XG59XG5cbmV4cG9ydCBjb25zdCBNdWx0aVRyYWNrVGltZWxpbmU6IFJlYWN0LkZDPE11bHRpVHJhY2tUaW1lbGluZVByb3BzPiA9ICh7XG4gIGN1ZXMsXG4gIHRvdGFsRnJhbWVzLFxuICBjdXJyZW50RnJhbWUsXG4gIGlzUGxheWluZyxcbiAgZnBzID0gMzAsXG4gIG9uU2Vla1RvLFxuICBvblRvZ2dsZVBsYXksXG4gIG9uUmVzdGFydCxcbiAgaXNDb2xsYXBzZWQgPSBmYWxzZSxcbiAgb25Ub2dnbGVDb2xsYXBzZVxufSkgPT4ge1xuICBjb25zdCBbaXNTY3J1YmJpbmcsIHNldElzU2NydWJiaW5nXSA9IHVzZVN0YXRlPGJvb2xlYW4+KGZhbHNlKTtcbiAgY29uc3QgdHJhY2tDb250YWluZXJSZWYgPSB1c2VSZWY8SFRNTERpdkVsZW1lbnQ+KG51bGwpO1xuXG4gIGNvbnN0IHNhZmVUb3RhbEZyYW1lcyA9IE1hdGgubWF4KDEsIHRvdGFsRnJhbWVzKTtcbiAgY29uc3QgdG90YWxEdXJhdGlvblNlYyA9IHNhZmVUb3RhbEZyYW1lcyAvIGZwcztcblxuICAvLyBGb3JtYXQgdGltZSBNTTpTUy5tc1xuICBjb25zdCBmb3JtYXRUaW1lID0gKGY6IG51bWJlcikgPT4ge1xuICAgIGNvbnN0IHRvdGFsU2VjID0gTWF0aC5tYXgoMCwgZikgLyBmcHM7XG4gICAgY29uc3QgbSA9IE1hdGguZmxvb3IodG90YWxTZWMgLyA2MCk7XG4gICAgY29uc3QgcyA9IE1hdGguZmxvb3IodG90YWxTZWMgJSA2MCk7XG4gICAgY29uc3QgbXMgPSBNYXRoLmZsb29yKCh0b3RhbFNlYyAlIDEpICogMTApO1xuICAgIHJldHVybiBgJHttLnRvU3RyaW5nKCkucGFkU3RhcnQoMiwgJzAnKX06JHtzLnRvU3RyaW5nKCkucGFkU3RhcnQoMiwgJzAnKX0uJHttc31gO1xuICB9O1xuXG4gIC8vIENvbnZlcnQgY2xpY2sgb3IgZHJhZyBjbGllbnRYIHRvIGZyYW1lXG4gIGNvbnN0IGNsaWVudFhUb0ZyYW1lID0gdXNlQ2FsbGJhY2soXG4gICAgKGNsaWVudFg6IG51bWJlcikgPT4ge1xuICAgICAgaWYgKCF0cmFja0NvbnRhaW5lclJlZi5jdXJyZW50KSByZXR1cm4gMDtcbiAgICAgIGNvbnN0IHJlY3QgPSB0cmFja0NvbnRhaW5lclJlZi5jdXJyZW50LmdldEJvdW5kaW5nQ2xpZW50UmVjdCgpO1xuICAgICAgY29uc3QgY2xpY2tSYXRpbyA9IE1hdGgubWF4KDAsIE1hdGgubWluKDEsIChjbGllbnRYIC0gcmVjdC5sZWZ0KSAvIHJlY3Qud2lkdGgpKTtcbiAgICAgIHJldHVybiBNYXRoLnJvdW5kKGNsaWNrUmF0aW8gKiAoc2FmZVRvdGFsRnJhbWVzIC0gMSkpO1xuICAgIH0sXG4gICAgW3NhZmVUb3RhbEZyYW1lc11cbiAgKTtcblxuICBjb25zdCBoYW5kbGVNb3VzZURvd24gPSAoZTogUmVhY3QuTW91c2VFdmVudDxIVE1MRGl2RWxlbWVudD4pID0+IHtcbiAgICBjb25zdCBmcmFtZSA9IGNsaWVudFhUb0ZyYW1lKGUuY2xpZW50WCk7XG4gICAgb25TZWVrVG8oZnJhbWUpO1xuICAgIHNldElzU2NydWJiaW5nKHRydWUpO1xuICB9O1xuXG4gIHVzZUVmZmVjdCgoKSA9PiB7XG4gICAgaWYgKCFpc1NjcnViYmluZykgcmV0dXJuO1xuXG4gICAgY29uc3QgaGFuZGxlTW91c2VNb3ZlID0gKGU6IE1vdXNlRXZlbnQpID0+IHtcbiAgICAgIGNvbnN0IGZyYW1lID0gY2xpZW50WFRvRnJhbWUoZS5jbGllbnRYKTtcbiAgICAgIG9uU2Vla1RvKGZyYW1lKTtcbiAgICB9O1xuXG4gICAgY29uc3QgaGFuZGxlTW91c2VVcCA9ICgpID0+IHtcbiAgICAgIHNldElzU2NydWJiaW5nKGZhbHNlKTtcbiAgICB9O1xuXG4gICAgd2luZG93LmFkZEV2ZW50TGlzdGVuZXIoJ21vdXNlbW92ZScsIGhhbmRsZU1vdXNlTW92ZSk7XG4gICAgd2luZG93LmFkZEV2ZW50TGlzdGVuZXIoJ21vdXNldXAnLCBoYW5kbGVNb3VzZVVwKTtcbiAgICByZXR1cm4gKCkgPT4ge1xuICAgICAgd2luZG93LnJlbW92ZUV2ZW50TGlzdGVuZXIoJ21vdXNlbW92ZScsIGhhbmRsZU1vdXNlTW92ZSk7XG4gICAgICB3aW5kb3cucmVtb3ZlRXZlbnRMaXN0ZW5lcignbW91c2V1cCcsIGhhbmRsZU1vdXNlVXApO1xuICAgIH07XG4gIH0sIFtpc1NjcnViYmluZywgY2xpZW50WFRvRnJhbWUsIG9uU2Vla1RvXSk7XG5cbiAgLy8gQ3VycmVudCBhY3RpdmUgcXVlc3Rpb24gaW5kZXhcbiAgY29uc3QgYWN0aXZlQ3VlSWR4ID0gY3Vlcy5maW5kSW5kZXgoXG4gICAgKGMpID0+IGN1cnJlbnRGcmFtZSA+PSBjLnN0YXJ0RnJhbWUgJiYgY3VycmVudEZyYW1lIDwgYy5lbmRGcmFtZVxuICApO1xuXG4gIGNvbnN0IGhhbmRsZVByZXZRdWVzdGlvbiA9ICgpID0+IHtcbiAgICBpZiAoYWN0aXZlQ3VlSWR4ID4gMCkge1xuICAgICAgb25TZWVrVG8oY3Vlc1thY3RpdmVDdWVJZHggLSAxXS5zdGFydEZyYW1lKTtcbiAgICB9IGVsc2Uge1xuICAgICAgb25TZWVrVG8oMCk7XG4gICAgfVxuICB9O1xuXG4gIGNvbnN0IGhhbmRsZU5leHRRdWVzdGlvbiA9ICgpID0+IHtcbiAgICBpZiAoYWN0aXZlQ3VlSWR4ID49IDAgJiYgYWN0aXZlQ3VlSWR4IDwgY3Vlcy5sZW5ndGggLSAxKSB7XG4gICAgICBvblNlZWtUbyhjdWVzW2FjdGl2ZUN1ZUlkeCArIDFdLnN0YXJ0RnJhbWUpO1xuICAgIH1cbiAgfTtcblxuICAvLyBQbGF5aGVhZCBwcm9ncmVzcyBwZXJjZW50YWdlXG4gIGNvbnN0IHBsYXloZWFkUGN0ID0gTWF0aC5tYXgoMCwgTWF0aC5taW4oMTAwLCAoY3VycmVudEZyYW1lIC8gc2FmZVRvdGFsRnJhbWVzKSAqIDEwMCkpO1xuXG4gIC8vIENvbGxhcHNlZCBjb21wYWN0IG1pbmktYmFyICgzMnB4KVxuICBpZiAoaXNDb2xsYXBzZWQpIHtcbiAgICByZXR1cm4gKFxuICAgICAgPGRpdiBjbGFzc05hbWU9XCJoLTggYmctc2xhdGUtOTUwIGJvcmRlci10IGJvcmRlci1zbGF0ZS04MDAgcHgtMyBmbGV4IGl0ZW1zLWNlbnRlciBqdXN0aWZ5LWJldHdlZW4gdGV4dC14cyB0ZXh0LXNsYXRlLTQwMCBzZWxlY3Qtbm9uZSBzaHJpbmstMCB6LTIwXCI+XG4gICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZmxleCBpdGVtcy1jZW50ZXIgZ2FwLTNcIj5cbiAgICAgICAgICA8YnV0dG9uXG4gICAgICAgICAgICBvbkNsaWNrPXtvblRvZ2dsZUNvbGxhcHNlfVxuICAgICAgICAgICAgY2xhc3NOYW1lPVwiZmxleCBpdGVtcy1jZW50ZXIgZ2FwLTEuNSBmb250LWJvbGQgdGV4dC1zbGF0ZS0zMDAgaG92ZXI6dGV4dC1hbWJlci00MDAgdHJhbnNpdGlvblwiXG4gICAgICAgICAgPlxuICAgICAgICAgICAgPENoZXZyb25VcCBzaXplPXsxNH0gY2xhc3NOYW1lPVwidGV4dC1hbWJlci00MDBcIiAvPlxuICAgICAgICAgICAgPHNwYW4+VGltZWxpbmUgKHtjdWVzLmxlbmd0aH0gY8OidSDigKIge2Zvcm1hdFRpbWUoc2FmZVRvdGFsRnJhbWVzKX0pPC9zcGFuPlxuICAgICAgICAgIDwvYnV0dG9uPlxuICAgICAgICAgIDxzcGFuIGNsYXNzTmFtZT1cImZvbnQtbW9ubyB0ZXh0LWFtYmVyLTQwMCBmb250LWJvbGQgdGV4dC1bMTFweF1cIj57Zm9ybWF0VGltZShjdXJyZW50RnJhbWUpfTwvc3Bhbj5cbiAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9XCJ0ZXh0LVsxMHB4XSB0ZXh0LXNsYXRlLTUwMFwiPnwgRiB7Y3VycmVudEZyYW1lfTwvc3Bhbj5cbiAgICAgICAgPC9kaXY+XG5cbiAgICAgICAgey8qIE1pbmkgcHJvZ3Jlc3Mgc2NydWJiZXIgKi99XG4gICAgICAgIDxkaXZcbiAgICAgICAgICBvbkNsaWNrPXsoZSkgPT4ge1xuICAgICAgICAgICAgY29uc3QgcmVjdCA9IGUuY3VycmVudFRhcmdldC5nZXRCb3VuZGluZ0NsaWVudFJlY3QoKTtcbiAgICAgICAgICAgIGNvbnN0IHBjdCA9IChlLmNsaWVudFggLSByZWN0LmxlZnQpIC8gcmVjdC53aWR0aDtcbiAgICAgICAgICAgIG9uU2Vla1RvKE1hdGgucm91bmQocGN0ICogKHNhZmVUb3RhbEZyYW1lcyAtIDEpKSk7XG4gICAgICAgICAgfX1cbiAgICAgICAgICBjbGFzc05hbWU9XCJmbGV4LTEgbWF4LXcteHMgbXgtNCBoLTEuNSBiZy1zbGF0ZS04MDAgcm91bmRlZC1mdWxsIGN1cnNvci1wb2ludGVyIG92ZXJmbG93LWhpZGRlbiByZWxhdGl2ZVwiXG4gICAgICAgID5cbiAgICAgICAgICA8ZGl2XG4gICAgICAgICAgICBjbGFzc05hbWU9XCJoLWZ1bGwgYmctYW1iZXItNTAwIHJvdW5kZWQtZnVsbFwiXG4gICAgICAgICAgICBzdHlsZT17eyB3aWR0aDogYCR7cGxheWhlYWRQY3R9JWAgfX1cbiAgICAgICAgICAvPlxuICAgICAgICA8L2Rpdj5cblxuICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImZsZXggaXRlbXMtY2VudGVyIGdhcC0yXCI+XG4gICAgICAgICAgPGJ1dHRvblxuICAgICAgICAgICAgb25DbGljaz17b25Ub2dnbGVQbGF5fVxuICAgICAgICAgICAgY2xhc3NOYW1lPVwicC0xIHRleHQtc2xhdGUtMzAwIGhvdmVyOnRleHQtd2hpdGVcIlxuICAgICAgICAgID5cbiAgICAgICAgICAgIHtpc1BsYXlpbmcgPyA8UGF1c2Ugc2l6ZT17MTN9IC8+IDogPFBsYXkgc2l6ZT17MTN9IC8+fVxuICAgICAgICAgIDwvYnV0dG9uPlxuICAgICAgICAgIDxCdXR0b25cbiAgICAgICAgICAgIHNpemU9XCJpY29uU21cIlxuICAgICAgICAgICAgdmFyaWFudD1cImdob3N0XCJcbiAgICAgICAgICAgIG9uQ2xpY2s9e29uVG9nZ2xlQ29sbGFwc2V9XG4gICAgICAgICAgICBjbGFzc05hbWU9XCJoLTYgdy02IHRleHQtc2xhdGUtNDAwIGhvdmVyOnRleHQtd2hpdGVcIlxuICAgICAgICAgICAgdGl0bGU9XCJN4bufIHLhu5luZyB0aW1lbGluZVwiXG4gICAgICAgICAgPlxuICAgICAgICAgICAgPENoZXZyb25VcCBzaXplPXsxNH0gLz5cbiAgICAgICAgICA8L0J1dHRvbj5cbiAgICAgICAgPC9kaXY+XG4gICAgICA8L2Rpdj5cbiAgICApO1xuICB9XG5cbiAgLy8gRXhwYW5kZWQgQ29tcGFjdCBUaW1lbGluZSAoVG90YWwgaGVpZ2h0IDc4cHgsIHNhdmVzIH4xNjBweCBmb3IgVmlkZW8gUHJldmlldyEpXG4gIHJldHVybiAoXG4gICAgPGRpdiBjbGFzc05hbWU9XCJiZy1zbGF0ZS05NTAgYm9yZGVyLXQgYm9yZGVyLXNsYXRlLTgwMCBmbGV4IGZsZXgtY29sIHNlbGVjdC1ub25lIHNocmluay0wIHotMjAgc2hhZG93LTJ4bCBoLVs3OHB4XVwiPlxuICAgICAgey8qIDEuIENvbnRyb2wgJiBKdW1wIEhlYWRlciAoMjhweCkgKi99XG4gICAgICA8ZGl2IGNsYXNzTmFtZT1cImgtNyBiZy1zbGF0ZS05MDAgYm9yZGVyLWIgYm9yZGVyLXNsYXRlLTgwMC84MCBweC0yLjUgZmxleCBpdGVtcy1jZW50ZXIganVzdGlmeS1iZXR3ZWVuIHNocmluay0wXCI+XG4gICAgICAgIHsvKiBQbGF5YmFjayBDb250cm9scyAmIFRpbWVjb2RlICovfVxuICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImZsZXggaXRlbXMtY2VudGVyIGdhcC0xLjVcIj5cbiAgICAgICAgICA8QnV0dG9uXG4gICAgICAgICAgICBzaXplPVwiaWNvblNtXCJcbiAgICAgICAgICAgIHZhcmlhbnQ9XCJnaG9zdFwiXG4gICAgICAgICAgICBvbkNsaWNrPXtoYW5kbGVQcmV2UXVlc3Rpb259XG4gICAgICAgICAgICBjbGFzc05hbWU9XCJoLTYgdy02IHRleHQtc2xhdGUtNDAwIGhvdmVyOnRleHQtd2hpdGUgcC0wXCJcbiAgICAgICAgICAgIHRpdGxlPVwiVuG7gSBjw6J1IHRyxrDhu5tjXCJcbiAgICAgICAgICA+XG4gICAgICAgICAgICA8U2tpcEJhY2sgc2l6ZT17MTJ9IC8+XG4gICAgICAgICAgPC9CdXR0b24+XG5cbiAgICAgICAgICA8YnV0dG9uXG4gICAgICAgICAgICBvbkNsaWNrPXtvblRvZ2dsZVBsYXl9XG4gICAgICAgICAgICBjbGFzc05hbWU9XCJ3LTYgaC02IHJvdW5kZWQtbWQgYmctYW1iZXItNTAwIGhvdmVyOmJnLWFtYmVyLTQwMCB0ZXh0LXNsYXRlLTk1MCBmbGV4IGl0ZW1zLWNlbnRlciBqdXN0aWZ5LWNlbnRlciBmb250LWJvbGQgdHJhbnNpdGlvbiBzaGFkb3cteHMgYWN0aXZlOnNjYWxlLTk1XCJcbiAgICAgICAgICAgIHRpdGxlPXtpc1BsYXlpbmcgPyAnVOG6oW0gZOG7q25nIChTcGFjZSknIDogJ1Bow6F0IChTcGFjZSknfVxuICAgICAgICAgID5cbiAgICAgICAgICAgIHtpc1BsYXlpbmcgPyA8UGF1c2Ugc2l6ZT17MTJ9IC8+IDogPFBsYXkgc2l6ZT17MTJ9IGNsYXNzTmFtZT1cIm1sLTAuNVwiIC8+fVxuICAgICAgICAgIDwvYnV0dG9uPlxuXG4gICAgICAgICAgPEJ1dHRvblxuICAgICAgICAgICAgc2l6ZT1cImljb25TbVwiXG4gICAgICAgICAgICB2YXJpYW50PVwiZ2hvc3RcIlxuICAgICAgICAgICAgb25DbGljaz17aGFuZGxlTmV4dFF1ZXN0aW9ufVxuICAgICAgICAgICAgY2xhc3NOYW1lPVwiaC02IHctNiB0ZXh0LXNsYXRlLTQwMCBob3Zlcjp0ZXh0LXdoaXRlIHAtMFwiXG4gICAgICAgICAgICB0aXRsZT1cIlNhbmcgY8OidSB0aeG6v3BcIlxuICAgICAgICAgID5cbiAgICAgICAgICAgIDxTa2lwRm9yd2FyZCBzaXplPXsxMn0gLz5cbiAgICAgICAgICA8L0J1dHRvbj5cblxuICAgICAgICAgIDxCdXR0b25cbiAgICAgICAgICAgIHNpemU9XCJpY29uU21cIlxuICAgICAgICAgICAgdmFyaWFudD1cImdob3N0XCJcbiAgICAgICAgICAgIG9uQ2xpY2s9e29uUmVzdGFydH1cbiAgICAgICAgICAgIGNsYXNzTmFtZT1cImgtNiB3LTYgdGV4dC1zbGF0ZS00MDAgaG92ZXI6dGV4dC13aGl0ZSBwLTBcIlxuICAgICAgICAgICAgdGl0bGU9XCJW4buBIMSR4bqndSB2aWRlb1wiXG4gICAgICAgICAgPlxuICAgICAgICAgICAgPFJvdGF0ZUNjdyBzaXplPXsxMX0gLz5cbiAgICAgICAgICA8L0J1dHRvbj5cblxuICAgICAgICAgIHsvKiBUaW1lY29kZSAmIEZyYW1lICovfVxuICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZmxleCBpdGVtcy1jZW50ZXIgZ2FwLTEgZm9udC1tb25vIHRleHQtWzExcHhdIGJnLXNsYXRlLTk1MC84MCBib3JkZXIgYm9yZGVyLXNsYXRlLTgwMCBweC0xLjUgcHktMC41IHJvdW5kZWQgbWwtMVwiPlxuICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPVwidGV4dC1hbWJlci00MDAgZm9udC1ib2xkXCI+e2Zvcm1hdFRpbWUoY3VycmVudEZyYW1lKX08L3NwYW4+XG4gICAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9XCJ0ZXh0LXNsYXRlLTYwMFwiPi88L3NwYW4+XG4gICAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9XCJ0ZXh0LXNsYXRlLTQwMFwiPntmb3JtYXRUaW1lKHNhZmVUb3RhbEZyYW1lcyl9PC9zcGFuPlxuICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPVwidGV4dC1zbGF0ZS01MDAgdGV4dC1bMTBweF1cIj58IEYge2N1cnJlbnRGcmFtZX08L3NwYW4+XG4gICAgICAgICAgPC9kaXY+XG4gICAgICAgIDwvZGl2PlxuXG4gICAgICAgIHsvKiBDZW50ZXI6IFF1ZXN0aW9uIE5hdmlnYXRpb24gUGlsbHMgKi99XG4gICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZmxleCBpdGVtcy1jZW50ZXIgZ2FwLTEgb3ZlcmZsb3cteC1hdXRvIG1heC13LXNtIHB5LTAuNVwiPlxuICAgICAgICAgIHtjdWVzLm1hcCgoYywgaSkgPT4gKFxuICAgICAgICAgICAgPGJ1dHRvblxuICAgICAgICAgICAgICBrZXk9e2MucXVlc3Rpb25JbmRleH1cbiAgICAgICAgICAgICAgb25DbGljaz17KCkgPT4gb25TZWVrVG8oYy5zdGFydEZyYW1lKX1cbiAgICAgICAgICAgICAgY2xhc3NOYW1lPXtgcHgtMS41IHB5LTAuNSByb3VuZGVkIHRleHQtWzEwcHhdIGZvbnQtYm9sZCBib3JkZXIgdHJhbnNpdGlvbiBzaHJpbmstMCAke1xuICAgICAgICAgICAgICAgIGFjdGl2ZUN1ZUlkeCA9PT0gaVxuICAgICAgICAgICAgICAgICAgPyAnYmctYW1iZXItNTAwIHRleHQtc2xhdGUtOTUwIGJvcmRlci1hbWJlci00MDAgc2hhZG93LXhzJ1xuICAgICAgICAgICAgICAgICAgOiAnYmctc2xhdGUtODAwLzgwIHRleHQtc2xhdGUtNDAwIGJvcmRlci1zbGF0ZS03MDAvNjAgaG92ZXI6dGV4dC1zbGF0ZS0yMDAnXG4gICAgICAgICAgICAgIH1gfVxuICAgICAgICAgICAgPlxuICAgICAgICAgICAgICBRe2kgKyAxfVxuICAgICAgICAgICAgPC9idXR0b24+XG4gICAgICAgICAgKSl9XG4gICAgICAgIDwvZGl2PlxuXG4gICAgICAgIHsvKiBSaWdodDogUGhhc2UgTGVnZW5kICYgQ29sbGFwc2UgKi99XG4gICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZmxleCBpdGVtcy1jZW50ZXIgZ2FwLTIgdGV4dC1bMTBweF1cIj5cbiAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImhpZGRlbiBzbTpmbGV4IGl0ZW1zLWNlbnRlciBnYXAtMiB0ZXh0LXNsYXRlLTQwMFwiPlxuICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPVwiZmxleCBpdGVtcy1jZW50ZXIgZ2FwLTFcIj5cbiAgICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPVwidy0yIGgtMiByb3VuZGVkLWZ1bGwgYmctaW5kaWdvLTUwMCBpbmxpbmUtYmxvY2tcIiAvPlxuICAgICAgICAgICAgICA8c3Bhbj5I4buPaSAoVFRTKTwvc3Bhbj5cbiAgICAgICAgICAgIDwvc3Bhbj5cbiAgICAgICAgICAgIDxzcGFuIGNsYXNzTmFtZT1cImZsZXggaXRlbXMtY2VudGVyIGdhcC0xXCI+XG4gICAgICAgICAgICAgIDxzcGFuIGNsYXNzTmFtZT1cInctMiBoLTIgcm91bmRlZC1mdWxsIGJnLWFtYmVyLTUwMCBpbmxpbmUtYmxvY2tcIiAvPlxuICAgICAgICAgICAgICA8c3Bhbj7EkOG6v208L3NwYW4+XG4gICAgICAgICAgICA8L3NwYW4+XG4gICAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9XCJmbGV4IGl0ZW1zLWNlbnRlciBnYXAtMVwiPlxuICAgICAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9XCJ3LTIgaC0yIHJvdW5kZWQtZnVsbCBiZy1lbWVyYWxkLTUwMCBpbmxpbmUtYmxvY2tcIiAvPlxuICAgICAgICAgICAgICA8c3Bhbj7EkMOhcCDDoW48L3NwYW4+XG4gICAgICAgICAgICA8L3NwYW4+XG4gICAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9XCJmbGV4IGl0ZW1zLWNlbnRlciBnYXAtMVwiPlxuICAgICAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9XCJ3LTIgaC0yIHJvdW5kZWQtZnVsbCBiZy1yb3NlLTUwMCBpbmxpbmUtYmxvY2tcIiAvPlxuICAgICAgICAgICAgICA8c3Bhbj5DaHV54buDbjwvc3Bhbj5cbiAgICAgICAgICAgIDwvc3Bhbj5cbiAgICAgICAgICA8L2Rpdj5cblxuICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiaC0zIHctcHggYmctc2xhdGUtODAwIG14LTAuNVwiIC8+XG5cbiAgICAgICAgICB7b25Ub2dnbGVDb2xsYXBzZSAmJiAoXG4gICAgICAgICAgICA8QnV0dG9uXG4gICAgICAgICAgICAgIHNpemU9XCJpY29uU21cIlxuICAgICAgICAgICAgICB2YXJpYW50PVwiZ2hvc3RcIlxuICAgICAgICAgICAgICBvbkNsaWNrPXtvblRvZ2dsZUNvbGxhcHNlfVxuICAgICAgICAgICAgICBjbGFzc05hbWU9XCJoLTYgdy02IHRleHQtc2xhdGUtNDAwIGhvdmVyOnRleHQtd2hpdGUgcC0wXCJcbiAgICAgICAgICAgICAgdGl0bGU9XCJUaHUgbmjhu48gdGltZWxpbmVcIlxuICAgICAgICAgICAgPlxuICAgICAgICAgICAgICA8Q2hldnJvbkRvd24gc2l6ZT17MTR9IC8+XG4gICAgICAgICAgICA8L0J1dHRvbj5cbiAgICAgICAgICApfVxuICAgICAgICA8L2Rpdj5cbiAgICAgIDwvZGl2PlxuXG4gICAgICB7LyogMi4gQ29tcGFjdCBWaXN1YWwgVHJhY2sgKDQ4cHgpICovfVxuICAgICAgPGRpdlxuICAgICAgICByZWY9e3RyYWNrQ29udGFpbmVyUmVmfVxuICAgICAgICBvbk1vdXNlRG93bj17aGFuZGxlTW91c2VEb3dufVxuICAgICAgICBjbGFzc05hbWU9XCJmbGV4LTEgcmVsYXRpdmUgYmctc2xhdGUtOTUwIG92ZXJmbG93LWhpZGRlbiBjdXJzb3ItcG9pbnRlciBzZWxlY3Qtbm9uZSBweC0xIHB5LTEgZmxleCBpdGVtcy1jZW50ZXJcIlxuICAgICAgPlxuICAgICAgICB7LyogUXVlc3Rpb25zIENsaXBzIEZsb3cgKi99XG4gICAgICAgIDxkaXYgY2xhc3NOYW1lPVwidy1mdWxsIGgtZnVsbCBmbGV4IGl0ZW1zLWNlbnRlciBnYXAtMSByZWxhdGl2ZSByb3VuZGVkIG92ZXJmbG93LWhpZGRlbiBiZy1zbGF0ZS05MDAvNTAgcC0wLjUgYm9yZGVyIGJvcmRlci1zbGF0ZS04MDAvNzBcIj5cbiAgICAgICAgICB7Y3Vlcy5tYXAoKGN1ZSwgaWR4KSA9PiB7XG4gICAgICAgICAgICBjb25zdCBjdWVEdXJhdGlvbiA9IE1hdGgubWF4KDEsIGN1ZS5kdXJhdGlvbkZyYW1lcyB8fCAoY3VlLmVuZEZyYW1lIC0gY3VlLnN0YXJ0RnJhbWUpIHx8IDMwKTtcbiAgICAgICAgICAgIGNvbnN0IGN1ZVBjdCA9IChjdWVEdXJhdGlvbiAvIHNhZmVUb3RhbEZyYW1lcykgKiAxMDA7XG4gICAgICAgICAgICBjb25zdCBwID0gY3VlLnBoYXNlcyB8fCB7XG4gICAgICAgICAgICAgIGludHJvU3RhcnQ6IGN1ZS5zdGFydEZyYW1lLFxuICAgICAgICAgICAgICBxdWVzdGlvblR0c1N0YXJ0OiBjdWUuc3RhcnRGcmFtZSxcbiAgICAgICAgICAgICAgcXVlc3Rpb25UdHNFbmQ6IGN1ZS5zdGFydEZyYW1lICsgTWF0aC5yb3VuZChjdWVEdXJhdGlvbiAqIDAuMyksXG4gICAgICAgICAgICAgIGNvdW50ZG93blN0YXJ0OiBjdWUuc3RhcnRGcmFtZSArIE1hdGgucm91bmQoY3VlRHVyYXRpb24gKiAwLjMpLFxuICAgICAgICAgICAgICBjb3VudGRvd25FbmQ6IGN1ZS5zdGFydEZyYW1lICsgTWF0aC5yb3VuZChjdWVEdXJhdGlvbiAqIDAuNyksXG4gICAgICAgICAgICAgIHJldmVhbFN0YXJ0OiBjdWUuc3RhcnRGcmFtZSArIE1hdGgucm91bmQoY3VlRHVyYXRpb24gKiAwLjcpLFxuICAgICAgICAgICAgICBleHBsYW5hdGlvblR0c1N0YXJ0OiBjdWUuc3RhcnRGcmFtZSArIE1hdGgucm91bmQoY3VlRHVyYXRpb24gKiAwLjcpLFxuICAgICAgICAgICAgICBleHBsYW5hdGlvblR0c0VuZDogY3VlLmVuZEZyYW1lXG4gICAgICAgICAgICB9O1xuXG4gICAgICAgICAgICAvLyBDb21wdXRlIHBoYXNlIHBlcmNlbnRhZ2VzIHdpdGhpbiB0aGlzIHF1ZXN0aW9uXG4gICAgICAgICAgICBjb25zdCBxVHRzRHVyYXRpb24gPSBNYXRoLm1heCgwLCAocC5xdWVzdGlvblR0c0VuZCB8fCAocC5pbnRyb1N0YXJ0ICsgOTApKSAtIHAuaW50cm9TdGFydCk7XG4gICAgICAgICAgICBjb25zdCBjZER1cmF0aW9uID0gTWF0aC5tYXgoMCwgKHAuY291bnRkb3duRW5kIHx8IHAuY291bnRkb3duU3RhcnQpIC0gcC5jb3VudGRvd25TdGFydCk7XG4gICAgICAgICAgICBjb25zdCBleHBEdXJhdGlvbiA9IE1hdGgubWF4KDAsIChwLmV4cGxhbmF0aW9uVHRzRW5kIHx8IHAucmV2ZWFsU3RhcnQpIC0gcC5yZXZlYWxTdGFydCk7XG4gICAgICAgICAgICBjb25zdCB0cmFuc0R1cmF0aW9uID0gTWF0aC5tYXgoMCwgY3VlRHVyYXRpb24gLSAoKHAuZXhwbGFuYXRpb25UdHNFbmQgfHwgY3VlLmVuZEZyYW1lKSAtIGN1ZS5zdGFydEZyYW1lKSk7XG5cbiAgICAgICAgICAgIGNvbnN0IHFUdHNQY3QgPSAocVR0c0R1cmF0aW9uIC8gY3VlRHVyYXRpb24pICogMTAwO1xuICAgICAgICAgICAgY29uc3QgY2RQY3QgPSAoY2REdXJhdGlvbiAvIGN1ZUR1cmF0aW9uKSAqIDEwMDtcbiAgICAgICAgICAgIGNvbnN0IGV4cFBjdCA9IChleHBEdXJhdGlvbiAvIGN1ZUR1cmF0aW9uKSAqIDEwMDtcbiAgICAgICAgICAgIGNvbnN0IHRyYW5zUGN0ID0gTWF0aC5tYXgoMCwgMTAwIC0gKHFUdHNQY3QgKyBjZFBjdCArIGV4cFBjdCkpO1xuXG4gICAgICAgICAgICBjb25zdCBpc0FjdGl2ZSA9IGFjdGl2ZUN1ZUlkeCA9PT0gaWR4O1xuXG4gICAgICAgICAgICByZXR1cm4gKFxuICAgICAgICAgICAgICA8ZGl2XG4gICAgICAgICAgICAgICAga2V5PXtjdWUucXVlc3Rpb25JbmRleH1cbiAgICAgICAgICAgICAgICBzdHlsZT17eyB3aWR0aDogYCR7Y3VlUGN0fSVgIH19XG4gICAgICAgICAgICAgICAgY2xhc3NOYW1lPXtgaC1mdWxsIHJvdW5kZWQgcmVsYXRpdmUgb3ZlcmZsb3ctaGlkZGVuIGZsZXggZmxleC1jb2wganVzdGlmeS1iZXR3ZWVuIGJvcmRlciB0cmFuc2l0aW9uLWFsbCAke1xuICAgICAgICAgICAgICAgICAgaXNBY3RpdmVcbiAgICAgICAgICAgICAgICAgICAgPyAnYm9yZGVyLWFtYmVyLTQwMC84MCBzaGFkb3ctWzBfMF84cHhfcmdiYSgyNDUsMTU4LDExLDAuMjUpXSdcbiAgICAgICAgICAgICAgICAgICAgOiAnYm9yZGVyLXNsYXRlLTcwMC82MCBvcGFjaXR5LTkwIGhvdmVyOm9wYWNpdHktMTAwJ1xuICAgICAgICAgICAgICAgIH1gfVxuICAgICAgICAgICAgICA+XG4gICAgICAgICAgICAgICAgey8qIEhlYWRlciBsYWJlbCAqL31cbiAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImgtMy41IHB4LTEuNSBmbGV4IGl0ZW1zLWNlbnRlciBqdXN0aWZ5LWJldHdlZW4gdGV4dC1bOXB4XSBmb250LW1vbm8gZm9udC1ib2xkIGJnLXNsYXRlLTk1MC83MCB0ZXh0LXNsYXRlLTMwMFwiPlxuICAgICAgICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPVwidHJ1bmNhdGVcIj5Dw6J1IHtpZHggKyAxfTwvc3Bhbj5cbiAgICAgICAgICAgICAgICAgIDxzcGFuIGNsYXNzTmFtZT1cInRleHQtc2xhdGUtNDAwIHRleHQtWzhweF1cIj57KGN1ZUR1cmF0aW9uIC8gZnBzKS50b0ZpeGVkKDEpfXM8L3NwYW4+XG4gICAgICAgICAgICAgICAgPC9kaXY+XG5cbiAgICAgICAgICAgICAgICB7LyogNCBQaGFzZSBCbG9ja3MgQmFyICovfVxuICAgICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZmxleC0xIGZsZXggaXRlbXMtY2VudGVyIG92ZXJmbG93LWhpZGRlblwiPlxuICAgICAgICAgICAgICAgICAgey8qIFBoYXNlIDE6IFF1ZXN0aW9uICYgVFRTICovfVxuICAgICAgICAgICAgICAgICAgPGRpdlxuICAgICAgICAgICAgICAgICAgICBzdHlsZT17eyB3aWR0aDogYCR7cVR0c1BjdH0lYCB9fVxuICAgICAgICAgICAgICAgICAgICBjbGFzc05hbWU9XCJoLWZ1bGwgYmctaW5kaWdvLTYwMC83MCBob3ZlcjpiZy1pbmRpZ28tNTAwLzkwIGJvcmRlci1yIGJvcmRlci1pbmRpZ28tNTAwLzQwIGZsZXggaXRlbXMtY2VudGVyIGp1c3RpZnktY2VudGVyIHRleHQtWzlweF0gZm9udC1zZW1pYm9sZCB0ZXh0LWluZGlnby0xMDAgcHgtMC41IG92ZXJmbG93LWhpZGRlbiB0cmFuc2l0aW9uXCJcbiAgICAgICAgICAgICAgICAgICAgdGl0bGU9e2BDw6J1ICR7aWR4ICsgMX06IEjhu49pICYgR2nhu41uZyDEkeG7jWMgVFRTICgkeyhxVHRzRHVyYXRpb24gLyBmcHMpLnRvRml4ZWQoMSl9cylgfVxuICAgICAgICAgICAgICAgICAgPlxuICAgICAgICAgICAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9XCJ0cnVuY2F0ZSBmbGV4IGl0ZW1zLWNlbnRlciBnYXAtMC41XCI+XG4gICAgICAgICAgICAgICAgICAgICAgPFZvbHVtZTIgc2l6ZT17OX0gY2xhc3NOYW1lPVwic2hyaW5rLTBcIiAvPlxuICAgICAgICAgICAgICAgICAgICAgIDxzcGFuIGNsYXNzTmFtZT1cImhpZGRlbiBtZDppbmxpbmVcIj5I4buPaTwvc3Bhbj5cbiAgICAgICAgICAgICAgICAgICAgPC9zcGFuPlxuICAgICAgICAgICAgICAgICAgPC9kaXY+XG5cbiAgICAgICAgICAgICAgICAgIHsvKiBQaGFzZSAyOiBDb3VudGRvd24gKi99XG4gICAgICAgICAgICAgICAgICA8ZGl2XG4gICAgICAgICAgICAgICAgICAgIHN0eWxlPXt7IHdpZHRoOiBgJHtjZFBjdH0lYCB9fVxuICAgICAgICAgICAgICAgICAgICBjbGFzc05hbWU9XCJoLWZ1bGwgYmctYW1iZXItNjAwLzcwIGhvdmVyOmJnLWFtYmVyLTUwMC85MCBib3JkZXItciBib3JkZXItYW1iZXItNTAwLzQwIGZsZXggaXRlbXMtY2VudGVyIGp1c3RpZnktY2VudGVyIHRleHQtWzlweF0gZm9udC1zZW1pYm9sZCB0ZXh0LWFtYmVyLTEwMCBweC0wLjUgb3ZlcmZsb3ctaGlkZGVuIHRyYW5zaXRpb25cIlxuICAgICAgICAgICAgICAgICAgICB0aXRsZT17YEPDonUgJHtpZHggKyAxfTogxJDhur9tIG5nxrDhu6NjICgkeyhjZER1cmF0aW9uIC8gZnBzKS50b0ZpeGVkKDEpfXMpYH1cbiAgICAgICAgICAgICAgICAgID5cbiAgICAgICAgICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPVwidHJ1bmNhdGUgZmxleCBpdGVtcy1jZW50ZXIgZ2FwLTAuNVwiPlxuICAgICAgICAgICAgICAgICAgICAgIDxDbG9jayBzaXplPXs5fSBjbGFzc05hbWU9XCJzaHJpbmstMFwiIC8+XG4gICAgICAgICAgICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPVwiaGlkZGVuIG1kOmlubGluZVwiPsSQ4bq/bTwvc3Bhbj5cbiAgICAgICAgICAgICAgICAgICAgPC9zcGFuPlxuICAgICAgICAgICAgICAgICAgPC9kaXY+XG5cbiAgICAgICAgICAgICAgICAgIHsvKiBQaGFzZSAzOiBSZXZlYWwgJiBFeHBsYW5hdGlvbiBUVFMgKi99XG4gICAgICAgICAgICAgICAgICA8ZGl2XG4gICAgICAgICAgICAgICAgICAgIHN0eWxlPXt7IHdpZHRoOiBgJHtleHBQY3R9JWAgfX1cbiAgICAgICAgICAgICAgICAgICAgY2xhc3NOYW1lPVwiaC1mdWxsIGJnLWVtZXJhbGQtNjAwLzcwIGhvdmVyOmJnLWVtZXJhbGQtNTAwLzkwIGJvcmRlci1yIGJvcmRlci1lbWVyYWxkLTUwMC80MCBmbGV4IGl0ZW1zLWNlbnRlciBqdXN0aWZ5LWNlbnRlciB0ZXh0LVs5cHhdIGZvbnQtc2VtaWJvbGQgdGV4dC1lbWVyYWxkLTEwMCBweC0wLjUgb3ZlcmZsb3ctaGlkZGVuIHRyYW5zaXRpb25cIlxuICAgICAgICAgICAgICAgICAgICB0aXRsZT17YEPDonUgJHtpZHggKyAxfTogxJDDoXAgw6FuICYgR2nhu41uZyDEkeG7jWMgVFRTICgkeyhleHBEdXJhdGlvbiAvIGZwcykudG9GaXhlZCgxKX1zKWB9XG4gICAgICAgICAgICAgICAgICA+XG4gICAgICAgICAgICAgICAgICAgIDxzcGFuIGNsYXNzTmFtZT1cInRydW5jYXRlIGZsZXggaXRlbXMtY2VudGVyIGdhcC0wLjVcIj5cbiAgICAgICAgICAgICAgICAgICAgICA8Q2hlY2tDaXJjbGUyIHNpemU9ezl9IGNsYXNzTmFtZT1cInNocmluay0wXCIgLz5cbiAgICAgICAgICAgICAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9XCJoaWRkZW4gbWQ6aW5saW5lXCI+xJDDoXAgw6FuPC9zcGFuPlxuICAgICAgICAgICAgICAgICAgICA8L3NwYW4+XG4gICAgICAgICAgICAgICAgICA8L2Rpdj5cblxuICAgICAgICAgICAgICAgICAgey8qIFBoYXNlIDQ6IFRyYW5zaXRpb24gKi99XG4gICAgICAgICAgICAgICAgICB7dHJhbnNQY3QgPiAwICYmIChcbiAgICAgICAgICAgICAgICAgICAgPGRpdlxuICAgICAgICAgICAgICAgICAgICAgIHN0eWxlPXt7IHdpZHRoOiBgJHt0cmFuc1BjdH0lYCB9fVxuICAgICAgICAgICAgICAgICAgICAgIGNsYXNzTmFtZT1cImgtZnVsbCBiZy1yb3NlLTYwMC83MCBob3ZlcjpiZy1yb3NlLTUwMC85MCBmbGV4IGl0ZW1zLWNlbnRlciBqdXN0aWZ5LWNlbnRlciB0ZXh0LVs4cHhdIGZvbnQtc2VtaWJvbGQgdGV4dC1yb3NlLTEwMCBweC0wLjUgb3ZlcmZsb3ctaGlkZGVuIHRyYW5zaXRpb25cIlxuICAgICAgICAgICAgICAgICAgICAgIHRpdGxlPXtgQ2h1eeG7g24gY8OidSAvIMSQ4buHbSBr4bq/dCB0aMO6YyAoJHsodHJhbnNEdXJhdGlvbiAvIGZwcykudG9GaXhlZCgxKX1zKWB9XG4gICAgICAgICAgICAgICAgICAgID5cbiAgICAgICAgICAgICAgICAgICAgICA8U3BsaXQgc2l6ZT17OH0gY2xhc3NOYW1lPVwic2hyaW5rLTBcIiAvPlxuICAgICAgICAgICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICAgICAgICAgICl9XG4gICAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgICAgKTtcbiAgICAgICAgICB9KX1cbiAgICAgICAgPC9kaXY+XG5cbiAgICAgICAgey8qIFJlYWx0aW1lIFBsYXloZWFkIFNjcnViYmVyIE5lZWRsZSAqL31cbiAgICAgICAgPGRpdlxuICAgICAgICAgIGNsYXNzTmFtZT1cImFic29sdXRlIHRvcC0wIGJvdHRvbS0wIHBvaW50ZXItZXZlbnRzLW5vbmUgei0zMCB0cmFuc2l0aW9uLVtsZWZ0XSBkdXJhdGlvbi03NVwiXG4gICAgICAgICAgc3R5bGU9e3sgbGVmdDogYCR7cGxheWhlYWRQY3R9JWAgfX1cbiAgICAgICAgPlxuICAgICAgICAgIHsvKiBUb3AgRGlhbW9uZCBIZWFkICovfVxuICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwidy0yLjUgaC0yLjUgLW1sLVs1cHhdIGJnLWFtYmVyLTQwMCByb3RhdGUtNDUgYm9yZGVyIGJvcmRlci1hbWJlci0yMDAgc2hhZG93LVswXzBfNnB4X3JnYmEoMjQ1LDE1OCwxMSwwLjgpXVwiIC8+XG4gICAgICAgICAgey8qIFZlcnRpY2FsIE5lZWRsZSBMaW5lICovfVxuICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwidy1bMS41cHhdIGgtZnVsbCBiZy1hbWJlci00MDAgc2hhZG93LVswXzBfNHB4X3JnYmEoMjQ1LDE1OCwxMSwwLjkpXVwiIC8+XG4gICAgICAgIDwvZGl2PlxuICAgICAgPC9kaXY+XG4gICAgPC9kaXY+XG4gICk7XG59O1xuIl0sImZpbGUiOiJEOi9zb3VyY2UgY29kZS9WaWRlbyBxdWl6IG5ldy9mcm9udGVuZC9zcmMvY29tcG9uZW50cy9lZGl0b3IvTXVsdGlUcmFja1RpbWVsaW5lLnRzeCJ9

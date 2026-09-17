@@ -174,6 +174,28 @@ export const DEFAULT_FALLBACK_TEMPLATE: VideoTemplate = {
       height: 5,
       opacity: 0.85,
       watermark: false
+    },
+    explanation: {
+      enabled: true,
+      readTts: true,
+      displayDurationSec: 3.0,
+      showIcon: true,
+      x: 6,
+      y: 84,
+      width: 88,
+      height: 9,
+      fontSize: 15,
+      fontWeight: '600',
+      color: '#1e293b',
+      textColor: '#1e293b',
+      backgroundColor: '#ffffff',
+      bgOpacity: 0.98,
+      borderRadius: 16,
+      borderWidth: 2,
+      borderColor: '#22c55e',
+      boxShadow: '0 8px 25px rgba(22, 163, 74, 0.18)',
+      padding: 12,
+      textAlign: 'left'
     }
   }
 };

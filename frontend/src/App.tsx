@@ -8,6 +8,7 @@ import {
   VideoCompositionProps,
   TimelineQuestionCue
 } from '../../remotion/types/index';
+import { applyTemplateLayout } from '../../remotion/types/templates';
 import {
   fetchChannels,
   fetchChannel,
@@ -300,15 +301,33 @@ export const App: React.FC = () => {
 
   const handleTemplateChange = (updatedTemplate: VideoTemplate) => {
     if (!currentChannel) return;
-    const updatedTemplates = currentChannel.templates.map((t) =>
-      t.id === updatedTemplate.id ? updatedTemplate : t
-    );
+    const exists = currentChannel.templates.some((t) => t.id === updatedTemplate.id);
+    const updatedTemplates = exists
+      ? currentChannel.templates.map((t) => (t.id === updatedTemplate.id ? updatedTemplate : t))
+      : [...currentChannel.templates, updatedTemplate];
     const updatedChannel: Channel = {
       ...currentChannel,
+      activeTemplateId: updatedTemplate.id,
       templates: updatedTemplates
     };
     setCurrentChannel(updatedChannel);
     triggerAutoSave(updatedChannel, undefined);
+  };
+
+  const handleApplyTemplate = (templateId: string) => {
+    if (!currentChannel) return;
+    try {
+      const baseTemplate = currentTemplate || currentChannel.templates[0] || DEFAULT_FALLBACK_TEMPLATE;
+      const { template: newTmpl, channel: updatedChannel } = applyTemplateLayout(templateId, baseTemplate, currentChannel);
+      if (!newTmpl || !newTmpl.components || !updatedChannel) {
+        console.error('[App] Failed to apply template:', templateId);
+        return;
+      }
+      setCurrentChannel(updatedChannel);
+      triggerAutoSave(updatedChannel, undefined);
+    } catch (err) {
+      console.error('[App] Error in handleApplyTemplate:', err);
+    }
   };
 
   const handleDuplicateChannel = async () => {
@@ -490,6 +509,7 @@ export const App: React.FC = () => {
                   onTemplateChange={handleTemplateChange}
                   onChannelChange={handleChannelChange}
                   onLanguageChange={handleSelectLanguage}
+                  onApplyTemplate={handleApplyTemplate}
                   selectedKey={selectedComponentKey}
                   onSelectKey={setSelectedComponentKey}
                 />
@@ -587,6 +607,7 @@ export const App: React.FC = () => {
             onQuizChange={handleQuizChange}
             onTemplateChange={handleTemplateChange}
             onChannelChange={handleChannelChange}
+            onApplyTemplate={handleApplyTemplate}
             selectedKey={selectedComponentKey}
             onSelectKey={setSelectedComponentKey}
           />

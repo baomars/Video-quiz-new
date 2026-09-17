@@ -1,0 +1,565 @@
+import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/src/components/editor/TopBar.tsx");import __vite__cjsImport0_react_jsxDevRuntime from "/@fs/D:/source code/Video quiz new/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=234e6012"; const Fragment = __vite__cjsImport0_react_jsxDevRuntime["Fragment"]; const jsxDEV = __vite__cjsImport0_react_jsxDevRuntime["jsxDEV"];
+import * as RefreshRuntime from "/@react-refresh";
+const inWebWorker = typeof WorkerGlobalScope !== "undefined" && self instanceof WorkerGlobalScope;
+let prevRefreshReg;
+let prevRefreshSig;
+if (import.meta.hot && !inWebWorker) {
+  if (!window.$RefreshReg$) {
+    throw new Error(
+      "@vitejs/plugin-react can't detect preamble. Something is wrong."
+    );
+  }
+  prevRefreshReg = window.$RefreshReg$;
+  prevRefreshSig = window.$RefreshSig$;
+  window.$RefreshReg$ = RefreshRuntime.getRefreshReg("D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx");
+  window.$RefreshSig$ = RefreshRuntime.createSignatureFunctionForTransform;
+}
+var _s = $RefreshSig$();
+import __vite__cjsImport3_react from "/@fs/D:/source code/Video quiz new/node_modules/.vite/deps/react.js?v=234e6012"; const useState = __vite__cjsImport3_react["useState"];
+import {
+  Film,
+  FolderOpen,
+  Check,
+  Loader2,
+  Copy,
+  RotateCcw,
+  AlertTriangle
+} from "/@fs/D:/source code/Video quiz new/node_modules/.vite/deps/lucide-react.js?v=e1a71809";
+import { Button } from "/src/components/ui/button.tsx";
+import { Badge } from "/src/components/ui/badge.tsx";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter
+} from "/src/components/ui/dialog.tsx";
+export const TopBar = ({
+  channels,
+  currentChannel,
+  onSelectChannel,
+  onDuplicateChannel,
+  onResetChannel,
+  currentLanguage,
+  onSelectLanguage,
+  totalDurationFrames,
+  totalQuestions,
+  fps = 30,
+  isSaving,
+  onManualSave,
+  onOpenAssetsModal,
+  onOpenExportModal,
+  isRendering,
+  renderProgress = 0
+}) => {
+  _s();
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const durationSec = Math.round(totalDurationFrames / fps * 10) / 10;
+  const m = Math.floor(durationSec / 60);
+  const s = Math.floor(durationSec % 60);
+  const durationFormatted = `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+  return /* @__PURE__ */ jsxDEV("header", { className: "h-14 bg-slate-900 border-b border-slate-800 text-slate-100 px-3 sm:px-5 flex items-center justify-between select-none z-30 shrink-0 shadow-lg", children: [
+    /* @__PURE__ */ jsxDEV("div", { className: "flex items-center gap-3", children: [
+      /* @__PURE__ */ jsxDEV("div", { className: "w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-400 flex items-center justify-center shadow-md shadow-amber-500/20 text-slate-950 font-black text-sm shrink-0", children: /* @__PURE__ */ jsxDEV(Film, { size: 18, className: "text-slate-950" }, void 0, false, {
+        fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+        lineNumber: 97,
+        columnNumber: 11
+      }, this) }, void 0, false, {
+        fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+        lineNumber: 96,
+        columnNumber: 9
+      }, this),
+      /* @__PURE__ */ jsxDEV("div", { children: [
+        /* @__PURE__ */ jsxDEV("div", { className: "flex items-center gap-2", children: [
+          /* @__PURE__ */ jsxDEV("span", { className: "font-extrabold text-sm tracking-wide text-white uppercase", children: "Quiz Video Studio" }, void 0, false, {
+            fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+            lineNumber: 101,
+            columnNumber: 13
+          }, this),
+          /* @__PURE__ */ jsxDEV(Badge, { className: "bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[9px] px-1.5 py-0 font-bold", children: "PRO" }, void 0, false, {
+            fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+            lineNumber: 104,
+            columnNumber: 13
+          }, this)
+        ] }, void 0, true, {
+          fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+          lineNumber: 100,
+          columnNumber: 11
+        }, this),
+        /* @__PURE__ */ jsxDEV("p", { className: "text-[10px] text-slate-400 font-medium leading-none mt-0.5 hidden sm:block", children: "Visual Video Editor 9:16" }, void 0, false, {
+          fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+          lineNumber: 108,
+          columnNumber: 11
+        }, this)
+      ] }, void 0, true, {
+        fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+        lineNumber: 99,
+        columnNumber: 9
+      }, this),
+      /* @__PURE__ */ jsxDEV("div", { className: "h-5 w-px bg-slate-800 mx-1 hidden md:block" }, void 0, false, {
+        fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+        lineNumber: 114,
+        columnNumber: 9
+      }, this),
+      /* @__PURE__ */ jsxDEV("div", { className: "hidden sm:flex items-center gap-1.5 bg-slate-800/80 border border-slate-700/80 rounded-xl px-2.5 py-1", children: [
+        /* @__PURE__ */ jsxDEV("span", { className: "text-[10px] text-slate-400 font-bold uppercase tracking-wider hidden lg:inline", children: "Kênh:" }, void 0, false, {
+          fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+          lineNumber: 118,
+          columnNumber: 11
+        }, this),
+        /* @__PURE__ */ jsxDEV(
+          "select",
+          {
+            value: currentChannel?.id || "",
+            onChange: (e) => onSelectChannel(e.target.value),
+            className: "bg-transparent text-xs font-bold text-slate-200 focus:outline-none cursor-pointer pr-1 max-w-[130px] sm:max-w-[180px] truncate",
+            children: channels.map(
+              (ch) => /* @__PURE__ */ jsxDEV("option", { value: ch.id, className: "bg-slate-900 text-slate-100", children: ch.name }, ch.id, false, {
+                fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+                lineNumber: 127,
+                columnNumber: 13
+              }, this)
+            )
+          },
+          void 0,
+          false,
+          {
+            fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+            lineNumber: 121,
+            columnNumber: 11
+          },
+          this
+        ),
+        /* @__PURE__ */ jsxDEV(
+          "button",
+          {
+            onClick: onDuplicateChannel,
+            title: "Nhân bản kênh này",
+            className: "p-1 hover:bg-slate-700 text-slate-400 hover:text-slate-200 rounded-md transition",
+            children: /* @__PURE__ */ jsxDEV(Copy, { size: 12 }, void 0, false, {
+              fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+              lineNumber: 137,
+              columnNumber: 13
+            }, this)
+          },
+          void 0,
+          false,
+          {
+            fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+            lineNumber: 132,
+            columnNumber: 11
+          },
+          this
+        ),
+        /* @__PURE__ */ jsxDEV(
+          "button",
+          {
+            onClick: () => setShowResetConfirm(true),
+            title: "Khôi phục mặc định",
+            className: "p-1 hover:bg-slate-700 text-slate-400 hover:text-rose-400 rounded-md transition",
+            children: /* @__PURE__ */ jsxDEV(RotateCcw, { size: 12 }, void 0, false, {
+              fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+              lineNumber: 144,
+              columnNumber: 13
+            }, this)
+          },
+          void 0,
+          false,
+          {
+            fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+            lineNumber: 139,
+            columnNumber: 11
+          },
+          this
+        )
+      ] }, void 0, true, {
+        fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+        lineNumber: 117,
+        columnNumber: 9
+      }, this),
+      /* @__PURE__ */ jsxDEV("div", { className: "hidden lg:flex items-center bg-slate-800/80 border border-slate-700/80 rounded-xl p-0.5 text-xs", children: [
+        /* @__PURE__ */ jsxDEV(
+          "button",
+          {
+            onClick: () => onSelectLanguage("vi"),
+            className: `px-2 py-0.5 rounded-lg font-bold transition flex items-center gap-1 ${currentLanguage === "vi" ? "bg-amber-500 text-slate-950 shadow-xs" : "text-slate-400 hover:text-slate-200"}`,
+            children: [
+              /* @__PURE__ */ jsxDEV("span", { children: "🇻🇳" }, void 0, false, {
+                fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+                lineNumber: 158,
+                columnNumber: 13
+              }, this),
+              /* @__PURE__ */ jsxDEV("span", { children: "VI" }, void 0, false, {
+                fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+                lineNumber: 159,
+                columnNumber: 13
+              }, this)
+            ]
+          },
+          void 0,
+          true,
+          {
+            fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+            lineNumber: 150,
+            columnNumber: 11
+          },
+          this
+        ),
+        /* @__PURE__ */ jsxDEV(
+          "button",
+          {
+            onClick: () => onSelectLanguage("en"),
+            className: `px-2 py-0.5 rounded-lg font-bold transition flex items-center gap-1 ${currentLanguage === "en" ? "bg-amber-500 text-slate-950 shadow-xs" : "text-slate-400 hover:text-slate-200"}`,
+            children: [
+              /* @__PURE__ */ jsxDEV("span", { children: "🇺🇸" }, void 0, false, {
+                fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+                lineNumber: 169,
+                columnNumber: 13
+              }, this),
+              /* @__PURE__ */ jsxDEV("span", { children: "EN" }, void 0, false, {
+                fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+                lineNumber: 170,
+                columnNumber: 13
+              }, this)
+            ]
+          },
+          void 0,
+          true,
+          {
+            fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+            lineNumber: 161,
+            columnNumber: 11
+          },
+          this
+        )
+      ] }, void 0, true, {
+        fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+        lineNumber: 149,
+        columnNumber: 9
+      }, this)
+    ] }, void 0, true, {
+      fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+      lineNumber: 95,
+      columnNumber: 7
+    }, this),
+    /* @__PURE__ */ jsxDEV("div", { className: "hidden xl:flex items-center gap-3", children: [
+      /* @__PURE__ */ jsxDEV("div", { className: "flex items-center gap-2 bg-slate-800/80 border border-slate-700/80 rounded-xl px-3 py-1 text-xs", children: [
+        /* @__PURE__ */ jsxDEV("span", { className: "font-mono font-bold text-amber-400", children: "720×1280 (9:16)" }, void 0, false, {
+          fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+          lineNumber: 179,
+          columnNumber: 11
+        }, this),
+        /* @__PURE__ */ jsxDEV("span", { className: "text-slate-500", children: "•" }, void 0, false, {
+          fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+          lineNumber: 180,
+          columnNumber: 11
+        }, this),
+        /* @__PURE__ */ jsxDEV("span", { className: "text-slate-300 font-medium", children: [
+          fps,
+          " FPS"
+        ] }, void 0, true, {
+          fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+          lineNumber: 181,
+          columnNumber: 11
+        }, this),
+        /* @__PURE__ */ jsxDEV("span", { className: "text-slate-500", children: "•" }, void 0, false, {
+          fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+          lineNumber: 182,
+          columnNumber: 11
+        }, this),
+        /* @__PURE__ */ jsxDEV("span", { className: "text-emerald-400 font-mono font-bold", children: durationFormatted }, void 0, false, {
+          fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+          lineNumber: 183,
+          columnNumber: 11
+        }, this),
+        /* @__PURE__ */ jsxDEV("span", { className: "text-slate-500", children: "•" }, void 0, false, {
+          fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+          lineNumber: 184,
+          columnNumber: 11
+        }, this),
+        /* @__PURE__ */ jsxDEV("span", { className: "text-slate-300 font-semibold", children: [
+          totalQuestions,
+          " câu"
+        ] }, void 0, true, {
+          fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+          lineNumber: 185,
+          columnNumber: 11
+        }, this)
+      ] }, void 0, true, {
+        fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+        lineNumber: 178,
+        columnNumber: 9
+      }, this),
+      /* @__PURE__ */ jsxDEV("div", { className: "flex items-center gap-2 text-[11px] font-semibold text-slate-400 bg-slate-800/40 border border-slate-700/50 rounded-xl px-2.5 py-1", children: [
+        /* @__PURE__ */ jsxDEV("span", { className: "flex items-center gap-1 text-emerald-400", children: [
+          /* @__PURE__ */ jsxDEV("span", { className: "w-2 h-2 rounded-full bg-emerald-400 animate-pulse" }, void 0, false, {
+            fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+            lineNumber: 191,
+            columnNumber: 13
+          }, this),
+          "FFmpeg 7.1"
+        ] }, void 0, true, {
+          fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+          lineNumber: 190,
+          columnNumber: 11
+        }, this),
+        /* @__PURE__ */ jsxDEV("span", { className: "text-slate-600", children: "|" }, void 0, false, {
+          fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+          lineNumber: 194,
+          columnNumber: 11
+        }, this),
+        /* @__PURE__ */ jsxDEV("span", { className: "flex items-center gap-1 text-sky-400", children: [
+          /* @__PURE__ */ jsxDEV("span", { className: "w-2 h-2 rounded-full bg-sky-400 animate-pulse" }, void 0, false, {
+            fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+            lineNumber: 196,
+            columnNumber: 13
+          }, this),
+          "Edge-TTS"
+        ] }, void 0, true, {
+          fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+          lineNumber: 195,
+          columnNumber: 11
+        }, this),
+        /* @__PURE__ */ jsxDEV("span", { className: "text-slate-600", children: "|" }, void 0, false, {
+          fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+          lineNumber: 199,
+          columnNumber: 11
+        }, this),
+        /* @__PURE__ */ jsxDEV("span", { className: "text-green-400 font-medium", children: "Native Skia Engine" }, void 0, false, {
+          fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+          lineNumber: 200,
+          columnNumber: 11
+        }, this)
+      ] }, void 0, true, {
+        fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+        lineNumber: 189,
+        columnNumber: 9
+      }, this)
+    ] }, void 0, true, {
+      fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+      lineNumber: 176,
+      columnNumber: 7
+    }, this),
+    /* @__PURE__ */ jsxDEV("div", { className: "flex items-center gap-2", children: [
+      /* @__PURE__ */ jsxDEV("div", { className: "hidden sm:flex items-center gap-1 text-xs font-medium text-slate-400 mr-1", children: isSaving ? /* @__PURE__ */ jsxDEV(Fragment, { children: [
+        /* @__PURE__ */ jsxDEV(Loader2, { size: 13, className: "animate-spin text-amber-400" }, void 0, false, {
+          fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+          lineNumber: 210,
+          columnNumber: 15
+        }, this),
+        /* @__PURE__ */ jsxDEV("span", { className: "text-[11px] text-amber-300", children: "Đang lưu..." }, void 0, false, {
+          fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+          lineNumber: 211,
+          columnNumber: 15
+        }, this)
+      ] }, void 0, true, {
+        fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+        lineNumber: 209,
+        columnNumber: 11
+      }, this) : /* @__PURE__ */ jsxDEV(Fragment, { children: [
+        /* @__PURE__ */ jsxDEV(Check, { size: 13, className: "text-emerald-400" }, void 0, false, {
+          fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+          lineNumber: 215,
+          columnNumber: 15
+        }, this),
+        /* @__PURE__ */ jsxDEV("span", { className: "text-[11px] text-slate-400", children: "Đã lưu" }, void 0, false, {
+          fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+          lineNumber: 216,
+          columnNumber: 15
+        }, this)
+      ] }, void 0, true, {
+        fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+        lineNumber: 214,
+        columnNumber: 11
+      }, this) }, void 0, false, {
+        fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+        lineNumber: 207,
+        columnNumber: 9
+      }, this),
+      /* @__PURE__ */ jsxDEV(
+        Button,
+        {
+          size: "sm",
+          variant: "outline",
+          onClick: onOpenAssetsModal,
+          className: "hidden sm:inline-flex bg-slate-800 hover:bg-slate-700 border-slate-700 text-slate-200 hover:text-white text-xs font-bold gap-1.5 h-8 px-3 rounded-xl transition",
+          children: [
+            /* @__PURE__ */ jsxDEV(FolderOpen, { size: 14, className: "text-amber-400" }, void 0, false, {
+              fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+              lineNumber: 228,
+              columnNumber: 11
+            }, this),
+            /* @__PURE__ */ jsxDEV("span", { children: "Tài nguyên" }, void 0, false, {
+              fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+              lineNumber: 229,
+              columnNumber: 11
+            }, this)
+          ]
+        },
+        void 0,
+        true,
+        {
+          fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+          lineNumber: 222,
+          columnNumber: 9
+        },
+        this
+      ),
+      /* @__PURE__ */ jsxDEV(
+        Button,
+        {
+          size: "sm",
+          onClick: onOpenExportModal,
+          className: `${isRendering ? "bg-amber-500 text-slate-950 font-black ring-2 ring-amber-400/80 animate-pulse" : "bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black shadow-md shadow-amber-500/25 active:scale-95"} text-xs gap-1.5 h-8 px-3.5 rounded-xl transition cursor-pointer`,
+          children: isRendering ? /* @__PURE__ */ jsxDEV(Fragment, { children: [
+            /* @__PURE__ */ jsxDEV(Loader2, { size: 14, className: "animate-spin text-slate-950" }, void 0, false, {
+              fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+              lineNumber: 244,
+              columnNumber: 15
+            }, this),
+            /* @__PURE__ */ jsxDEV("span", { children: [
+              "Đang Render ",
+              renderProgress,
+              "%"
+            ] }, void 0, true, {
+              fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+              lineNumber: 245,
+              columnNumber: 15
+            }, this)
+          ] }, void 0, true, {
+            fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+            lineNumber: 243,
+            columnNumber: 11
+          }, this) : /* @__PURE__ */ jsxDEV(Fragment, { children: [
+            /* @__PURE__ */ jsxDEV(Film, { size: 14 }, void 0, false, {
+              fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+              lineNumber: 249,
+              columnNumber: 15
+            }, this),
+            /* @__PURE__ */ jsxDEV("span", { children: "Xuất Video" }, void 0, false, {
+              fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+              lineNumber: 250,
+              columnNumber: 15
+            }, this)
+          ] }, void 0, true, {
+            fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+            lineNumber: 248,
+            columnNumber: 11
+          }, this)
+        },
+        void 0,
+        false,
+        {
+          fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+          lineNumber: 233,
+          columnNumber: 9
+        },
+        this
+      )
+    ] }, void 0, true, {
+      fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+      lineNumber: 205,
+      columnNumber: 7
+    }, this),
+    /* @__PURE__ */ jsxDEV(Dialog, { open: showResetConfirm, onOpenChange: setShowResetConfirm, children: /* @__PURE__ */ jsxDEV(DialogContent, { className: "sm:max-w-md bg-slate-900 border-slate-800 text-slate-100", children: [
+      /* @__PURE__ */ jsxDEV(DialogHeader, { children: [
+        /* @__PURE__ */ jsxDEV(DialogTitle, { className: "flex items-center gap-2 text-rose-400", children: [
+          /* @__PURE__ */ jsxDEV(AlertTriangle, { size: 20 }, void 0, false, {
+            fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+            lineNumber: 261,
+            columnNumber: 15
+          }, this),
+          "Khôi phục cài đặt gốc của kênh?"
+        ] }, void 0, true, {
+          fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+          lineNumber: 260,
+          columnNumber: 13
+        }, this),
+        /* @__PURE__ */ jsxDEV(DialogDescription, { className: "text-slate-400 text-xs", children: "Thao tác này sẽ đặt lại toàn bộ template, màu sắc, font chữ và âm thanh về mặc định ban đầu. Bạn có chắc chắn muốn tiếp tục?" }, void 0, false, {
+          fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+          lineNumber: 264,
+          columnNumber: 13
+        }, this)
+      ] }, void 0, true, {
+        fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+        lineNumber: 259,
+        columnNumber: 11
+      }, this),
+      /* @__PURE__ */ jsxDEV(DialogFooter, { className: "gap-2 sm:gap-0", children: [
+        /* @__PURE__ */ jsxDEV(
+          Button,
+          {
+            variant: "outline",
+            onClick: () => setShowResetConfirm(false),
+            className: "bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700",
+            children: "Hủy"
+          },
+          void 0,
+          false,
+          {
+            fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+            lineNumber: 269,
+            columnNumber: 13
+          },
+          this
+        ),
+        /* @__PURE__ */ jsxDEV(
+          Button,
+          {
+            onClick: () => {
+              setShowResetConfirm(false);
+              onResetChannel();
+            },
+            className: "bg-rose-600 hover:bg-rose-500 text-white font-bold",
+            children: "Xác nhận khôi phục"
+          },
+          void 0,
+          false,
+          {
+            fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+            lineNumber: 276,
+            columnNumber: 13
+          },
+          this
+        )
+      ] }, void 0, true, {
+        fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+        lineNumber: 268,
+        columnNumber: 11
+      }, this)
+    ] }, void 0, true, {
+      fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+      lineNumber: 258,
+      columnNumber: 9
+    }, this) }, void 0, false, {
+      fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+      lineNumber: 257,
+      columnNumber: 7
+    }, this)
+  ] }, void 0, true, {
+    fileName: "D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx",
+    lineNumber: 93,
+    columnNumber: 5
+  }, this);
+};
+_s(TopBar, "cWSXslV+Z2gH4ANSErZtLX7j+Ds=");
+_c = TopBar;
+var _c;
+$RefreshReg$(_c, "TopBar");
+if (import.meta.hot && !inWebWorker) {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+}
+if (import.meta.hot && !inWebWorker) {
+  RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
+    RefreshRuntime.registerExportsForReactRefresh("D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx", currentExports);
+    import.meta.hot.accept((nextExports) => {
+      if (!nextExports) return;
+      const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate("D:/source code/Video quiz new/frontend/src/components/editor/TopBar.tsx", currentExports, nextExports);
+      if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);
+    });
+  });
+}
+
+//# sourceMappingURL=data:application/json;base64,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IiwiTG9hZGVyMiIsIkNvcHkiLCJSb3RhdGVDY3ciLCJBbGVydFRyaWFuZ2xlIiwiQnV0dG9uIiwiQmFkZ2UiLCJEaWFsb2ciLCJEaWFsb2dDb250ZW50IiwiRGlhbG9nSGVhZGVyIiwiRGlhbG9nVGl0bGUiLCJEaWFsb2dEZXNjcmlwdGlvbiIsIkRpYWxvZ0Zvb3RlciIsIlRvcEJhciIsImNoYW5uZWxzIiwiY3VycmVudENoYW5uZWwiLCJvblNlbGVjdENoYW5uZWwiLCJvbkR1cGxpY2F0ZUNoYW5uZWwiLCJvblJlc2V0Q2hhbm5lbCIsImN1cnJlbnRMYW5ndWFnZSIsIm9uU2VsZWN0TGFuZ3VhZ2UiLCJ0b3RhbER1cmF0aW9uRnJhbWVzIiwidG90YWxRdWVzdGlvbnMiLCJmcHMiLCJpc1NhdmluZyIsIm9uTWFudWFsU2F2ZSIsIm9uT3BlbkFzc2V0c01vZGFsIiwib25PcGVuRXhwb3J0TW9kYWwiLCJpc1JlbmRlcmluZyIsInJlbmRlclByb2dyZXNzIiwiX3MiLCJzaG93UmVzZXRDb25maXJtIiwic2V0U2hvd1Jlc2V0Q29uZmlybSIsImR1cmF0aW9uU2VjIiwiTWF0aCIsInJvdW5kIiwibSIsImZsb29yIiwicyIsImR1cmF0aW9uRm9ybWF0dGVkIiwidG9TdHJpbmciLCJwYWRTdGFydCIsImlkIiwiZSIsInRhcmdldCIsInZhbHVlIiwibWFwIiwiY2giLCJuYW1lIiwiX2MiXSwiaWdub3JlTGlzdCI6W10sInNvdXJjZXMiOlsiVG9wQmFyLnRzeCJdLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgUmVhY3QsIHsgdXNlU3RhdGUgfSBmcm9tICdyZWFjdCc7XG5pbXBvcnQgeyBDaGFubmVsLCBMYW5ndWFnZUNvZGUgfSBmcm9tICcuLi8uLi8uLi8uLi9yZW1vdGlvbi90eXBlcy9pbmRleCc7XG5pbXBvcnQge1xuICBGaWxtLFxuICBGb2xkZXJPcGVuLFxuICBTcGFya2xlcyxcbiAgQ2hlY2ssXG4gIExvYWRlcjIsXG4gIENvcHksXG4gIFJvdGF0ZUNjdyxcbiAgQWN0aXZpdHksXG4gIExheWVycyxcbiAgR2xvYmUsXG4gIFNsaWRlcnMsXG4gIEFsZXJ0VHJpYW5nbGUsXG4gIE1vbml0b3JQbGF5XG59IGZyb20gJ2x1Y2lkZS1yZWFjdCc7XG5pbXBvcnQgeyBCdXR0b24gfSBmcm9tICcuLi91aS9idXR0b24nO1xuaW1wb3J0IHsgQmFkZ2UgfSBmcm9tICcuLi91aS9iYWRnZSc7XG5pbXBvcnQge1xuICBEaWFsb2csXG4gIERpYWxvZ0NvbnRlbnQsXG4gIERpYWxvZ0hlYWRlcixcbiAgRGlhbG9nVGl0bGUsXG4gIERpYWxvZ0Rlc2NyaXB0aW9uLFxuICBEaWFsb2dGb290ZXJcbn0gZnJvbSAnLi4vdWkvZGlhbG9nJztcblxuaW50ZXJmYWNlIFRvcEJhclByb3BzIHtcbiAgY2hhbm5lbHM6IHsgaWQ6IHN0cmluZzsgbmFtZTogc3RyaW5nOyBhdmF0YXJVcmw6IHN0cmluZyB9W107XG4gIGN1cnJlbnRDaGFubmVsOiBDaGFubmVsIHwgbnVsbDtcbiAgb25TZWxlY3RDaGFubmVsOiAoY2hhbm5lbElkOiBzdHJpbmcpID0+IHZvaWQ7XG4gIG9uRHVwbGljYXRlQ2hhbm5lbDogKCkgPT4gdm9pZDtcbiAgb25SZXNldENoYW5uZWw6ICgpID0+IHZvaWQ7XG4gIGN1cnJlbnRMYW5ndWFnZTogTGFuZ3VhZ2VDb2RlO1xuICBvblNlbGVjdExhbmd1YWdlOiAobGFuZzogTGFuZ3VhZ2VDb2RlKSA9PiB2b2lkO1xuICB0b3RhbER1cmF0aW9uRnJhbWVzOiBudW1iZXI7XG4gIHRvdGFsUXVlc3Rpb25zOiBudW1iZXI7XG4gIGZwcz86IG51bWJlcjtcbiAgaXNTYXZpbmc6IGJvb2xlYW47XG4gIG9uTWFudWFsU2F2ZT86ICgpID0+IHZvaWQ7XG4gIG9uT3BlbkFzc2V0c01vZGFsOiAoKSA9PiB2b2lkO1xuICBvbk9wZW5FeHBvcnRNb2RhbDogKCkgPT4gdm9pZDtcbiAgaXNSZW5kZXJpbmc/OiBib29sZWFuO1xuICByZW5kZXJQcm9ncmVzcz86IG51bWJlcjtcbn1cblxuZXhwb3J0IGNvbnN0IFRvcEJhcjogUmVhY3QuRkM8VG9wQmFyUHJvcHM+ID0gKHtcbiAgY2hhbm5lbHMsXG4gIGN1cnJlbnRDaGFubmVsLFxuICBvblNlbGVjdENoYW5uZWwsXG4gIG9uRHVwbGljYXRlQ2hhbm5lbCxcbiAgb25SZXNldENoYW5uZWwsXG4gIGN1cnJlbnRMYW5ndWFnZSxcbiAgb25TZWxlY3RMYW5ndWFnZSxcbiAgdG90YWxEdXJhdGlvbkZyYW1lcyxcbiAgdG90YWxRdWVzdGlvbnMsXG4gIGZwcyA9IDMwLFxuICBpc1NhdmluZyxcbiAgb25NYW51YWxTYXZlLFxuICBvbk9wZW5Bc3NldHNNb2RhbCxcbiAgb25PcGVuRXhwb3J0TW9kYWwsXG4gIGlzUmVuZGVyaW5nLFxuICByZW5kZXJQcm9ncmVzcyA9IDBcbn0pID0+IHtcbiAgY29uc3QgW3Nob3dSZXNldENvbmZpcm0sIHNldFNob3dSZXNldENvbmZpcm1dID0gdXNlU3RhdGUoZmFsc2UpO1xuXG4gIGNvbnN0IGR1cmF0aW9uU2VjID0gTWF0aC5yb3VuZCgodG90YWxEdXJhdGlvbkZyYW1lcyAvIGZwcykgKiAxMCkgLyAxMDtcbiAgY29uc3QgbSA9IE1hdGguZmxvb3IoZHVyYXRpb25TZWMgLyA2MCk7XG4gIGNvbnN0IHMgPSBNYXRoLmZsb29yKGR1cmF0aW9uU2VjICUgNjApO1xuICBjb25zdCBkdXJhdGlvbkZvcm1hdHRlZCA9IGAke20udG9TdHJpbmcoKS5wYWRTdGFydCgyLCAnMCcpfToke3MudG9TdHJpbmcoKS5wYWRTdGFydCgyLCAnMCcpfWA7XG5cbiAgcmV0dXJuIChcbiAgICA8aGVhZGVyIGNsYXNzTmFtZT1cImgtMTQgYmctc2xhdGUtOTAwIGJvcmRlci1iIGJvcmRlci1zbGF0ZS04MDAgdGV4dC1zbGF0ZS0xMDAgcHgtMyBzbTpweC01IGZsZXggaXRlbXMtY2VudGVyIGp1c3RpZnktYmV0d2VlbiBzZWxlY3Qtbm9uZSB6LTMwIHNocmluay0wIHNoYWRvdy1sZ1wiPlxuICAgICAgey8qIDEuIEJyYW5kIExvZ28gKyBTdHVkaW8gTmFtZSAqL31cbiAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZmxleCBpdGVtcy1jZW50ZXIgZ2FwLTNcIj5cbiAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJ3LTggaC04IHJvdW5kZWQteGwgYmctZ3JhZGllbnQtdG8tdHIgZnJvbS1hbWJlci01MDAgdG8tYW1iZXItNDAwIGZsZXggaXRlbXMtY2VudGVyIGp1c3RpZnktY2VudGVyIHNoYWRvdy1tZCBzaGFkb3ctYW1iZXItNTAwLzIwIHRleHQtc2xhdGUtOTUwIGZvbnQtYmxhY2sgdGV4dC1zbSBzaHJpbmstMFwiPlxuICAgICAgICAgIDxGaWxtIHNpemU9ezE4fSBjbGFzc05hbWU9XCJ0ZXh0LXNsYXRlLTk1MFwiIC8+XG4gICAgICAgIDwvZGl2PlxuICAgICAgICA8ZGl2PlxuICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZmxleCBpdGVtcy1jZW50ZXIgZ2FwLTJcIj5cbiAgICAgICAgICAgIDxzcGFuIGNsYXNzTmFtZT1cImZvbnQtZXh0cmFib2xkIHRleHQtc20gdHJhY2tpbmctd2lkZSB0ZXh0LXdoaXRlIHVwcGVyY2FzZVwiPlxuICAgICAgICAgICAgICBRdWl6IFZpZGVvIFN0dWRpb1xuICAgICAgICAgICAgPC9zcGFuPlxuICAgICAgICAgICAgPEJhZGdlIGNsYXNzTmFtZT1cImJnLWFtYmVyLTUwMC8yMCB0ZXh0LWFtYmVyLTMwMCBib3JkZXIgYm9yZGVyLWFtYmVyLTUwMC8zMCB0ZXh0LVs5cHhdIHB4LTEuNSBweS0wIGZvbnQtYm9sZFwiPlxuICAgICAgICAgICAgICBQUk9cbiAgICAgICAgICAgIDwvQmFkZ2U+XG4gICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgPHAgY2xhc3NOYW1lPVwidGV4dC1bMTBweF0gdGV4dC1zbGF0ZS00MDAgZm9udC1tZWRpdW0gbGVhZGluZy1ub25lIG10LTAuNSBoaWRkZW4gc206YmxvY2tcIj5cbiAgICAgICAgICAgIFZpc3VhbCBWaWRlbyBFZGl0b3IgOToxNlxuICAgICAgICAgIDwvcD5cbiAgICAgICAgPC9kaXY+XG5cbiAgICAgICAgey8qIFNlcGFyYXRvciAqL31cbiAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJoLTUgdy1weCBiZy1zbGF0ZS04MDAgbXgtMSBoaWRkZW4gbWQ6YmxvY2tcIiAvPlxuXG4gICAgICAgIHsvKiBDaGFubmVsIFNlbGVjdG9yICovfVxuICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImhpZGRlbiBzbTpmbGV4IGl0ZW1zLWNlbnRlciBnYXAtMS41IGJnLXNsYXRlLTgwMC84MCBib3JkZXIgYm9yZGVyLXNsYXRlLTcwMC84MCByb3VuZGVkLXhsIHB4LTIuNSBweS0xXCI+XG4gICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPVwidGV4dC1bMTBweF0gdGV4dC1zbGF0ZS00MDAgZm9udC1ib2xkIHVwcGVyY2FzZSB0cmFja2luZy13aWRlciBoaWRkZW4gbGc6aW5saW5lXCI+XG4gICAgICAgICAgICBLw6puaDpcbiAgICAgICAgICA8L3NwYW4+XG4gICAgICAgICAgPHNlbGVjdFxuICAgICAgICAgICAgdmFsdWU9e2N1cnJlbnRDaGFubmVsPy5pZCB8fCAnJ31cbiAgICAgICAgICAgIG9uQ2hhbmdlPXsoZSkgPT4gb25TZWxlY3RDaGFubmVsKGUudGFyZ2V0LnZhbHVlKX1cbiAgICAgICAgICAgIGNsYXNzTmFtZT1cImJnLXRyYW5zcGFyZW50IHRleHQteHMgZm9udC1ib2xkIHRleHQtc2xhdGUtMjAwIGZvY3VzOm91dGxpbmUtbm9uZSBjdXJzb3ItcG9pbnRlciBwci0xIG1heC13LVsxMzBweF0gc206bWF4LXctWzE4MHB4XSB0cnVuY2F0ZVwiXG4gICAgICAgICAgPlxuICAgICAgICAgICAge2NoYW5uZWxzLm1hcCgoY2gpID0+IChcbiAgICAgICAgICAgICAgPG9wdGlvbiBrZXk9e2NoLmlkfSB2YWx1ZT17Y2guaWR9IGNsYXNzTmFtZT1cImJnLXNsYXRlLTkwMCB0ZXh0LXNsYXRlLTEwMFwiPlxuICAgICAgICAgICAgICAgIHtjaC5uYW1lfVxuICAgICAgICAgICAgICA8L29wdGlvbj5cbiAgICAgICAgICAgICkpfVxuICAgICAgICAgIDwvc2VsZWN0PlxuICAgICAgICAgIDxidXR0b25cbiAgICAgICAgICAgIG9uQ2xpY2s9e29uRHVwbGljYXRlQ2hhbm5lbH1cbiAgICAgICAgICAgIHRpdGxlPVwiTmjDom4gYuG6o24ga8OqbmggbsOgeVwiXG4gICAgICAgICAgICBjbGFzc05hbWU9XCJwLTEgaG92ZXI6Ymctc2xhdGUtNzAwIHRleHQtc2xhdGUtNDAwIGhvdmVyOnRleHQtc2xhdGUtMjAwIHJvdW5kZWQtbWQgdHJhbnNpdGlvblwiXG4gICAgICAgICAgPlxuICAgICAgICAgICAgPENvcHkgc2l6ZT17MTJ9IC8+XG4gICAgICAgICAgPC9idXR0b24+XG4gICAgICAgICAgPGJ1dHRvblxuICAgICAgICAgICAgb25DbGljaz17KCkgPT4gc2V0U2hvd1Jlc2V0Q29uZmlybSh0cnVlKX1cbiAgICAgICAgICAgIHRpdGxlPVwiS2jDtGkgcGjhu6VjIG3hurdjIMSR4buLbmhcIlxuICAgICAgICAgICAgY2xhc3NOYW1lPVwicC0xIGhvdmVyOmJnLXNsYXRlLTcwMCB0ZXh0LXNsYXRlLTQwMCBob3Zlcjp0ZXh0LXJvc2UtNDAwIHJvdW5kZWQtbWQgdHJhbnNpdGlvblwiXG4gICAgICAgICAgPlxuICAgICAgICAgICAgPFJvdGF0ZUNjdyBzaXplPXsxMn0gLz5cbiAgICAgICAgICA8L2J1dHRvbj5cbiAgICAgICAgPC9kaXY+XG5cbiAgICAgICAgey8qIExhbmd1YWdlIFN3aXRjaGVyICovfVxuICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImhpZGRlbiBsZzpmbGV4IGl0ZW1zLWNlbnRlciBiZy1zbGF0ZS04MDAvODAgYm9yZGVyIGJvcmRlci1zbGF0ZS03MDAvODAgcm91bmRlZC14bCBwLTAuNSB0ZXh0LXhzXCI+XG4gICAgICAgICAgPGJ1dHRvblxuICAgICAgICAgICAgb25DbGljaz17KCkgPT4gb25TZWxlY3RMYW5ndWFnZSgndmknKX1cbiAgICAgICAgICAgIGNsYXNzTmFtZT17YHB4LTIgcHktMC41IHJvdW5kZWQtbGcgZm9udC1ib2xkIHRyYW5zaXRpb24gZmxleCBpdGVtcy1jZW50ZXIgZ2FwLTEgJHtcbiAgICAgICAgICAgICAgY3VycmVudExhbmd1YWdlID09PSAndmknXG4gICAgICAgICAgICAgICAgPyAnYmctYW1iZXItNTAwIHRleHQtc2xhdGUtOTUwIHNoYWRvdy14cydcbiAgICAgICAgICAgICAgICA6ICd0ZXh0LXNsYXRlLTQwMCBob3Zlcjp0ZXh0LXNsYXRlLTIwMCdcbiAgICAgICAgICAgIH1gfVxuICAgICAgICAgID5cbiAgICAgICAgICAgIDxzcGFuPvCfh7vwn4ezPC9zcGFuPlxuICAgICAgICAgICAgPHNwYW4+Vkk8L3NwYW4+XG4gICAgICAgICAgPC9idXR0b24+XG4gICAgICAgICAgPGJ1dHRvblxuICAgICAgICAgICAgb25DbGljaz17KCkgPT4gb25TZWxlY3RMYW5ndWFnZSgnZW4nKX1cbiAgICAgICAgICAgIGNsYXNzTmFtZT17YHB4LTIgcHktMC41IHJvdW5kZWQtbGcgZm9udC1ib2xkIHRyYW5zaXRpb24gZmxleCBpdGVtcy1jZW50ZXIgZ2FwLTEgJHtcbiAgICAgICAgICAgICAgY3VycmVudExhbmd1YWdlID09PSAnZW4nXG4gICAgICAgICAgICAgICAgPyAnYmctYW1iZXItNTAwIHRleHQtc2xhdGUtOTUwIHNoYWRvdy14cydcbiAgICAgICAgICAgICAgICA6ICd0ZXh0LXNsYXRlLTQwMCBob3Zlcjp0ZXh0LXNsYXRlLTIwMCdcbiAgICAgICAgICAgIH1gfVxuICAgICAgICAgID5cbiAgICAgICAgICAgIDxzcGFuPvCfh7rwn4e4PC9zcGFuPlxuICAgICAgICAgICAgPHNwYW4+RU48L3NwYW4+XG4gICAgICAgICAgPC9idXR0b24+XG4gICAgICAgIDwvZGl2PlxuICAgICAgPC9kaXY+XG5cbiAgICAgIHsvKiAyLiBDZW50ZXI6IFZpZGVvIFJlc29sdXRpb24gJiBTcGVjcyBCYWRnZXMgKyBFbmdpbmUgU3RhdHVzICovfVxuICAgICAgPGRpdiBjbGFzc05hbWU9XCJoaWRkZW4geGw6ZmxleCBpdGVtcy1jZW50ZXIgZ2FwLTNcIj5cbiAgICAgICAgey8qIFNwZWNzIFBpbGwgKi99XG4gICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZmxleCBpdGVtcy1jZW50ZXIgZ2FwLTIgYmctc2xhdGUtODAwLzgwIGJvcmRlciBib3JkZXItc2xhdGUtNzAwLzgwIHJvdW5kZWQteGwgcHgtMyBweS0xIHRleHQteHNcIj5cbiAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9XCJmb250LW1vbm8gZm9udC1ib2xkIHRleHQtYW1iZXItNDAwXCI+NzIww5cxMjgwICg5OjE2KTwvc3Bhbj5cbiAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9XCJ0ZXh0LXNsYXRlLTUwMFwiPuKAojwvc3Bhbj5cbiAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9XCJ0ZXh0LXNsYXRlLTMwMCBmb250LW1lZGl1bVwiPntmcHN9IEZQUzwvc3Bhbj5cbiAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9XCJ0ZXh0LXNsYXRlLTUwMFwiPuKAojwvc3Bhbj5cbiAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9XCJ0ZXh0LWVtZXJhbGQtNDAwIGZvbnQtbW9ubyBmb250LWJvbGRcIj57ZHVyYXRpb25Gb3JtYXR0ZWR9PC9zcGFuPlxuICAgICAgICAgIDxzcGFuIGNsYXNzTmFtZT1cInRleHQtc2xhdGUtNTAwXCI+4oCiPC9zcGFuPlxuICAgICAgICAgIDxzcGFuIGNsYXNzTmFtZT1cInRleHQtc2xhdGUtMzAwIGZvbnQtc2VtaWJvbGRcIj57dG90YWxRdWVzdGlvbnN9IGPDonU8L3NwYW4+XG4gICAgICAgIDwvZGl2PlxuXG4gICAgICAgIHsvKiBFbmdpbmUgU3RhdHVzICovfVxuICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImZsZXggaXRlbXMtY2VudGVyIGdhcC0yIHRleHQtWzExcHhdIGZvbnQtc2VtaWJvbGQgdGV4dC1zbGF0ZS00MDAgYmctc2xhdGUtODAwLzQwIGJvcmRlciBib3JkZXItc2xhdGUtNzAwLzUwIHJvdW5kZWQteGwgcHgtMi41IHB5LTFcIj5cbiAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9XCJmbGV4IGl0ZW1zLWNlbnRlciBnYXAtMSB0ZXh0LWVtZXJhbGQtNDAwXCI+XG4gICAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9XCJ3LTIgaC0yIHJvdW5kZWQtZnVsbCBiZy1lbWVyYWxkLTQwMCBhbmltYXRlLXB1bHNlXCIgLz5cbiAgICAgICAgICAgIEZGbXBlZyA3LjFcbiAgICAgICAgICA8L3NwYW4+XG4gICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPVwidGV4dC1zbGF0ZS02MDBcIj58PC9zcGFuPlxuICAgICAgICAgIDxzcGFuIGNsYXNzTmFtZT1cImZsZXggaXRlbXMtY2VudGVyIGdhcC0xIHRleHQtc2t5LTQwMFwiPlxuICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPVwidy0yIGgtMiByb3VuZGVkLWZ1bGwgYmctc2t5LTQwMCBhbmltYXRlLXB1bHNlXCIgLz5cbiAgICAgICAgICAgIEVkZ2UtVFRTXG4gICAgICAgICAgPC9zcGFuPlxuICAgICAgICAgIDxzcGFuIGNsYXNzTmFtZT1cInRleHQtc2xhdGUtNjAwXCI+fDwvc3Bhbj5cbiAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9XCJ0ZXh0LWdyZWVuLTQwMCBmb250LW1lZGl1bVwiPk5hdGl2ZSBTa2lhIEVuZ2luZTwvc3Bhbj5cbiAgICAgICAgPC9kaXY+XG4gICAgICA8L2Rpdj5cblxuICAgICAgey8qIDMuIFJpZ2h0OiBTYXZlIEluZGljYXRvciwgQXNzZXRzIE1vZGFsICYgRXhwb3J0IENUQSAqL31cbiAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZmxleCBpdGVtcy1jZW50ZXIgZ2FwLTJcIj5cbiAgICAgICAgey8qIEF1dG8tc2F2ZSBzdGF0dXMgKi99XG4gICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiaGlkZGVuIHNtOmZsZXggaXRlbXMtY2VudGVyIGdhcC0xIHRleHQteHMgZm9udC1tZWRpdW0gdGV4dC1zbGF0ZS00MDAgbXItMVwiPlxuICAgICAgICAgIHtpc1NhdmluZyA/IChcbiAgICAgICAgICAgIDw+XG4gICAgICAgICAgICAgIDxMb2FkZXIyIHNpemU9ezEzfSBjbGFzc05hbWU9XCJhbmltYXRlLXNwaW4gdGV4dC1hbWJlci00MDBcIiAvPlxuICAgICAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9XCJ0ZXh0LVsxMXB4XSB0ZXh0LWFtYmVyLTMwMFwiPsSQYW5nIGzGsHUuLi48L3NwYW4+XG4gICAgICAgICAgICA8Lz5cbiAgICAgICAgICApIDogKFxuICAgICAgICAgICAgPD5cbiAgICAgICAgICAgICAgPENoZWNrIHNpemU9ezEzfSBjbGFzc05hbWU9XCJ0ZXh0LWVtZXJhbGQtNDAwXCIgLz5cbiAgICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPVwidGV4dC1bMTFweF0gdGV4dC1zbGF0ZS00MDBcIj7EkMOjIGzGsHU8L3NwYW4+XG4gICAgICAgICAgICA8Lz5cbiAgICAgICAgICApfVxuICAgICAgICA8L2Rpdj5cblxuICAgICAgICB7LyogQXNzZXQgTWFuYWdlciBCdXR0b24gKi99XG4gICAgICAgIDxCdXR0b25cbiAgICAgICAgICBzaXplPVwic21cIlxuICAgICAgICAgIHZhcmlhbnQ9XCJvdXRsaW5lXCJcbiAgICAgICAgICBvbkNsaWNrPXtvbk9wZW5Bc3NldHNNb2RhbH1cbiAgICAgICAgICBjbGFzc05hbWU9XCJoaWRkZW4gc206aW5saW5lLWZsZXggYmctc2xhdGUtODAwIGhvdmVyOmJnLXNsYXRlLTcwMCBib3JkZXItc2xhdGUtNzAwIHRleHQtc2xhdGUtMjAwIGhvdmVyOnRleHQtd2hpdGUgdGV4dC14cyBmb250LWJvbGQgZ2FwLTEuNSBoLTggcHgtMyByb3VuZGVkLXhsIHRyYW5zaXRpb25cIlxuICAgICAgICA+XG4gICAgICAgICAgPEZvbGRlck9wZW4gc2l6ZT17MTR9IGNsYXNzTmFtZT1cInRleHQtYW1iZXItNDAwXCIgLz5cbiAgICAgICAgICA8c3Bhbj5Uw6BpIG5ndXnDqm48L3NwYW4+XG4gICAgICAgIDwvQnV0dG9uPlxuXG4gICAgICAgIHsvKiBQcmltYXJ5IEV4cG9ydCBCdXR0b24gKi99XG4gICAgICAgIDxCdXR0b25cbiAgICAgICAgICBzaXplPVwic21cIlxuICAgICAgICAgIG9uQ2xpY2s9e29uT3BlbkV4cG9ydE1vZGFsfVxuICAgICAgICAgIGNsYXNzTmFtZT17YCR7XG4gICAgICAgICAgICBpc1JlbmRlcmluZ1xuICAgICAgICAgICAgICA/ICdiZy1hbWJlci01MDAgdGV4dC1zbGF0ZS05NTAgZm9udC1ibGFjayByaW5nLTIgcmluZy1hbWJlci00MDAvODAgYW5pbWF0ZS1wdWxzZSdcbiAgICAgICAgICAgICAgOiAnYmctZ3JhZGllbnQtdG8tciBmcm9tLWFtYmVyLTUwMCB0by1hbWJlci00MDAgaG92ZXI6ZnJvbS1hbWJlci00MDAgaG92ZXI6dG8tYW1iZXItMzAwIHRleHQtc2xhdGUtOTUwIGZvbnQtYmxhY2sgc2hhZG93LW1kIHNoYWRvdy1hbWJlci01MDAvMjUgYWN0aXZlOnNjYWxlLTk1J1xuICAgICAgICAgIH0gdGV4dC14cyBnYXAtMS41IGgtOCBweC0zLjUgcm91bmRlZC14bCB0cmFuc2l0aW9uIGN1cnNvci1wb2ludGVyYH1cbiAgICAgICAgPlxuICAgICAgICAgIHtpc1JlbmRlcmluZyA/IChcbiAgICAgICAgICAgIDw+XG4gICAgICAgICAgICAgIDxMb2FkZXIyIHNpemU9ezE0fSBjbGFzc05hbWU9XCJhbmltYXRlLXNwaW4gdGV4dC1zbGF0ZS05NTBcIiAvPlxuICAgICAgICAgICAgICA8c3Bhbj7EkGFuZyBSZW5kZXIge3JlbmRlclByb2dyZXNzfSU8L3NwYW4+XG4gICAgICAgICAgICA8Lz5cbiAgICAgICAgICApIDogKFxuICAgICAgICAgICAgPD5cbiAgICAgICAgICAgICAgPEZpbG0gc2l6ZT17MTR9IC8+XG4gICAgICAgICAgICAgIDxzcGFuPlh14bqldCBWaWRlbzwvc3Bhbj5cbiAgICAgICAgICAgIDwvPlxuICAgICAgICAgICl9XG4gICAgICAgIDwvQnV0dG9uPlxuICAgICAgPC9kaXY+XG5cbiAgICAgIHsvKiBSZXNldCBDaGFubmVsIENvbmZpcm1hdGlvbiBEaWFsb2cgKi99XG4gICAgICA8RGlhbG9nIG9wZW49e3Nob3dSZXNldENvbmZpcm19IG9uT3BlbkNoYW5nZT17c2V0U2hvd1Jlc2V0Q29uZmlybX0+XG4gICAgICAgIDxEaWFsb2dDb250ZW50IGNsYXNzTmFtZT1cInNtOm1heC13LW1kIGJnLXNsYXRlLTkwMCBib3JkZXItc2xhdGUtODAwIHRleHQtc2xhdGUtMTAwXCI+XG4gICAgICAgICAgPERpYWxvZ0hlYWRlcj5cbiAgICAgICAgICAgIDxEaWFsb2dUaXRsZSBjbGFzc05hbWU9XCJmbGV4IGl0ZW1zLWNlbnRlciBnYXAtMiB0ZXh0LXJvc2UtNDAwXCI+XG4gICAgICAgICAgICAgIDxBbGVydFRyaWFuZ2xlIHNpemU9ezIwfSAvPlxuICAgICAgICAgICAgICBLaMO0aSBwaOG7pWMgY8OgaSDEkeG6t3QgZ+G7kWMgY+G7p2Ega8Oqbmg/XG4gICAgICAgICAgICA8L0RpYWxvZ1RpdGxlPlxuICAgICAgICAgICAgPERpYWxvZ0Rlc2NyaXB0aW9uIGNsYXNzTmFtZT1cInRleHQtc2xhdGUtNDAwIHRleHQteHNcIj5cbiAgICAgICAgICAgICAgVGhhbyB0w6FjIG7DoHkgc+G6vSDEkeG6t3QgbOG6oWkgdG/DoG4gYuG7mSB0ZW1wbGF0ZSwgbcOgdSBz4bqvYywgZm9udCBjaOG7ryB2w6Agw6JtIHRoYW5oIHbhu4EgbeG6t2MgxJHhu4tuaCBiYW4gxJHhuqd1LiBC4bqhbiBjw7MgY2jhuq9jIGNo4bqvbiBtdeG7kW4gdGnhur9wIHThu6VjP1xuICAgICAgICAgICAgPC9EaWFsb2dEZXNjcmlwdGlvbj5cbiAgICAgICAgICA8L0RpYWxvZ0hlYWRlcj5cbiAgICAgICAgICA8RGlhbG9nRm9vdGVyIGNsYXNzTmFtZT1cImdhcC0yIHNtOmdhcC0wXCI+XG4gICAgICAgICAgICA8QnV0dG9uXG4gICAgICAgICAgICAgIHZhcmlhbnQ9XCJvdXRsaW5lXCJcbiAgICAgICAgICAgICAgb25DbGljaz17KCkgPT4gc2V0U2hvd1Jlc2V0Q29uZmlybShmYWxzZSl9XG4gICAgICAgICAgICAgIGNsYXNzTmFtZT1cImJnLXNsYXRlLTgwMCBib3JkZXItc2xhdGUtNzAwIHRleHQtc2xhdGUtMjAwIGhvdmVyOmJnLXNsYXRlLTcwMFwiXG4gICAgICAgICAgICA+XG4gICAgICAgICAgICAgIEjhu6d5XG4gICAgICAgICAgICA8L0J1dHRvbj5cbiAgICAgICAgICAgIDxCdXR0b25cbiAgICAgICAgICAgICAgb25DbGljaz17KCkgPT4ge1xuICAgICAgICAgICAgICAgIHNldFNob3dSZXNldENvbmZpcm0oZmFsc2UpO1xuICAgICAgICAgICAgICAgIG9uUmVzZXRDaGFubmVsKCk7XG4gICAgICAgICAgICAgIH19XG4gICAgICAgICAgICAgIGNsYXNzTmFtZT1cImJnLXJvc2UtNjAwIGhvdmVyOmJnLXJvc2UtNTAwIHRleHQtd2hpdGUgZm9udC1ib2xkXCJcbiAgICAgICAgICAgID5cbiAgICAgICAgICAgICAgWMOhYyBuaOG6rW4ga2jDtGkgcGjhu6VjXG4gICAgICAgICAgICA8L0J1dHRvbj5cbiAgICAgICAgICA8L0RpYWxvZ0Zvb3Rlcj5cbiAgICAgICAgPC9EaWFsb2dDb250ZW50PlxuICAgICAgPC9EaWFsb2c+XG4gICAgPC9oZWFkZXI+XG4gICk7XG59O1xuIl0sImZpbGUiOiJEOi9zb3VyY2UgY29kZS9WaWRlbyBxdWl6IG5ldy9mcm9udGVuZC9zcmMvY29tcG9uZW50cy9lZGl0b3IvVG9wQmFyLnRzeCJ9

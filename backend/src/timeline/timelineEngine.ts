@@ -66,20 +66,54 @@ export class TimelineEngine {
 
       // 4. Reveal & Explanation Phase
       const revealStart = currentFrame;
-      const hasExplanationAudio = Boolean(ttsData.explanationUrl);
-      const expDelayFrames = hasExplanationAudio ? 10 : 0; // 0.33s dramatic pause before voiceover begins
+      const langConfig = channel.languages[quiz.language] || channel.languages.vi;
+      const answerTtsEnabled = (template.components.answerButtons as any)?.readTts !== false &&
+        (langConfig?.readAnswer !== false);
+      const explanationTtsEnabled = template.components.explanation?.readTts !== false;
+      const showExplanation = template.components.explanation?.enabled !== false;
+      const configuredDisplayDuration = template.components.explanation?.displayDurationSec ??
+        template.timing?.explanationDisplayDuration ?? 3.0;
+
+      // 4a. Answer TTS (đáp án đúng)
+      const hasAnswerAudio = answerTtsEnabled && Boolean(ttsData.revealUrl);
+      const answerDelayFrames = 6; // 0.2s pause for visual reveal & SFX pop first
+      const answerDurationSec = hasAnswerAudio ? (ttsData.revealDuration || 1.8) : 0;
+      const answerFrames = Math.ceil(answerDurationSec * this.fps);
+      const answerTtsStart = revealStart + answerDelayFrames;
+      const answerTtsEnd = answerTtsStart + answerFrames;
+
+      // 4b. Explanation TTS (đọc giải thích)
+      const hasExplanationAudio = explanationTtsEnabled && Boolean(ttsData.explanationUrl);
+      const expDelayFrames = hasAnswerAudio ? 6 : 10; // 0.2s pause after answer TTS, or 0.33s after reveal if no answer TTS
       const expDurationSec = hasExplanationAudio
         ? (ttsData.explanationDuration || q.durations?.explanationTts || 2.0)
         : 0;
       const expFrames = Math.ceil(expDurationSec * this.fps);
-      const explanationTtsStart = revealStart + expDelayFrames;
+      const explanationTtsStart = (hasAnswerAudio ? answerTtsEnd : revealStart) + expDelayFrames;
       const explanationTtsEnd = explanationTtsStart + expFrames;
 
-      // Ensure reveal window holds for the full explanation TTS plus a comfortable post-explanation cushion
+      let revealFrames: number;
       const minRevealFrames = Math.ceil(revealSec * this.fps);
-      const postExpCushion = hasExplanationAudio ? Math.ceil(0.5 * this.fps) : 0; // 0.5s cushion
-      const neededRevealFrames = expDelayFrames + expFrames + postExpCushion;
-      const revealFrames = Math.max(minRevealFrames, neededRevealFrames);
+
+      if (hasExplanationAudio) {
+        // Voiceover active: wait for Answer TTS -> Explanation TTS -> post cushion
+        const postExpCushion = Math.ceil(0.6 * this.fps); // 0.6s cushion
+        const neededRevealFrames = (explanationTtsEnd - revealStart) + postExpCushion;
+        revealFrames = Math.max(minRevealFrames, neededRevealFrames);
+      } else if (hasAnswerAudio) {
+        // Answer TTS is ON, but Explanation TTS is OFF:
+        // Wait for Answer TTS to finish, then hold for configured displayDuration
+        const holdAfterAnswerFrames = Math.ceil(configuredDisplayDuration * this.fps);
+        const neededRevealFrames = (answerTtsEnd - revealStart) + holdAfterAnswerFrames;
+        revealFrames = Math.max(minRevealFrames, neededRevealFrames);
+      } else if (showExplanation) {
+        // Both TTS are OFF, hold for configured displayDuration
+        revealFrames = Math.ceil(Math.max(revealSec, configuredDisplayDuration) * this.fps);
+      } else {
+        // Standard reveal duration
+        revealFrames = minRevealFrames;
+      }
+
       currentFrame += revealFrames;
 
       const isLastQuestion = i === quiz.questions.length - 1;
@@ -178,8 +212,19 @@ export class TimelineEngine {
         volume: channel.audio.volumes.correct ?? 1.0
       });
 
-      // F. Explanation TTS
-      if (ttsData.explanationUrl) {
+      // F1. Answer TTS (đáp án đúng)
+      if (hasAnswerAudio && ttsData.revealUrl) {
+        audioCues.push({
+          type: 'tts',
+          url: ttsData.revealUrl,
+          startFrame: answerTtsStart,
+          durationFrames: answerFrames,
+          volume: 1.0
+        });
+      }
+
+      // F2. Explanation TTS (đọc giải thích)
+      if (hasExplanationAudio && ttsData.explanationUrl) {
         audioCues.push({
           type: 'tts',
           url: ttsData.explanationUrl,
@@ -205,6 +250,8 @@ export class TimelineEngine {
           countdownStart,
           countdownEnd,
           revealStart,
+          answerTtsStart: hasAnswerAudio ? answerTtsStart : undefined,
+          answerTtsEnd: hasAnswerAudio ? answerTtsEnd : undefined,
           explanationTtsStart,
           explanationTtsEnd
         },

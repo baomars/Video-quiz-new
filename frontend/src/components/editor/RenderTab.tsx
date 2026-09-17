@@ -63,6 +63,7 @@ interface RenderTabProps {
   setActiveBatchId?: (id: string | null) => void;
   batchState?: BatchRenderJob | null;
   setBatchState?: React.Dispatch<React.SetStateAction<BatchRenderJob | null>> | ((batch: BatchRenderJob | null) => void);
+  onRenderStarted?: () => void;
 }
 
 interface StageLog {
@@ -168,7 +169,8 @@ export const RenderTab: React.FC<RenderTabProps> = ({
   activeBatchId: propsActiveBatchId,
   setActiveBatchId: propsSetActiveBatchId,
   batchState: propsBatchState,
-  setBatchState: propsSetBatchState
+  setBatchState: propsSetBatchState,
+  onRenderStarted
 }) => {
   // Mode selection
   const [renderMode, setRenderMode] = useState<'single' | 'batch'>('single');
@@ -494,6 +496,7 @@ export const RenderTab: React.FC<RenderTabProps> = ({
           }
         ]
       });
+      onRenderStarted?.();
     } catch (err: any) {
       alert(`Lỗi khởi động render: ${err.message}`);
     } finally {
@@ -543,6 +546,7 @@ export const RenderTab: React.FC<RenderTabProps> = ({
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       });
+      onRenderStarted?.();
     } catch (err: any) {
       alert(`Lỗi khởi động batch render: ${err.message}`);
     } finally {

@@ -209,14 +209,27 @@ const ActiveMotionBackground: React.FC<{
   return (
     <div style={bgStyle}>
       {bgType === 'neon' && (
-        <NeonBackground
-          presetId={style.neonPresetId || 'neon-gradient'}
-          speed={style.neonSpeed ?? 1.0}
-          intensity={style.neonIntensity ?? 1.0}
-          color1={style.neonColor1}
-          color2={style.neonColor2}
-          color3={style.neonColor3}
-        />
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            opacity: style.opacity ?? style.motion?.opacity ?? 1,
+            filter: (style.blur || style.motion?.blur) ? `blur(${style.blur || style.motion?.blur}px)` : undefined,
+            transform: (style.motion?.zoomScale && style.motion.zoomScale > 1) ? `scale(${style.motion.zoomScale})` : undefined,
+            transformOrigin: 'center center'
+          }}
+        >
+          <NeonBackground
+            presetId={style.neonPresetId || 'neon-gradient'}
+            speed={style.neonSpeed ?? style.motion?.speed ?? 1.0}
+            intensity={style.neonIntensity ?? 1.0}
+            color1={style.neonColor1 ?? style.motion?.color1}
+            color2={style.neonColor2 ?? style.motion?.color2}
+            color3={style.neonColor3 ?? style.motion?.color3}
+            direction={style.motion?.direction}
+            movement={style.motion?.movement}
+          />
+        </div>
       )}
 
       {bgType === 'image' && style.imageUrl && (

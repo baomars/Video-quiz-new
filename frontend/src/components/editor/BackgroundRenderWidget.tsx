@@ -95,6 +95,13 @@ interface BackgroundRenderWidgetProps {
   onDismiss: () => void;
 }
 
+function formatTime(seconds?: number): string {
+  if (!seconds || isNaN(seconds)) return '00:00';
+  const m = Math.floor(seconds / 60);
+  const s = Math.floor(seconds % 60);
+  return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+}
+
 export const BackgroundRenderWidget: React.FC<BackgroundRenderWidgetProps> = ({
   jobState,
   batchState,
@@ -112,129 +119,90 @@ export const BackgroundRenderWidget: React.FC<BackgroundRenderWidgetProps> = ({
     const isCompleted = jobState.status === 'completed';
     const isFailed = jobState.status === 'failed';
 
+    const framesText = jobState.totalFrames
+      ? `${jobState.currentFrame || 0}/${jobState.totalFrames}`
+      : `${jobState.currentFrame || 0}`;
+    const fpsText = (jobState.currentFps || 0).toFixed(1);
+    const timeText = formatTime(jobState.elapsedSec);
+    const statusText = isProcessing ? 'Rendering' : isCompleted ? 'Completed' : 'Failed';
+
     return (
-      <div className="fixed bottom-24 right-5 z-50 w-84 bg-slate-950/95 backdrop-blur-md border border-slate-700/80 shadow-[0_8px_30px_rgb(0,0,0,0.6)] rounded-xl p-3.5 text-slate-100 transition-all animate-in fade-in slide-in-from-bottom-5">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            {isProcessing && (
-              <div className="w-6 h-6 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center">
-                <Loader2 size={13} className="animate-spin" />
-              </div>
-            )}
-            {isCompleted && (
-              <div className="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
-                <CheckCircle2 size={14} />
-              </div>
-            )}
-            {isFailed && (
-              <div className="w-6 h-6 rounded-lg bg-rose-500/20 text-rose-400 flex items-center justify-center">
-                <AlertCircle size={14} />
-              </div>
-            )}
-
-            <div>
-              <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
-                <span>{isProcessing ? 'Render chạy nền' : isCompleted ? 'Render hoàn tất' : 'Render thất bại'}</span>
-                {isProcessing && (
-                  <span className="text-[10px] px-1.5 py-0.2 bg-amber-500/20 text-amber-300 rounded font-mono">
-                    {jobState.progress}%
-                  </span>
-                )}
-              </h4>
+      <div
+        className="fixed bottom-20 sm:bottom-6 right-3 sm:right-6 z-50 flex items-center gap-2.5 bg-slate-950/95 hover:bg-slate-900/95 backdrop-blur-md border border-slate-700/80 hover:border-amber-500/50 shadow-[0_8px_30px_rgb(0,0,0,0.7)] rounded-full px-3.5 py-2 text-slate-100 transition-all cursor-pointer group animate-in fade-in slide-in-from-bottom-3"
+        onClick={onOpenDetails}
+        title="Bấm để xem chi tiết tiến trình render"
+      >
+        {/* Status Indicator Icon */}
+        <div className="flex items-center justify-center shrink-0">
+          {isProcessing && (
+            <div className="w-5 h-5 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center">
+              <Loader2 size={12} className="animate-spin" />
             </div>
-          </div>
-
-          <div className="flex items-center gap-1">
-            <button
-              onClick={onOpenDetails}
-              className="p-1 text-slate-400 hover:text-white rounded hover:bg-slate-800 transition"
-              title="Mở bảng chi tiết"
-            >
-              <Maximize2 size={13} />
-            </button>
-            <button
-              onClick={onDismiss}
-              className="p-1 text-slate-400 hover:text-white rounded hover:bg-slate-800 transition"
-              title="Ẩn thông báo"
-            >
-              <X size={13} />
-            </button>
-          </div>
+          )}
+          {isCompleted && (
+            <div className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+              <CheckCircle2 size={13} />
+            </div>
+          )}
+          {isFailed && (
+            <div className="w-5 h-5 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center">
+              <AlertCircle size={13} />
+            </div>
+          )}
         </div>
 
-        {/* Progress Bar */}
-        <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden mb-2">
-          <div
-            className={`h-full transition-all duration-300 ${
-              isCompleted
-                ? 'bg-emerald-500'
-                : isFailed
-                ? 'bg-rose-500'
-                : 'bg-gradient-to-r from-amber-500 to-amber-400'
+        {/* Compact Metrics Row */}
+        <div className="flex items-center gap-2 text-xs font-mono select-none">
+          <span className="text-slate-300">
+            <strong className="text-slate-400 font-medium">Frames:</strong> {framesText}
+          </span>
+          <span className="text-slate-600">|</span>
+          <span className="text-slate-300">
+            <strong className="text-slate-400 font-medium">FPS:</strong> {fpsText}
+          </span>
+          <span className="text-slate-600">|</span>
+          <span className="text-slate-300">
+            <strong className="text-slate-400 font-medium">Time:</strong> {timeText}
+          </span>
+          <span className="text-slate-600">|</span>
+          <span
+            className={`font-bold ${
+              isProcessing
+                ? 'text-amber-400'
+                : isCompleted
+                ? 'text-emerald-400'
+                : 'text-rose-400'
             }`}
-            style={{ width: `${isCompleted ? 100 : jobState.progress}%` }}
-          />
+          >
+            {statusText}
+            {isProcessing && ` (${jobState.progress}%)`}
+          </span>
         </div>
 
-        {/* Status Line */}
-        <div className="text-[11px] text-slate-300 line-clamp-1 mb-2.5">
-          {isProcessing ? (
-            <span className="text-slate-300">
-              {jobState.stage || 'Đang xử lý pipeline render...'}
-            </span>
-          ) : isCompleted ? (
-            <span className="text-emerald-300">
-              Video đã sẵn sàng ({((jobState.fileSizeBytes || 0) / (1024 * 1024)).toFixed(1)} MB)
-            </span>
-          ) : (
-            <span className="text-rose-400 line-clamp-1">
-              {jobState.error || 'Có lỗi xảy ra'}
-            </span>
-          )}
-        </div>
+        {/* Quick Download if Completed */}
+        {isCompleted && jobState.outputUrl && (
+          <a
+            href={jobState.outputUrl}
+            download
+            onClick={(e) => e.stopPropagation()}
+            className="p-1 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/20 rounded-full transition ml-0.5"
+            title="Tải video MP4"
+          >
+            <Download size={13} />
+          </a>
+        )}
 
-        {/* Bottom Metrics / Action Row */}
-        <div className="flex items-center justify-between text-[10px] pt-1 border-t border-slate-800/80">
-          {isProcessing ? (
-            <>
-              <div className="flex items-center gap-2 text-slate-400 font-mono">
-                {jobState.currentFps ? <span>{jobState.currentFps} FPS</span> : null}
-                {jobState.etaSec ? <span>ETA ~{jobState.etaSec}s</span> : null}
-              </div>
-              <button
-                onClick={onOpenDetails}
-                className="text-amber-400 hover:text-amber-300 font-semibold transition underline underline-offset-2"
-              >
-                Xem chi tiết
-              </button>
-            </>
-          ) : isCompleted ? (
-            <>
-              <a
-                href={jobState.outputUrl}
-                download
-                className="flex items-center gap-1 text-emerald-400 hover:text-emerald-300 font-bold bg-emerald-500/10 px-2 py-1 rounded border border-emerald-500/30 transition"
-              >
-                <Download size={11} />
-                <span>Tải Video MP4</span>
-              </a>
-              <button
-                onClick={onOpenDetails}
-                className="text-slate-400 hover:text-slate-200 transition"
-              >
-                Xem lịch sử
-              </button>
-            </>
-          ) : (
-            <button
-              onClick={onOpenDetails}
-              className="text-rose-400 hover:text-rose-300 font-semibold"
-            >
-              Xem chi tiết lỗi
-            </button>
-          )}
-        </div>
+        {/* Dismiss Button */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onDismiss();
+          }}
+          className="p-1 text-slate-500 hover:text-slate-300 hover:bg-slate-800 rounded-full transition ml-0.5"
+          title="Đóng"
+        >
+          <X size={12} />
+        </button>
       </div>
     );
   }
@@ -245,84 +213,75 @@ export const BackgroundRenderWidget: React.FC<BackgroundRenderWidgetProps> = ({
     const isCompleted = batchState.status === 'completed';
     const isFailed = batchState.status === 'failed';
 
+    const framesText = batchState.totalFrames
+      ? `${batchState.currentFrame || 0}/${batchState.totalFrames}`
+      : `${batchState.currentFrame || 0}`;
+    const fpsText = (batchState.currentFps || 0).toFixed(1);
+    const timeText = formatTime(batchState.elapsedSec);
+    const statusText = isProcessing ? 'Rendering' : isCompleted ? 'Completed' : 'Failed';
+
     return (
-      <div className="fixed bottom-24 right-5 z-50 w-88 bg-slate-950/95 backdrop-blur-md border border-slate-700/80 shadow-[0_8px_30px_rgb(0,0,0,0.6)] rounded-xl p-3.5 text-slate-100 transition-all animate-in fade-in slide-in-from-bottom-5">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            {isProcessing ? (
-              <div className="w-6 h-6 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center">
-                <Boxes size={13} className="animate-pulse" />
-              </div>
-            ) : isCompleted ? (
-              <div className="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
-                <CheckCircle2 size={14} />
-              </div>
-            ) : (
-              <div className="w-6 h-6 rounded-lg bg-rose-500/20 text-rose-400 flex items-center justify-center">
-                <AlertCircle size={14} />
-              </div>
-            )}
-
-            <div>
-              <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
-                <span>Render hàng loạt</span>
-                <span className="text-[10px] px-1.5 py-0.2 bg-amber-500/20 text-amber-300 rounded font-mono">
-                  {batchState.completedVideosCount}/{batchState.totalVideos} videos
-                </span>
-              </h4>
+      <div
+        className="fixed bottom-20 sm:bottom-6 right-3 sm:right-6 z-50 flex items-center gap-2.5 bg-slate-950/95 hover:bg-slate-900/95 backdrop-blur-md border border-slate-700/80 hover:border-amber-500/50 shadow-[0_8px_30px_rgb(0,0,0,0.7)] rounded-full px-3.5 py-2 text-slate-100 transition-all cursor-pointer group animate-in fade-in slide-in-from-bottom-3"
+        onClick={onOpenDetails}
+        title="Bấm để xem chi tiết tiến trình batch render"
+      >
+        <div className="flex items-center justify-center shrink-0">
+          {isProcessing ? (
+            <div className="w-5 h-5 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center">
+              <Boxes size={12} className="animate-pulse" />
             </div>
-          </div>
-
-          <div className="flex items-center gap-1">
-            <button
-              onClick={onOpenDetails}
-              className="p-1 text-slate-400 hover:text-white rounded hover:bg-slate-800 transition"
-              title="Mở bảng chi tiết"
-            >
-              <Maximize2 size={13} />
-            </button>
-            <button
-              onClick={onDismiss}
-              className="p-1 text-slate-400 hover:text-white rounded hover:bg-slate-800 transition"
-              title="Ẩn thông báo"
-            >
-              <X size={13} />
-            </button>
-          </div>
+          ) : isCompleted ? (
+            <div className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+              <CheckCircle2 size={13} />
+            </div>
+          ) : (
+            <div className="w-5 h-5 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center">
+              <AlertCircle size={13} />
+            </div>
+          )}
         </div>
 
-        {/* Progress Bar */}
-        <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden mb-2">
-          <div
-            className={`h-full transition-all duration-300 ${
-              isCompleted
-                ? 'bg-emerald-500'
-                : isFailed
-                ? 'bg-rose-500'
-                : 'bg-gradient-to-r from-amber-500 to-amber-400'
-            }`}
-            style={{ width: `${isCompleted ? 100 : batchState.progress}%` }}
-          />
-        </div>
-
-        {/* Status Line */}
-        <div className="text-[11px] text-slate-300 line-clamp-1 mb-2.5">
-          {batchState.stage || 'Đang render theo lô...'}
-        </div>
-
-        {/* Footer */}
-        <div className="flex items-center justify-between text-[10px] pt-1 border-t border-slate-800/80">
-          <span className="text-slate-400 font-mono">
-            Đã xong {batchState.completedVideosCount}/{batchState.totalVideos} video
+        <div className="flex items-center gap-2 text-xs font-mono select-none">
+          <span className="text-amber-300 font-bold">
+            [{batchState.completedVideosCount}/{batchState.totalVideos}]
           </span>
-          <button
-            onClick={onOpenDetails}
-            className="text-amber-400 hover:text-amber-300 font-semibold underline underline-offset-2"
+          <span className="text-slate-300">
+            <strong className="text-slate-400 font-medium">Frames:</strong> {framesText}
+          </span>
+          <span className="text-slate-600">|</span>
+          <span className="text-slate-300">
+            <strong className="text-slate-400 font-medium">FPS:</strong> {fpsText}
+          </span>
+          <span className="text-slate-600">|</span>
+          <span className="text-slate-300">
+            <strong className="text-slate-400 font-medium">Time:</strong> {timeText}
+          </span>
+          <span className="text-slate-600">|</span>
+          <span
+            className={`font-bold ${
+              isProcessing
+                ? 'text-amber-400'
+                : isCompleted
+                ? 'text-emerald-400'
+                : 'text-rose-400'
+            }`}
           >
-            Mở chi tiết
-          </button>
+            {statusText}
+            {isProcessing && ` (${batchState.progress}%)`}
+          </span>
         </div>
+
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onDismiss();
+          }}
+          className="p-1 text-slate-500 hover:text-slate-300 hover:bg-slate-800 rounded-full transition ml-0.5"
+          title="Đóng"
+        >
+          <X size={12} />
+        </button>
       </div>
     );
   }

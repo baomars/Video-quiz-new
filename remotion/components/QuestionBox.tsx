@@ -61,9 +61,10 @@ export const QuestionBox: React.FC<QuestionBoxProps> = React.memo(({
     ? getEntranceTransform(style.animation || 'pop', frame, fps, delayFrame)
     : { opacity: 1, transform: 'none' };
 
-  // If no illustration, slightly expand question box vertically for better balance
-  const effectiveY = !hasIllustration ? Math.max(22, style.y - 12) : style.y;
-  const effectiveHeight = !hasIllustration ? Math.min(30, style.height + 10) : style.height;
+  // If no illustration, slightly expand question box vertically for better balance ONLY IF it was placed in the bottom half
+  const isBelowIllustration = (style.y ?? 46) >= 35;
+  const effectiveY = (!hasIllustration && isBelowIllustration) ? Math.max(20, style.y - 12) : (style.y ?? 20);
+  const effectiveHeight = (!hasIllustration && isBelowIllustration) ? Math.min(26, style.height + 6) : (style.height ?? 18);
 
   // Horizontal Alignment of the Box
   const width = style.width ?? 88;
@@ -106,6 +107,70 @@ export const QuestionBox: React.FC<QuestionBoxProps> = React.memo(({
   const strokeColor = style.textStrokeColor || 'rgba(0,0,0,0.85)';
   const textColor = style.textColor || style.color || '#0f172a';
 
+  // Shape specific variations
+  let computedBorderRadius = `${style.borderRadius ?? 20}px`;
+  let computedBorderStyle = style.borderStyle || 'solid';
+  let computedClipPath: string | undefined = undefined;
+  let effectiveBoxShadow = boxShadow;
+
+  switch (style.shape) {
+    case 'rectangle':
+      computedBorderRadius = '0px';
+      break;
+    case 'circle':
+    case 'ellipse':
+      computedBorderRadius = '50%';
+      break;
+    case 'hexagon':
+      computedClipPath = 'polygon(15% 0%, 85% 0%, 100% 50%, 85% 100%, 15% 100%, 0% 50%)';
+      computedBorderRadius = '2px';
+      break;
+    case 'diamond':
+      computedClipPath = 'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)';
+      computedBorderRadius = '0px';
+      break;
+    case 'hud': {
+      const chamfer = style.chamferSize || 16;
+      computedClipPath = `polygon(${chamfer}px 0%, calc(100% - ${chamfer}px) 0%, 100% ${chamfer}px, 100% calc(100% - ${chamfer}px), calc(100% - ${chamfer}px) 100%, ${chamfer}px 100%, 0% calc(100% - ${chamfer}px), 0% ${chamfer}px)`;
+      computedBorderRadius = '4px';
+      break;
+    }
+    case 'blob':
+      computedBorderRadius = '42% 58% 70% 30% / 45% 45% 55% 55%';
+      break;
+    case 'ticket':
+      computedClipPath = 'polygon(0% 0%, 100% 0%, 100% calc(50% - 12px), calc(100% - 12px) 50%, 100% calc(50% + 12px), 100% 100%, 0% 100%, 0% calc(50% + 12px), 12px 50%, 0% calc(50% - 12px))';
+      break;
+    case 'badge':
+      computedClipPath = 'polygon(12% 0%, 88% 0%, 100% 12%, 100% 88%, 88% 100%, 12% 100%, 0% 88%, 0% 12%)';
+      break;
+    case 'bubble':
+      computedBorderRadius = '30px 12px 30px 12px';
+      break;
+    case 'speech-bubble':
+      computedBorderRadius = '24px 24px 24px 6px';
+      break;
+    case 'pill':
+    case 'capsule':
+      computedBorderRadius = '9999px';
+      break;
+    case 'doodle':
+      computedBorderStyle = style.borderStyle || 'dashed';
+      break;
+    case 'minimal':
+      effectiveBoxShadow = 'none';
+      break;
+    case 'color-block':
+    case 'rounded':
+    default:
+      computedBorderRadius = `${style.borderRadius ?? 20}px`;
+      break;
+  }
+
+  if (style.popShadow) {
+    effectiveBoxShadow = `${style.popShadowOffset || 6}px ${style.popShadowOffset || 6}px 0px ${style.popShadowColor || '#111827'}`;
+  }
+
   return (
     <div
       style={{
@@ -115,9 +180,10 @@ export const QuestionBox: React.FC<QuestionBoxProps> = React.memo(({
         width: `${style.width}%`,
         height: `${effectiveHeight}%`,
         backgroundColor: effectiveBg,
-        borderRadius: `${style.borderRadius ?? 20}px`,
-        border: `${borderWidth}px solid ${borderColor}`,
-        boxShadow,
+        borderRadius: computedBorderRadius,
+        border: borderWidth > 0 ? `${borderWidth}px ${computedBorderStyle} ${borderColor}` : 'none',
+        clipPath: computedClipPath,
+        boxShadow: effectiveBoxShadow,
         padding: `${style.padding || 18}px`,
         display: 'flex',
         flexDirection: 'column',
@@ -145,6 +211,17 @@ export const QuestionBox: React.FC<QuestionBoxProps> = React.memo(({
       >
         {questionText}
       </div>
+      {style.shape === 'minimal' && (
+        <div
+          style={{
+            width: '60px',
+            height: '2px',
+            backgroundColor: borderColor || primaryColor || 'rgba(255,255,255,0.4)',
+            marginTop: '12px',
+            borderRadius: '1px'
+          }}
+        />
+      )}
     </div>
   );
 });

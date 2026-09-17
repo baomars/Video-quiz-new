@@ -714,8 +714,12 @@ export class RenderManager {
     const ttsMap: Record<string, QuestionTTSData> = {};
     let ttsCompletedCount = 0;
 
-    // Process questions in parallel chunks of 3 (Question TTS + Explanation TTS concurrently)
+    // Process questions in parallel chunks of 3 (Question TTS + Answer TTS + Explanation TTS concurrently)
     const chunkSize = 3;
+    const answerTtsEnabled = (template.components.answerButtons as any)?.readTts !== false &&
+      (langConfig?.readAnswer !== false);
+    const explanationTtsEnabled = template.components.explanation?.readTts !== false;
+
     for (let chunkIdx = 0; chunkIdx < quiz.questions.length; chunkIdx += chunkSize) {
       const chunk = quiz.questions.slice(chunkIdx, chunkIdx + chunkSize);
       await Promise.all(
@@ -723,11 +727,16 @@ export class RenderManager {
           const i = chunkIdx + subIdx;
           const qData: QuestionTTSData = {};
           const revealPrefix = langConfig.revealScript || (language === 'vi' ? 'Đáp án chính xác là' : 'The correct answer is');
-          const correctText = `${revealPrefix} ${q.correctAnswer}. ${q.explanation || ''}`.trim();
+          const answerOption = (q.options && q.options[q.correctAnswer])
+            ? `${q.correctAnswer}. ${q.options[q.correctAnswer]}`
+            : q.correctAnswer;
+          const answerText = `${revealPrefix} ${answerOption}`.trim();
+          const expText = (q.explanation || '').trim();
 
           try {
-            // Concurrently generate Question & Explanation TTS for this question
-            const [qRes, expRes] = await Promise.all([
+            // Concurrently generate Question, Answer, and Explanation TTS
+            const ttsPromises: [Promise<any>, Promise<any> | Promise<null>, Promise<any> | Promise<null>] = [
+              // 1. Question Voiceover
               this.ttsProvider.generate({
                 text: q.question,
                 voice: langConfig.voice,
@@ -737,25 +746,50 @@ export class RenderManager {
                 channelId: channel.id,
                 lang: language
               }),
-              this.ttsProvider.generate({
-                text: correctText,
-                voice: langConfig.voice,
-                rate: langConfig.rate,
-                pitch: langConfig.pitch,
-                volume: langConfig.volume,
-                channelId: channel.id,
-                lang: language
-              })
-            ]);
+              // 2. Answer TTS (đáp án đúng)
+              answerTtsEnabled
+                ? this.ttsProvider.generate({
+                    text: answerText,
+                    voice: langConfig.voice,
+                    rate: langConfig.rate,
+                    pitch: langConfig.pitch,
+                    volume: langConfig.volume,
+                    channelId: channel.id,
+                    lang: language
+                  })
+                : Promise.resolve(null),
+              // 3. Explanation TTS (đọc giải thích)
+              (explanationTtsEnabled && expText.length > 0)
+                ? this.ttsProvider.generate({
+                    text: expText,
+                    voice: langConfig.voice,
+                    rate: langConfig.rate,
+                    pitch: langConfig.pitch,
+                    volume: langConfig.volume,
+                    channelId: channel.id,
+                    lang: language
+                  })
+                : Promise.resolve(null)
+            ];
 
-            if (!qRes || !qRes.url || !expRes || !expRes.url) {
+            const [qRes, ansRes, expRes] = await Promise.all(ttsPromises);
+
+            if (!qRes || !qRes.url) {
               throw new Error(`File TTS rỗng cho câu ${i + 1}`);
             }
 
             qData.questionUrl = qRes.url;
             qData.questionDuration = qRes.durationSec;
-            qData.explanationUrl = expRes.url;
-            qData.explanationDuration = expRes.durationSec;
+
+            if (answerTtsEnabled && ansRes && ansRes.url) {
+              qData.revealUrl = ansRes.url;
+              qData.revealDuration = ansRes.durationSec;
+            }
+
+            if (explanationTtsEnabled && expRes && expRes.url) {
+              qData.explanationUrl = expRes.url;
+              qData.explanationDuration = expRes.durationSec;
+            }
 
             ttsMap[q.id] = qData;
             ttsCompletedCount++;
@@ -773,12 +807,18 @@ export class RenderManager {
       );
     }
 
-    // MANDATORY ASSERTION: Every single question must have both Question TTS and Explanation TTS
+    // MANDATORY ASSERTION: Every single question must have Question TTS and required components
     for (let i = 0; i < quiz.questions.length; i++) {
       const q = quiz.questions[i];
       const data = ttsMap[q.id];
-      if (!data || !data.questionUrl || !data.explanationUrl) {
-        throw new Error(`[LỖI KIỂM ĐỊNH TTS] Câu hỏi #${i + 1} (${q.id}) bị thiếu TTS. Không được phép render video thiếu âm thanh!`);
+      if (!data || !data.questionUrl) {
+        throw new Error(`[LỖI KIỂM ĐỊNH TTS] Câu hỏi #${i + 1} (${q.id}) bị thiếu TTS câu hỏi.`);
+      }
+      if (answerTtsEnabled && !data.revealUrl) {
+        throw new Error(`[LỖI KIỂM ĐỊNH TTS] Câu hỏi #${i + 1} (${q.id}) bị thiếu TTS đáp án.`);
+      }
+      if (explanationTtsEnabled && q.explanation && q.explanation.trim() && !data.explanationUrl) {
+        throw new Error(`[LỖI KIỂM ĐỊNH TTS] Câu hỏi #${i + 1} (${q.id}) bị thiếu TTS giải thích.`);
       }
     }
 

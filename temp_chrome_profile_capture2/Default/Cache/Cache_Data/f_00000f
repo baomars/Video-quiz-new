@@ -1,0 +1,496 @@
+import { createHotContext as __vite__createHotContext } from "/@vite/client";import.meta.hot = __vite__createHotContext("/src/components/editor/AssetManagerModal.tsx");import __vite__cjsImport0_react_jsxDevRuntime from "/@fs/D:/source code/Video quiz new/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=234e6012"; const jsxDEV = __vite__cjsImport0_react_jsxDevRuntime["jsxDEV"];
+import * as RefreshRuntime from "/@react-refresh";
+const inWebWorker = typeof WorkerGlobalScope !== "undefined" && self instanceof WorkerGlobalScope;
+let prevRefreshReg;
+let prevRefreshSig;
+if (import.meta.hot && !inWebWorker) {
+  if (!window.$RefreshReg$) {
+    throw new Error(
+      "@vitejs/plugin-react can't detect preamble. Something is wrong."
+    );
+  }
+  prevRefreshReg = window.$RefreshReg$;
+  prevRefreshSig = window.$RefreshSig$;
+  window.$RefreshReg$ = RefreshRuntime.getRefreshReg("D:/source code/Video quiz new/frontend/src/components/editor/AssetManagerModal.tsx");
+  window.$RefreshSig$ = RefreshRuntime.createSignatureFunctionForTransform;
+}
+var _s = $RefreshSig$();
+import __vite__cjsImport3_react from "/@fs/D:/source code/Video quiz new/node_modules/.vite/deps/react.js?v=234e6012"; const useState = __vite__cjsImport3_react["useState"]; const useRef = __vite__cjsImport3_react["useRef"];
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription
+} from "/src/components/ui/dialog.tsx";
+import {
+  FolderOpen,
+  Volume2,
+  Image as ImageIcon,
+  Upload,
+  Play,
+  Sparkles
+} from "/@fs/D:/source code/Video quiz new/node_modules/.vite/deps/lucide-react.js?v=e1a71809";
+import { uploadAudio, uploadImage } from "/src/services/api.ts";
+export const AssetManagerModal = ({
+  isOpen,
+  onClose,
+  channel,
+  template,
+  onChannelChange,
+  onTemplateChange
+}) => {
+  _s();
+  const [activeTab, setActiveTab] = useState("sfx");
+  const bgFileInputRef = useRef(null);
+  const logoFileInputRef = useRef(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const playPreview = (url) => {
+    if (!url) return;
+    const audio = new Audio(url);
+    audio.play().catch((err) => console.error("Audio play error:", err));
+  };
+  const handleUploadSfx = async (key, file) => {
+    try {
+      setIsUploading(true);
+      const res = await uploadAudio(file);
+      onChannelChange({
+        ...channel,
+        audio: {
+          ...channel.audio,
+          sfx: {
+            ...channel.audio?.sfx,
+            [key]: res.url
+          }
+        }
+      });
+    } catch (err) {
+      alert(`Lỗi upload SFX: ${err.message}`);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+  const handleUploadBgImage = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setIsUploading(true);
+      const res = await uploadImage(file);
+      onTemplateChange({
+        ...template,
+        components: {
+          ...template.components,
+          background: {
+            ...template.components.background,
+            type: "image",
+            imageUrl: res.optimizedUrl || res.originalUrl
+          }
+        }
+      });
+    } catch (err) {
+      alert(`Lỗi upload ảnh nền: ${err.message}`);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+  const handleUploadLogo = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setIsUploading(true);
+      const res = await uploadImage(file);
+      onChannelChange({
+        ...channel,
+        brand: {
+          ...channel.brand,
+          logoUrl: res.optimizedUrl || res.originalUrl
+        }
+      });
+    } catch (err) {
+      alert(`Lỗi upload logo: ${err.message}`);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+  return /* @__PURE__ */ jsxDEV(Dialog, { open: isOpen, onOpenChange: (open) => !open && onClose(), children: /* @__PURE__ */ jsxDEV(DialogContent, { className: "sm:max-w-3xl bg-slate-950 border-slate-800 text-slate-100 max-h-[88vh] overflow-y-auto p-5 scrollbar-thin scrollbar-thumb-slate-800", children: [
+    /* @__PURE__ */ jsxDEV(DialogHeader, { className: "border-b border-slate-800 pb-3", children: /* @__PURE__ */ jsxDEV("div", { className: "flex items-center gap-2.5", children: [
+      /* @__PURE__ */ jsxDEV("div", { className: "w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center", children: /* @__PURE__ */ jsxDEV(FolderOpen, { size: 18 }, void 0, false, {
+        fileName: "D:/source code/Video quiz new/frontend/src/components/editor/AssetManagerModal.tsx",
+        lineNumber: 142,
+        columnNumber: 15
+      }, this) }, void 0, false, {
+        fileName: "D:/source code/Video quiz new/frontend/src/components/editor/AssetManagerModal.tsx",
+        lineNumber: 141,
+        columnNumber: 13
+      }, this),
+      /* @__PURE__ */ jsxDEV("div", { children: [
+        /* @__PURE__ */ jsxDEV(DialogTitle, { className: "text-base font-extrabold text-white", children: "Quản Lý Tài Nguyên & Âm Thanh (Assets Library)" }, void 0, false, {
+          fileName: "D:/source code/Video quiz new/frontend/src/components/editor/AssetManagerModal.tsx",
+          lineNumber: 145,
+          columnNumber: 15
+        }, this),
+        /* @__PURE__ */ jsxDEV(DialogDescription, { className: "text-xs text-slate-400", children: "Tùy chỉnh SFX, nhạc nền BGM, ảnh nền và logo watermark cho kênh." }, void 0, false, {
+          fileName: "D:/source code/Video quiz new/frontend/src/components/editor/AssetManagerModal.tsx",
+          lineNumber: 148,
+          columnNumber: 15
+        }, this)
+      ] }, void 0, true, {
+        fileName: "D:/source code/Video quiz new/frontend/src/components/editor/AssetManagerModal.tsx",
+        lineNumber: 144,
+        columnNumber: 13
+      }, this)
+    ] }, void 0, true, {
+      fileName: "D:/source code/Video quiz new/frontend/src/components/editor/AssetManagerModal.tsx",
+      lineNumber: 140,
+      columnNumber: 11
+    }, this) }, void 0, false, {
+      fileName: "D:/source code/Video quiz new/frontend/src/components/editor/AssetManagerModal.tsx",
+      lineNumber: 139,
+      columnNumber: 9
+    }, this),
+    /* @__PURE__ */ jsxDEV("div", { className: "flex items-center gap-2 border-b border-slate-800 pb-2", children: [
+      { id: "sfx", label: "SFX Âm Thanh", icon: /* @__PURE__ */ jsxDEV(Volume2, { size: 13 }, void 0, false, {
+        fileName: "D:/source code/Video quiz new/frontend/src/components/editor/AssetManagerModal.tsx",
+        lineNumber: 158,
+        columnNumber: 53
+      }, this) },
+      { id: "backgrounds", label: "Ảnh Nền", icon: /* @__PURE__ */ jsxDEV(ImageIcon, { size: 13 }, void 0, false, {
+        fileName: "D:/source code/Video quiz new/frontend/src/components/editor/AssetManagerModal.tsx",
+        lineNumber: 159,
+        columnNumber: 56
+      }, this) },
+      { id: "brand", label: "Logo & Nhận Diện", icon: /* @__PURE__ */ jsxDEV(Sparkles, { size: 13 }, void 0, false, {
+        fileName: "D:/source code/Video quiz new/frontend/src/components/editor/AssetManagerModal.tsx",
+        lineNumber: 160,
+        columnNumber: 59
+      }, this) }
+    ].map(
+      (t) => /* @__PURE__ */ jsxDEV(
+        "button",
+        {
+          onClick: () => setActiveTab(t.id),
+          className: `px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${activeTab === t.id ? "bg-amber-500 text-slate-950 shadow-xs" : "text-slate-400 hover:text-white bg-slate-900"}`,
+          children: [
+            t.icon,
+            /* @__PURE__ */ jsxDEV("span", { children: t.label }, void 0, false, {
+              fileName: "D:/source code/Video quiz new/frontend/src/components/editor/AssetManagerModal.tsx",
+              lineNumber: 172,
+              columnNumber: 15
+            }, this)
+          ]
+        },
+        t.id,
+        true,
+        {
+          fileName: "D:/source code/Video quiz new/frontend/src/components/editor/AssetManagerModal.tsx",
+          lineNumber: 162,
+          columnNumber: 11
+        },
+        this
+      )
+    ) }, void 0, false, {
+      fileName: "D:/source code/Video quiz new/frontend/src/components/editor/AssetManagerModal.tsx",
+      lineNumber: 156,
+      columnNumber: 9
+    }, this),
+    activeTab === "sfx" && /* @__PURE__ */ jsxDEV("div", { className: "space-y-2.5 py-2", children: [
+      { id: "countdown", label: "Tích tắc đếm ngược (Tick)", desc: "Phát từng giây trong giai đoạn đếm ngược" },
+      { id: "countdownFinish", label: "Chuông hết giờ (Bell)", desc: "Phát khi countdown về 0" },
+      { id: "correctAnswer", label: "Keng đáp án đúng (Chime)", desc: "Phát khi đáp án đúng xuất hiện" },
+      { id: "transition", label: "Whoosh chuyển câu (Transition)", desc: "Phát đồng bộ khi chuyển sang câu mới" },
+      { id: "reveal", label: "Swoosh mở giải thích (Reveal)", desc: "Phát khi mở thẻ giải thích" }
+    ].map((sfx) => {
+      const customUrl = channel.audio?.sfx?.[sfx.id];
+      return /* @__PURE__ */ jsxDEV(
+        "div",
+        {
+          className: "flex items-center justify-between p-3 rounded-xl bg-slate-900 border border-slate-800",
+          children: [
+            /* @__PURE__ */ jsxDEV("div", { children: [
+              /* @__PURE__ */ jsxDEV("h4", { className: "text-xs font-bold text-slate-200", children: sfx.label }, void 0, false, {
+                fileName: "D:/source code/Video quiz new/frontend/src/components/editor/AssetManagerModal.tsx",
+                lineNumber: 194,
+                columnNumber: 21
+              }, this),
+              /* @__PURE__ */ jsxDEV("p", { className: "text-[11px] text-slate-500", children: sfx.desc }, void 0, false, {
+                fileName: "D:/source code/Video quiz new/frontend/src/components/editor/AssetManagerModal.tsx",
+                lineNumber: 195,
+                columnNumber: 21
+              }, this),
+              /* @__PURE__ */ jsxDEV("span", { className: "text-[10px] font-mono text-amber-400", children: customUrl ? `Tệp riêng: ${customUrl.split("/").pop()}` : "Mặc định Studio" }, void 0, false, {
+                fileName: "D:/source code/Video quiz new/frontend/src/components/editor/AssetManagerModal.tsx",
+                lineNumber: 196,
+                columnNumber: 21
+              }, this)
+            ] }, void 0, true, {
+              fileName: "D:/source code/Video quiz new/frontend/src/components/editor/AssetManagerModal.tsx",
+              lineNumber: 193,
+              columnNumber: 19
+            }, this),
+            /* @__PURE__ */ jsxDEV("div", { className: "flex items-center gap-2", children: [
+              /* @__PURE__ */ jsxDEV(
+                "button",
+                {
+                  onClick: () => playPreview(customUrl || `/assets/sfx/${sfx.id}.mp3`),
+                  className: "px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-400 text-xs font-bold flex items-center gap-1",
+                  children: [
+                    /* @__PURE__ */ jsxDEV(Play, { size: 13 }, void 0, false, {
+                      fileName: "D:/source code/Video quiz new/frontend/src/components/editor/AssetManagerModal.tsx",
+                      lineNumber: 206,
+                      columnNumber: 23
+                    }, this),
+                    /* @__PURE__ */ jsxDEV("span", { children: "Nghe thử" }, void 0, false, {
+                      fileName: "D:/source code/Video quiz new/frontend/src/components/editor/AssetManagerModal.tsx",
+                      lineNumber: 207,
+                      columnNumber: 23
+                    }, this)
+                  ]
+                },
+                void 0,
+                true,
+                {
+                  fileName: "D:/source code/Video quiz new/frontend/src/components/editor/AssetManagerModal.tsx",
+                  lineNumber: 202,
+                  columnNumber: 21
+                },
+                this
+              ),
+              /* @__PURE__ */ jsxDEV("label", { className: "px-2.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold flex items-center gap-1 cursor-pointer", children: [
+                /* @__PURE__ */ jsxDEV(Upload, { size: 13 }, void 0, false, {
+                  fileName: "D:/source code/Video quiz new/frontend/src/components/editor/AssetManagerModal.tsx",
+                  lineNumber: 211,
+                  columnNumber: 23
+                }, this),
+                /* @__PURE__ */ jsxDEV("span", { children: "Upload mới" }, void 0, false, {
+                  fileName: "D:/source code/Video quiz new/frontend/src/components/editor/AssetManagerModal.tsx",
+                  lineNumber: 212,
+                  columnNumber: 23
+                }, this),
+                /* @__PURE__ */ jsxDEV(
+                  "input",
+                  {
+                    type: "file",
+                    accept: "audio/*",
+                    className: "hidden",
+                    onChange: (e) => {
+                      const f = e.target.files?.[0];
+                      if (f) handleUploadSfx(sfx.id, f);
+                    }
+                  },
+                  void 0,
+                  false,
+                  {
+                    fileName: "D:/source code/Video quiz new/frontend/src/components/editor/AssetManagerModal.tsx",
+                    lineNumber: 213,
+                    columnNumber: 23
+                  },
+                  this
+                )
+              ] }, void 0, true, {
+                fileName: "D:/source code/Video quiz new/frontend/src/components/editor/AssetManagerModal.tsx",
+                lineNumber: 210,
+                columnNumber: 21
+              }, this)
+            ] }, void 0, true, {
+              fileName: "D:/source code/Video quiz new/frontend/src/components/editor/AssetManagerModal.tsx",
+              lineNumber: 201,
+              columnNumber: 19
+            }, this)
+          ]
+        },
+        sfx.id,
+        true,
+        {
+          fileName: "D:/source code/Video quiz new/frontend/src/components/editor/AssetManagerModal.tsx",
+          lineNumber: 189,
+          columnNumber: 15
+        },
+        this
+      );
+    }) }, void 0, false, {
+      fileName: "D:/source code/Video quiz new/frontend/src/components/editor/AssetManagerModal.tsx",
+      lineNumber: 179,
+      columnNumber: 9
+    }, this),
+    activeTab === "backgrounds" && /* @__PURE__ */ jsxDEV("div", { className: "space-y-3 py-2", children: [
+      /* @__PURE__ */ jsxDEV("div", { className: "flex items-center justify-between", children: [
+        /* @__PURE__ */ jsxDEV("span", { className: "text-xs font-bold text-slate-300", children: "Ảnh nền hiện tại:" }, void 0, false, {
+          fileName: "D:/source code/Video quiz new/frontend/src/components/editor/AssetManagerModal.tsx",
+          lineNumber: 234,
+          columnNumber: 15
+        }, this),
+        /* @__PURE__ */ jsxDEV("label", { className: "px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold flex items-center gap-1 cursor-pointer", children: [
+          /* @__PURE__ */ jsxDEV(Upload, { size: 13 }, void 0, false, {
+            fileName: "D:/source code/Video quiz new/frontend/src/components/editor/AssetManagerModal.tsx",
+            lineNumber: 236,
+            columnNumber: 17
+          }, this),
+          /* @__PURE__ */ jsxDEV("span", { children: "Upload Ảnh Nền Mới" }, void 0, false, {
+            fileName: "D:/source code/Video quiz new/frontend/src/components/editor/AssetManagerModal.tsx",
+            lineNumber: 237,
+            columnNumber: 17
+          }, this),
+          /* @__PURE__ */ jsxDEV(
+            "input",
+            {
+              type: "file",
+              accept: "image/*",
+              className: "hidden",
+              onChange: handleUploadBgImage
+            },
+            void 0,
+            false,
+            {
+              fileName: "D:/source code/Video quiz new/frontend/src/components/editor/AssetManagerModal.tsx",
+              lineNumber: 238,
+              columnNumber: 17
+            },
+            this
+          )
+        ] }, void 0, true, {
+          fileName: "D:/source code/Video quiz new/frontend/src/components/editor/AssetManagerModal.tsx",
+          lineNumber: 235,
+          columnNumber: 15
+        }, this)
+      ] }, void 0, true, {
+        fileName: "D:/source code/Video quiz new/frontend/src/components/editor/AssetManagerModal.tsx",
+        lineNumber: 233,
+        columnNumber: 13
+      }, this),
+      template.components.background?.imageUrl ? /* @__PURE__ */ jsxDEV("div", { className: "relative h-48 rounded-xl overflow-hidden border border-slate-800", children: /* @__PURE__ */ jsxDEV(
+        "img",
+        {
+          src: template.components.background.imageUrl,
+          alt: "Background",
+          className: "w-full h-full object-cover"
+        },
+        void 0,
+        false,
+        {
+          fileName: "D:/source code/Video quiz new/frontend/src/components/editor/AssetManagerModal.tsx",
+          lineNumber: 249,
+          columnNumber: 17
+        },
+        this
+      ) }, void 0, false, {
+        fileName: "D:/source code/Video quiz new/frontend/src/components/editor/AssetManagerModal.tsx",
+        lineNumber: 248,
+        columnNumber: 11
+      }, this) : /* @__PURE__ */ jsxDEV("div", { className: "p-8 text-center text-xs text-slate-500 bg-slate-900 rounded-xl border border-slate-800", children: "Đang dùng nền Gradient / Màu trơn" }, void 0, false, {
+        fileName: "D:/source code/Video quiz new/frontend/src/components/editor/AssetManagerModal.tsx",
+        lineNumber: 256,
+        columnNumber: 11
+      }, this)
+    ] }, void 0, true, {
+      fileName: "D:/source code/Video quiz new/frontend/src/components/editor/AssetManagerModal.tsx",
+      lineNumber: 232,
+      columnNumber: 9
+    }, this),
+    activeTab === "brand" && /* @__PURE__ */ jsxDEV("div", { className: "space-y-3 py-2", children: /* @__PURE__ */ jsxDEV("div", { className: "p-3 bg-slate-900 rounded-xl border border-slate-800 space-y-2", children: [
+      /* @__PURE__ */ jsxDEV("h4", { className: "text-xs font-bold text-slate-200", children: "Logo / Watermark Kênh:" }, void 0, false, {
+        fileName: "D:/source code/Video quiz new/frontend/src/components/editor/AssetManagerModal.tsx",
+        lineNumber: 267,
+        columnNumber: 15
+      }, this),
+      /* @__PURE__ */ jsxDEV("div", { className: "flex items-center gap-3", children: [
+        /* @__PURE__ */ jsxDEV("div", { className: "w-16 h-16 rounded-xl border border-slate-700 bg-slate-950 overflow-hidden flex items-center justify-center", children: channel.brand?.logoUrl ? /* @__PURE__ */ jsxDEV(
+          "img",
+          {
+            src: channel.brand.logoUrl,
+            alt: "Logo",
+            className: "w-full h-full object-contain"
+          },
+          void 0,
+          false,
+          {
+            fileName: "D:/source code/Video quiz new/frontend/src/components/editor/AssetManagerModal.tsx",
+            lineNumber: 271,
+            columnNumber: 17
+          },
+          this
+        ) : /* @__PURE__ */ jsxDEV("span", { className: "text-xs font-bold text-slate-600", children: "No Logo" }, void 0, false, {
+          fileName: "D:/source code/Video quiz new/frontend/src/components/editor/AssetManagerModal.tsx",
+          lineNumber: 277,
+          columnNumber: 17
+        }, this) }, void 0, false, {
+          fileName: "D:/source code/Video quiz new/frontend/src/components/editor/AssetManagerModal.tsx",
+          lineNumber: 269,
+          columnNumber: 17
+        }, this),
+        /* @__PURE__ */ jsxDEV("label", { className: "px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold flex items-center gap-1 cursor-pointer", children: [
+          /* @__PURE__ */ jsxDEV(Upload, { size: 13 }, void 0, false, {
+            fileName: "D:/source code/Video quiz new/frontend/src/components/editor/AssetManagerModal.tsx",
+            lineNumber: 282,
+            columnNumber: 19
+          }, this),
+          /* @__PURE__ */ jsxDEV("span", { children: "Upload Logo Kênh" }, void 0, false, {
+            fileName: "D:/source code/Video quiz new/frontend/src/components/editor/AssetManagerModal.tsx",
+            lineNumber: 283,
+            columnNumber: 19
+          }, this),
+          /* @__PURE__ */ jsxDEV(
+            "input",
+            {
+              type: "file",
+              accept: "image/*",
+              className: "hidden",
+              onChange: handleUploadLogo
+            },
+            void 0,
+            false,
+            {
+              fileName: "D:/source code/Video quiz new/frontend/src/components/editor/AssetManagerModal.tsx",
+              lineNumber: 284,
+              columnNumber: 19
+            },
+            this
+          )
+        ] }, void 0, true, {
+          fileName: "D:/source code/Video quiz new/frontend/src/components/editor/AssetManagerModal.tsx",
+          lineNumber: 281,
+          columnNumber: 17
+        }, this)
+      ] }, void 0, true, {
+        fileName: "D:/source code/Video quiz new/frontend/src/components/editor/AssetManagerModal.tsx",
+        lineNumber: 268,
+        columnNumber: 15
+      }, this)
+    ] }, void 0, true, {
+      fileName: "D:/source code/Video quiz new/frontend/src/components/editor/AssetManagerModal.tsx",
+      lineNumber: 266,
+      columnNumber: 13
+    }, this) }, void 0, false, {
+      fileName: "D:/source code/Video quiz new/frontend/src/components/editor/AssetManagerModal.tsx",
+      lineNumber: 265,
+      columnNumber: 9
+    }, this)
+  ] }, void 0, true, {
+    fileName: "D:/source code/Video quiz new/frontend/src/components/editor/AssetManagerModal.tsx",
+    lineNumber: 138,
+    columnNumber: 7
+  }, this) }, void 0, false, {
+    fileName: "D:/source code/Video quiz new/frontend/src/components/editor/AssetManagerModal.tsx",
+    lineNumber: 137,
+    columnNumber: 5
+  }, this);
+};
+_s(AssetManagerModal, "UeTq68l/Ocz3PeKfRImnPYVCxKY=");
+_c = AssetManagerModal;
+var _c;
+$RefreshReg$(_c, "AssetManagerModal");
+if (import.meta.hot && !inWebWorker) {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+}
+if (import.meta.hot && !inWebWorker) {
+  RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {
+    RefreshRuntime.registerExportsForReactRefresh("D:/source code/Video quiz new/frontend/src/components/editor/AssetManagerModal.tsx", currentExports);
+    import.meta.hot.accept((nextExports) => {
+      if (!nextExports) return;
+      const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate("D:/source code/Video quiz new/frontend/src/components/editor/AssetManagerModal.tsx", currentExports, nextExports);
+      if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);
+    });
+  });
+}
+
+//# sourceMappingURL=data:application/json;base64,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QyxNQUFLO0FBQUEsY0FDTCxRQUFPO0FBQUEsY0FDUCxXQUFVO0FBQUEsY0FDVixVQUFVRjtBQUFBQTtBQUFBQSxZQUpaO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFBQTtBQUFBO0FBQUE7QUFBQSxVQUk2QjtBQUFBLGFBUC9CO0FBQUE7QUFBQTtBQUFBO0FBQUEsZUFTQTtBQUFBLFdBdEJGO0FBQUE7QUFBQTtBQUFBO0FBQUEsYUF1QkE7QUFBQSxTQXpCRjtBQUFBO0FBQUE7QUFBQTtBQUFBLFdBMEJBLEtBM0JGO0FBQUE7QUFBQTtBQUFBO0FBQUEsV0E0QkE7QUFBQSxPQTNKSjtBQUFBO0FBQUE7QUFBQTtBQUFBLFNBNkpBLEtBOUpGO0FBQUE7QUFBQTtBQUFBO0FBQUEsU0ErSkE7QUFFSjtBQUFFakMsR0F0UFdQLG1CQUFtRDtBQUFBLEtBQW5EQTtBQUFtRCxJQUFBc0Q7QUFBQSxhQUFBQSxJQUFBIiwibmFtZXMiOlsidXNlU3RhdGUiLCJ1c2VSZWYiLCJEaWFsb2ciLCJEaWFsb2dDb250ZW50IiwiRGlhbG9nSGVhZGVyIiwiRGlhbG9nVGl0bGUiLCJEaWFsb2dEZXNjcmlwdGlvbiIsIkZvbGRlck9wZW4iLCJWb2x1bWUyIiwiSW1hZ2UiLCJJbWFnZUljb24iLCJVcGxvYWQiLCJQbGF5IiwiU3BhcmtsZXMiLCJ1cGxvYWRBdWRpbyIsInVwbG9hZEltYWdlIiwiQXNzZXRNYW5hZ2VyTW9kYWwiLCJpc09wZW4iLCJvbkNsb3NlIiwiY2hhbm5lbCIsInRlbXBsYXRlIiwib25DaGFubmVsQ2hhbmdlIiwib25UZW1wbGF0ZUNoYW5nZSIsIl9zIiwiYWN0aXZlVGFiIiwic2V0QWN0aXZlVGFiIiwiYmdGaWxlSW5wdXRSZWYiLCJsb2dvRmlsZUlucHV0UmVmIiwiaXNVcGxvYWRpbmciLCJzZXRJc1VwbG9hZGluZyIsInBsYXlQcmV2aWV3IiwidXJsIiwiYXVkaW8iLCJBdWRpbyIsInBsYXkiLCJjYXRjaCIsImVyciIsImNvbnNvbGUiLCJlcnJvciIsImhhbmRsZVVwbG9hZFNmeCIsImtleSIsImZpbGUiLCJyZXMiLCJzZngiLCJhbGVydCIsIm1lc3NhZ2UiLCJoYW5kbGVVcGxvYWRCZ0ltYWdlIiwiZSIsInRhcmdldCIsImZpbGVzIiwiY29tcG9uZW50cyIsImJhY2tncm91bmQiLCJ0eXBlIiwiaW1hZ2VVcmwiLCJvcHRpbWl6ZWRVcmwiLCJvcmlnaW5hbFVybCIsImhhbmRsZVVwbG9hZExvZ28iLCJicmFuZCIsImxvZ29VcmwiLCJvcGVuIiwiaWQiLCJsYWJlbCIsImljb24iLCJtYXAiLCJ0IiwiZGVzYyIsImN1c3RvbVVybCIsInNwbGl0IiwicG9wIiwiZiIsIl9jIl0sImlnbm9yZUxpc3QiOltdLCJzb3VyY2VzIjpbIkFzc2V0TWFuYWdlck1vZGFsLnRzeCJdLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgUmVhY3QsIHsgdXNlU3RhdGUsIHVzZVJlZiB9IGZyb20gJ3JlYWN0JztcbmltcG9ydCB7IENoYW5uZWwsIFZpZGVvVGVtcGxhdGUgfSBmcm9tICcuLi8uLi8uLi8uLi9yZW1vdGlvbi90eXBlcy9pbmRleCc7XG5pbXBvcnQge1xuICBEaWFsb2csXG4gIERpYWxvZ0NvbnRlbnQsXG4gIERpYWxvZ0hlYWRlcixcbiAgRGlhbG9nVGl0bGUsXG4gIERpYWxvZ0Rlc2NyaXB0aW9uXG59IGZyb20gJy4uL3VpL2RpYWxvZyc7XG5pbXBvcnQge1xuICBGb2xkZXJPcGVuLFxuICBNdXNpYyxcbiAgVm9sdW1lMixcbiAgSW1hZ2UgYXMgSW1hZ2VJY29uLFxuICBVcGxvYWQsXG4gIFBsYXksXG4gIENoZWNrLFxuICBTcGFya2xlcyxcbiAgTGF5ZXJzXG59IGZyb20gJ2x1Y2lkZS1yZWFjdCc7XG5pbXBvcnQgeyBCdXR0b24gfSBmcm9tICcuLi91aS9idXR0b24nO1xuaW1wb3J0IHsgdXBsb2FkQXVkaW8sIHVwbG9hZEltYWdlIH0gZnJvbSAnLi4vLi4vc2VydmljZXMvYXBpJztcblxuaW50ZXJmYWNlIEFzc2V0TWFuYWdlck1vZGFsUHJvcHMge1xuICBpc09wZW46IGJvb2xlYW47XG4gIG9uQ2xvc2U6ICgpID0+IHZvaWQ7XG4gIGNoYW5uZWw6IENoYW5uZWw7XG4gIHRlbXBsYXRlOiBWaWRlb1RlbXBsYXRlO1xuICBvbkNoYW5uZWxDaGFuZ2U6ICh1cGRhdGVkOiBDaGFubmVsKSA9PiB2b2lkO1xuICBvblRlbXBsYXRlQ2hhbmdlOiAodXBkYXRlZDogVmlkZW9UZW1wbGF0ZSkgPT4gdm9pZDtcbn1cblxuZXhwb3J0IGNvbnN0IEFzc2V0TWFuYWdlck1vZGFsOiBSZWFjdC5GQzxBc3NldE1hbmFnZXJNb2RhbFByb3BzPiA9ICh7XG4gIGlzT3BlbixcbiAgb25DbG9zZSxcbiAgY2hhbm5lbCxcbiAgdGVtcGxhdGUsXG4gIG9uQ2hhbm5lbENoYW5nZSxcbiAgb25UZW1wbGF0ZUNoYW5nZVxufSkgPT4ge1xuICBjb25zdCBbYWN0aXZlVGFiLCBzZXRBY3RpdmVUYWJdID0gdXNlU3RhdGU8J3NmeCcgfCAnYmdtJyB8ICdiYWNrZ3JvdW5kcycgfCAnYnJhbmQnPignc2Z4Jyk7XG4gIGNvbnN0IGJnRmlsZUlucHV0UmVmID0gdXNlUmVmPEhUTUxJbnB1dEVsZW1lbnQgfCBudWxsPihudWxsKTtcbiAgY29uc3QgbG9nb0ZpbGVJbnB1dFJlZiA9IHVzZVJlZjxIVE1MSW5wdXRFbGVtZW50IHwgbnVsbD4obnVsbCk7XG4gIGNvbnN0IFtpc1VwbG9hZGluZywgc2V0SXNVcGxvYWRpbmddID0gdXNlU3RhdGUoZmFsc2UpO1xuXG4gIGNvbnN0IHBsYXlQcmV2aWV3ID0gKHVybD86IHN0cmluZykgPT4ge1xuICAgIGlmICghdXJsKSByZXR1cm47XG4gICAgY29uc3QgYXVkaW8gPSBuZXcgQXVkaW8odXJsKTtcbiAgICBhdWRpby5wbGF5KCkuY2F0Y2goKGVycikgPT4gY29uc29sZS5lcnJvcignQXVkaW8gcGxheSBlcnJvcjonLCBlcnIpKTtcbiAgfTtcblxuICBjb25zdCBoYW5kbGVVcGxvYWRTZnggPSBhc3luYyAoa2V5OiBzdHJpbmcsIGZpbGU6IEZpbGUpID0+IHtcbiAgICB0cnkge1xuICAgICAgc2V0SXNVcGxvYWRpbmcodHJ1ZSk7XG4gICAgICBjb25zdCByZXMgPSBhd2FpdCB1cGxvYWRBdWRpbyhmaWxlKTtcbiAgICAgIG9uQ2hhbm5lbENoYW5nZSh7XG4gICAgICAgIC4uLmNoYW5uZWwsXG4gICAgICAgIGF1ZGlvOiB7XG4gICAgICAgICAgLi4uY2hhbm5lbC5hdWRpbyxcbiAgICAgICAgICBzZng6IHtcbiAgICAgICAgICAgIC4uLmNoYW5uZWwuYXVkaW8/LnNmeCxcbiAgICAgICAgICAgIFtrZXldOiByZXMudXJsXG4gICAgICAgICAgfVxuICAgICAgICB9XG4gICAgICB9KTtcbiAgICB9IGNhdGNoIChlcnI6IGFueSkge1xuICAgICAgYWxlcnQoYEzhu5dpIHVwbG9hZCBTRlg6ICR7ZXJyLm1lc3NhZ2V9YCk7XG4gICAgfSBmaW5hbGx5IHtcbiAgICAgIHNldElzVXBsb2FkaW5nKGZhbHNlKTtcbiAgICB9XG4gIH07XG5cbiAgY29uc3QgaGFuZGxlVXBsb2FkQmdJbWFnZSA9IGFzeW5jIChlOiBSZWFjdC5DaGFuZ2VFdmVudDxIVE1MSW5wdXRFbGVtZW50PikgPT4ge1xuICAgIGNvbnN0IGZpbGUgPSBlLnRhcmdldC5maWxlcz8uWzBdO1xuICAgIGlmICghZmlsZSkgcmV0dXJuO1xuICAgIHRyeSB7XG4gICAgICBzZXRJc1VwbG9hZGluZyh0cnVlKTtcbiAgICAgIGNvbnN0IHJlcyA9IGF3YWl0IHVwbG9hZEltYWdlKGZpbGUpO1xuICAgICAgb25UZW1wbGF0ZUNoYW5nZSh7XG4gICAgICAgIC4uLnRlbXBsYXRlLFxuICAgICAgICBjb21wb25lbnRzOiB7XG4gICAgICAgICAgLi4udGVtcGxhdGUuY29tcG9uZW50cyxcbiAgICAgICAgICBiYWNrZ3JvdW5kOiB7XG4gICAgICAgICAgICAuLi50ZW1wbGF0ZS5jb21wb25lbnRzLmJhY2tncm91bmQsXG4gICAgICAgICAgICB0eXBlOiAnaW1hZ2UnLFxuICAgICAgICAgICAgaW1hZ2VVcmw6IHJlcy5vcHRpbWl6ZWRVcmwgfHwgcmVzLm9yaWdpbmFsVXJsXG4gICAgICAgICAgfVxuICAgICAgICB9XG4gICAgICB9KTtcbiAgICB9IGNhdGNoIChlcnI6IGFueSkge1xuICAgICAgYWxlcnQoYEzhu5dpIHVwbG9hZCDhuqNuaCBu4buBbjogJHtlcnIubWVzc2FnZX1gKTtcbiAgICB9IGZpbmFsbHkge1xuICAgICAgc2V0SXNVcGxvYWRpbmcoZmFsc2UpO1xuICAgIH1cbiAgfTtcblxuICBjb25zdCBoYW5kbGVVcGxvYWRMb2dvID0gYXN5bmMgKGU6IFJlYWN0LkNoYW5nZUV2ZW50PEhUTUxJbnB1dEVsZW1lbnQ+KSA9PiB7XG4gICAgY29uc3QgZmlsZSA9IGUudGFyZ2V0LmZpbGVzPy5bMF07XG4gICAgaWYgKCFmaWxlKSByZXR1cm47XG4gICAgdHJ5IHtcbiAgICAgIHNldElzVXBsb2FkaW5nKHRydWUpO1xuICAgICAgY29uc3QgcmVzID0gYXdhaXQgdXBsb2FkSW1hZ2UoZmlsZSk7XG4gICAgICBvbkNoYW5uZWxDaGFuZ2Uoe1xuICAgICAgICAuLi5jaGFubmVsLFxuICAgICAgICBicmFuZDoge1xuICAgICAgICAgIC4uLmNoYW5uZWwuYnJhbmQsXG4gICAgICAgICAgbG9nb1VybDogcmVzLm9wdGltaXplZFVybCB8fCByZXMub3JpZ2luYWxVcmxcbiAgICAgICAgfVxuICAgICAgfSk7XG4gICAgfSBjYXRjaCAoZXJyOiBhbnkpIHtcbiAgICAgIGFsZXJ0KGBM4buXaSB1cGxvYWQgbG9nbzogJHtlcnIubWVzc2FnZX1gKTtcbiAgICB9IGZpbmFsbHkge1xuICAgICAgc2V0SXNVcGxvYWRpbmcoZmFsc2UpO1xuICAgIH1cbiAgfTtcblxuICByZXR1cm4gKFxuICAgIDxEaWFsb2cgb3Blbj17aXNPcGVufSBvbk9wZW5DaGFuZ2U9eyhvcGVuKSA9PiAhb3BlbiAmJiBvbkNsb3NlKCl9PlxuICAgICAgPERpYWxvZ0NvbnRlbnQgY2xhc3NOYW1lPVwic206bWF4LXctM3hsIGJnLXNsYXRlLTk1MCBib3JkZXItc2xhdGUtODAwIHRleHQtc2xhdGUtMTAwIG1heC1oLVs4OHZoXSBvdmVyZmxvdy15LWF1dG8gcC01IHNjcm9sbGJhci10aGluIHNjcm9sbGJhci10aHVtYi1zbGF0ZS04MDBcIj5cbiAgICAgICAgPERpYWxvZ0hlYWRlciBjbGFzc05hbWU9XCJib3JkZXItYiBib3JkZXItc2xhdGUtODAwIHBiLTNcIj5cbiAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cImZsZXggaXRlbXMtY2VudGVyIGdhcC0yLjVcIj5cbiAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwidy04IGgtOCByb3VuZGVkLXhsIGJnLWFtYmVyLTUwMC8yMCB0ZXh0LWFtYmVyLTQwMCBib3JkZXIgYm9yZGVyLWFtYmVyLTUwMC8zMCBmbGV4IGl0ZW1zLWNlbnRlciBqdXN0aWZ5LWNlbnRlclwiPlxuICAgICAgICAgICAgICA8Rm9sZGVyT3BlbiBzaXplPXsxOH0gLz5cbiAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgICAgPGRpdj5cbiAgICAgICAgICAgICAgPERpYWxvZ1RpdGxlIGNsYXNzTmFtZT1cInRleHQtYmFzZSBmb250LWV4dHJhYm9sZCB0ZXh0LXdoaXRlXCI+XG4gICAgICAgICAgICAgICAgUXXhuqNuIEzDvSBUw6BpIE5ndXnDqm4gJiDDgm0gVGhhbmggKEFzc2V0cyBMaWJyYXJ5KVxuICAgICAgICAgICAgICA8L0RpYWxvZ1RpdGxlPlxuICAgICAgICAgICAgICA8RGlhbG9nRGVzY3JpcHRpb24gY2xhc3NOYW1lPVwidGV4dC14cyB0ZXh0LXNsYXRlLTQwMFwiPlxuICAgICAgICAgICAgICAgIFTDuXkgY2jhu4luaCBTRlgsIG5o4bqhYyBu4buBbiBCR00sIOG6o25oIG7hu4FuIHbDoCBsb2dvIHdhdGVybWFyayBjaG8ga8OqbmguXG4gICAgICAgICAgICAgIDwvRGlhbG9nRGVzY3JpcHRpb24+XG4gICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgPC9EaWFsb2dIZWFkZXI+XG5cbiAgICAgICAgey8qIFRhYnMgKi99XG4gICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZmxleCBpdGVtcy1jZW50ZXIgZ2FwLTIgYm9yZGVyLWIgYm9yZGVyLXNsYXRlLTgwMCBwYi0yXCI+XG4gICAgICAgICAge1tcbiAgICAgICAgICAgIHsgaWQ6ICdzZngnLCBsYWJlbDogJ1NGWCDDgm0gVGhhbmgnLCBpY29uOiA8Vm9sdW1lMiBzaXplPXsxM30gLz4gfSxcbiAgICAgICAgICAgIHsgaWQ6ICdiYWNrZ3JvdW5kcycsIGxhYmVsOiAn4bqibmggTuG7gW4nLCBpY29uOiA8SW1hZ2VJY29uIHNpemU9ezEzfSAvPiB9LFxuICAgICAgICAgICAgeyBpZDogJ2JyYW5kJywgbGFiZWw6ICdMb2dvICYgTmjhuq1uIERp4buHbicsIGljb246IDxTcGFya2xlcyBzaXplPXsxM30gLz4gfVxuICAgICAgICAgIF0ubWFwKCh0KSA9PiAoXG4gICAgICAgICAgICA8YnV0dG9uXG4gICAgICAgICAgICAgIGtleT17dC5pZH1cbiAgICAgICAgICAgICAgb25DbGljaz17KCkgPT4gc2V0QWN0aXZlVGFiKHQuaWQgYXMgYW55KX1cbiAgICAgICAgICAgICAgY2xhc3NOYW1lPXtgcHgtMyBweS0xLjUgcm91bmRlZC1sZyB0ZXh0LXhzIGZvbnQtYm9sZCB0cmFuc2l0aW9uIGZsZXggaXRlbXMtY2VudGVyIGdhcC0xLjUgJHtcbiAgICAgICAgICAgICAgICBhY3RpdmVUYWIgPT09IHQuaWRcbiAgICAgICAgICAgICAgICAgID8gJ2JnLWFtYmVyLTUwMCB0ZXh0LXNsYXRlLTk1MCBzaGFkb3cteHMnXG4gICAgICAgICAgICAgICAgICA6ICd0ZXh0LXNsYXRlLTQwMCBob3Zlcjp0ZXh0LXdoaXRlIGJnLXNsYXRlLTkwMCdcbiAgICAgICAgICAgICAgfWB9XG4gICAgICAgICAgICA+XG4gICAgICAgICAgICAgIHt0Lmljb259XG4gICAgICAgICAgICAgIDxzcGFuPnt0LmxhYmVsfTwvc3Bhbj5cbiAgICAgICAgICAgIDwvYnV0dG9uPlxuICAgICAgICAgICkpfVxuICAgICAgICA8L2Rpdj5cblxuICAgICAgICB7LyogVGFiIDE6IFNGWCAqL31cbiAgICAgICAge2FjdGl2ZVRhYiA9PT0gJ3NmeCcgJiYgKFxuICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwic3BhY2UteS0yLjUgcHktMlwiPlxuICAgICAgICAgICAge1tcbiAgICAgICAgICAgICAgeyBpZDogJ2NvdW50ZG93bicsIGxhYmVsOiAnVMOtY2ggdOG6r2MgxJHhur9tIG5nxrDhu6NjIChUaWNrKScsIGRlc2M6ICdQaMOhdCB04burbmcgZ2nDonkgdHJvbmcgZ2lhaSDEkW/huqFuIMSR4bq/bSBuZ8aw4bujYycgfSxcbiAgICAgICAgICAgICAgeyBpZDogJ2NvdW50ZG93bkZpbmlzaCcsIGxhYmVsOiAnQ2h1w7RuZyBo4bq/dCBnaeG7nSAoQmVsbCknLCBkZXNjOiAnUGjDoXQga2hpIGNvdW50ZG93biB24buBIDAnIH0sXG4gICAgICAgICAgICAgIHsgaWQ6ICdjb3JyZWN0QW5zd2VyJywgbGFiZWw6ICdLZW5nIMSRw6FwIMOhbiDEkcO6bmcgKENoaW1lKScsIGRlc2M6ICdQaMOhdCBraGkgxJHDoXAgw6FuIMSRw7puZyB4deG6pXQgaGnhu4duJyB9LFxuICAgICAgICAgICAgICB7IGlkOiAndHJhbnNpdGlvbicsIGxhYmVsOiAnV2hvb3NoIGNodXnhu4NuIGPDonUgKFRyYW5zaXRpb24pJywgZGVzYzogJ1Bow6F0IMSR4buTbmcgYuG7mSBraGkgY2h1eeG7g24gc2FuZyBjw6J1IG3hu5tpJyB9LFxuICAgICAgICAgICAgICB7IGlkOiAncmV2ZWFsJywgbGFiZWw6ICdTd29vc2ggbeG7nyBnaeG6o2kgdGjDrWNoIChSZXZlYWwpJywgZGVzYzogJ1Bow6F0IGtoaSBt4bufIHRo4bq7IGdp4bqjaSB0aMOtY2gnIH1cbiAgICAgICAgICAgIF0ubWFwKChzZngpID0+IHtcbiAgICAgICAgICAgICAgY29uc3QgY3VzdG9tVXJsID0gY2hhbm5lbC5hdWRpbz8uc2Z4Py5bc2Z4LmlkXTtcbiAgICAgICAgICAgICAgcmV0dXJuIChcbiAgICAgICAgICAgICAgICA8ZGl2XG4gICAgICAgICAgICAgICAgICBrZXk9e3NmeC5pZH1cbiAgICAgICAgICAgICAgICAgIGNsYXNzTmFtZT1cImZsZXggaXRlbXMtY2VudGVyIGp1c3RpZnktYmV0d2VlbiBwLTMgcm91bmRlZC14bCBiZy1zbGF0ZS05MDAgYm9yZGVyIGJvcmRlci1zbGF0ZS04MDBcIlxuICAgICAgICAgICAgICAgID5cbiAgICAgICAgICAgICAgICAgIDxkaXY+XG4gICAgICAgICAgICAgICAgICAgIDxoNCBjbGFzc05hbWU9XCJ0ZXh0LXhzIGZvbnQtYm9sZCB0ZXh0LXNsYXRlLTIwMFwiPntzZngubGFiZWx9PC9oND5cbiAgICAgICAgICAgICAgICAgICAgPHAgY2xhc3NOYW1lPVwidGV4dC1bMTFweF0gdGV4dC1zbGF0ZS01MDBcIj57c2Z4LmRlc2N9PC9wPlxuICAgICAgICAgICAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9XCJ0ZXh0LVsxMHB4XSBmb250LW1vbm8gdGV4dC1hbWJlci00MDBcIj5cbiAgICAgICAgICAgICAgICAgICAgICB7Y3VzdG9tVXJsID8gYFThu4dwIHJpw6puZzogJHtjdXN0b21Vcmwuc3BsaXQoJy8nKS5wb3AoKX1gIDogJ03hurdjIMSR4buLbmggU3R1ZGlvJ31cbiAgICAgICAgICAgICAgICAgICAgPC9zcGFuPlxuICAgICAgICAgICAgICAgICAgPC9kaXY+XG5cbiAgICAgICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZmxleCBpdGVtcy1jZW50ZXIgZ2FwLTJcIj5cbiAgICAgICAgICAgICAgICAgICAgPGJ1dHRvblxuICAgICAgICAgICAgICAgICAgICAgIG9uQ2xpY2s9eygpID0+IHBsYXlQcmV2aWV3KGN1c3RvbVVybCB8fCBgL2Fzc2V0cy9zZngvJHtzZnguaWR9Lm1wM2ApfVxuICAgICAgICAgICAgICAgICAgICAgIGNsYXNzTmFtZT1cInB4LTIuNSBweS0xLjUgcm91bmRlZC1sZyBiZy1zbGF0ZS04MDAgaG92ZXI6Ymctc2xhdGUtNzAwIHRleHQtYW1iZXItNDAwIHRleHQteHMgZm9udC1ib2xkIGZsZXggaXRlbXMtY2VudGVyIGdhcC0xXCJcbiAgICAgICAgICAgICAgICAgICAgPlxuICAgICAgICAgICAgICAgICAgICAgIDxQbGF5IHNpemU9ezEzfSAvPlxuICAgICAgICAgICAgICAgICAgICAgIDxzcGFuPk5naGUgdGjhu608L3NwYW4+XG4gICAgICAgICAgICAgICAgICAgIDwvYnV0dG9uPlxuXG4gICAgICAgICAgICAgICAgICAgIDxsYWJlbCBjbGFzc05hbWU9XCJweC0yLjUgcHktMS41IHJvdW5kZWQtbGcgYmctYW1iZXItNTAwIGhvdmVyOmJnLWFtYmVyLTQwMCB0ZXh0LXNsYXRlLTk1MCB0ZXh0LXhzIGZvbnQtYm9sZCBmbGV4IGl0ZW1zLWNlbnRlciBnYXAtMSBjdXJzb3ItcG9pbnRlclwiPlxuICAgICAgICAgICAgICAgICAgICAgIDxVcGxvYWQgc2l6ZT17MTN9IC8+XG4gICAgICAgICAgICAgICAgICAgICAgPHNwYW4+VXBsb2FkIG3hu5tpPC9zcGFuPlxuICAgICAgICAgICAgICAgICAgICAgIDxpbnB1dFxuICAgICAgICAgICAgICAgICAgICAgICAgdHlwZT1cImZpbGVcIlxuICAgICAgICAgICAgICAgICAgICAgICAgYWNjZXB0PVwiYXVkaW8vKlwiXG4gICAgICAgICAgICAgICAgICAgICAgICBjbGFzc05hbWU9XCJoaWRkZW5cIlxuICAgICAgICAgICAgICAgICAgICAgICAgb25DaGFuZ2U9eyhlKSA9PiB7XG4gICAgICAgICAgICAgICAgICAgICAgICAgIGNvbnN0IGYgPSBlLnRhcmdldC5maWxlcz8uWzBdO1xuICAgICAgICAgICAgICAgICAgICAgICAgICBpZiAoZikgaGFuZGxlVXBsb2FkU2Z4KHNmeC5pZCwgZik7XG4gICAgICAgICAgICAgICAgICAgICAgICB9fVxuICAgICAgICAgICAgICAgICAgICAgIC8+XG4gICAgICAgICAgICAgICAgICAgIDwvbGFiZWw+XG4gICAgICAgICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICAgICAgKTtcbiAgICAgICAgICAgIH0pfVxuICAgICAgICAgIDwvZGl2PlxuICAgICAgICApfVxuXG4gICAgICAgIHsvKiBUYWIgMzogQmFja2dyb3VuZHMgKi99XG4gICAgICAgIHthY3RpdmVUYWIgPT09ICdiYWNrZ3JvdW5kcycgJiYgKFxuICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwic3BhY2UteS0zIHB5LTJcIj5cbiAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZmxleCBpdGVtcy1jZW50ZXIganVzdGlmeS1iZXR3ZWVuXCI+XG4gICAgICAgICAgICAgIDxzcGFuIGNsYXNzTmFtZT1cInRleHQteHMgZm9udC1ib2xkIHRleHQtc2xhdGUtMzAwXCI+4bqibmggbuG7gW4gaGnhu4duIHThuqFpOjwvc3Bhbj5cbiAgICAgICAgICAgICAgPGxhYmVsIGNsYXNzTmFtZT1cInB4LTMgcHktMS41IHJvdW5kZWQtbGcgYmctYW1iZXItNTAwIGhvdmVyOmJnLWFtYmVyLTQwMCB0ZXh0LXNsYXRlLTk1MCB0ZXh0LXhzIGZvbnQtYm9sZCBmbGV4IGl0ZW1zLWNlbnRlciBnYXAtMSBjdXJzb3ItcG9pbnRlclwiPlxuICAgICAgICAgICAgICAgIDxVcGxvYWQgc2l6ZT17MTN9IC8+XG4gICAgICAgICAgICAgICAgPHNwYW4+VXBsb2FkIOG6om5oIE7hu4FuIE3hu5tpPC9zcGFuPlxuICAgICAgICAgICAgICAgIDxpbnB1dFxuICAgICAgICAgICAgICAgICAgdHlwZT1cImZpbGVcIlxuICAgICAgICAgICAgICAgICAgYWNjZXB0PVwiaW1hZ2UvKlwiXG4gICAgICAgICAgICAgICAgICBjbGFzc05hbWU9XCJoaWRkZW5cIlxuICAgICAgICAgICAgICAgICAgb25DaGFuZ2U9e2hhbmRsZVVwbG9hZEJnSW1hZ2V9XG4gICAgICAgICAgICAgICAgLz5cbiAgICAgICAgICAgICAgPC9sYWJlbD5cbiAgICAgICAgICAgIDwvZGl2PlxuXG4gICAgICAgICAgICB7dGVtcGxhdGUuY29tcG9uZW50cy5iYWNrZ3JvdW5kPy5pbWFnZVVybCA/IChcbiAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9XCJyZWxhdGl2ZSBoLTQ4IHJvdW5kZWQteGwgb3ZlcmZsb3ctaGlkZGVuIGJvcmRlciBib3JkZXItc2xhdGUtODAwXCI+XG4gICAgICAgICAgICAgICAgPGltZ1xuICAgICAgICAgICAgICAgICAgc3JjPXt0ZW1wbGF0ZS5jb21wb25lbnRzLmJhY2tncm91bmQuaW1hZ2VVcmx9XG4gICAgICAgICAgICAgICAgICBhbHQ9XCJCYWNrZ3JvdW5kXCJcbiAgICAgICAgICAgICAgICAgIGNsYXNzTmFtZT1cInctZnVsbCBoLWZ1bGwgb2JqZWN0LWNvdmVyXCJcbiAgICAgICAgICAgICAgICAvPlxuICAgICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICAgICkgOiAoXG4gICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwicC04IHRleHQtY2VudGVyIHRleHQteHMgdGV4dC1zbGF0ZS01MDAgYmctc2xhdGUtOTAwIHJvdW5kZWQteGwgYm9yZGVyIGJvcmRlci1zbGF0ZS04MDBcIj5cbiAgICAgICAgICAgICAgICDEkGFuZyBkw7luZyBu4buBbiBHcmFkaWVudCAvIE3DoHUgdHLGoW5cbiAgICAgICAgICAgICAgPC9kaXY+XG4gICAgICAgICAgICApfVxuICAgICAgICAgIDwvZGl2PlxuICAgICAgICApfVxuXG4gICAgICAgIHsvKiBUYWIgNDogQnJhbmQgKi99XG4gICAgICAgIHthY3RpdmVUYWIgPT09ICdicmFuZCcgJiYgKFxuICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwic3BhY2UteS0zIHB5LTJcIj5cbiAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwicC0zIGJnLXNsYXRlLTkwMCByb3VuZGVkLXhsIGJvcmRlciBib3JkZXItc2xhdGUtODAwIHNwYWNlLXktMlwiPlxuICAgICAgICAgICAgICA8aDQgY2xhc3NOYW1lPVwidGV4dC14cyBmb250LWJvbGQgdGV4dC1zbGF0ZS0yMDBcIj5Mb2dvIC8gV2F0ZXJtYXJrIEvDqm5oOjwvaDQ+XG4gICAgICAgICAgICAgIDxkaXYgY2xhc3NOYW1lPVwiZmxleCBpdGVtcy1jZW50ZXIgZ2FwLTNcIj5cbiAgICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT1cInctMTYgaC0xNiByb3VuZGVkLXhsIGJvcmRlciBib3JkZXItc2xhdGUtNzAwIGJnLXNsYXRlLTk1MCBvdmVyZmxvdy1oaWRkZW4gZmxleCBpdGVtcy1jZW50ZXIganVzdGlmeS1jZW50ZXJcIj5cbiAgICAgICAgICAgICAgICAgIHtjaGFubmVsLmJyYW5kPy5sb2dvVXJsID8gKFxuICAgICAgICAgICAgICAgICAgICA8aW1nXG4gICAgICAgICAgICAgICAgICAgICAgc3JjPXtjaGFubmVsLmJyYW5kLmxvZ29Vcmx9XG4gICAgICAgICAgICAgICAgICAgICAgYWx0PVwiTG9nb1wiXG4gICAgICAgICAgICAgICAgICAgICAgY2xhc3NOYW1lPVwidy1mdWxsIGgtZnVsbCBvYmplY3QtY29udGFpblwiXG4gICAgICAgICAgICAgICAgICAgIC8+XG4gICAgICAgICAgICAgICAgICApIDogKFxuICAgICAgICAgICAgICAgICAgICA8c3BhbiBjbGFzc05hbWU9XCJ0ZXh0LXhzIGZvbnQtYm9sZCB0ZXh0LXNsYXRlLTYwMFwiPk5vIExvZ288L3NwYW4+XG4gICAgICAgICAgICAgICAgICApfVxuICAgICAgICAgICAgICAgIDwvZGl2PlxuXG4gICAgICAgICAgICAgICAgPGxhYmVsIGNsYXNzTmFtZT1cInB4LTMgcHktMS41IHJvdW5kZWQtbGcgYmctYW1iZXItNTAwIGhvdmVyOmJnLWFtYmVyLTQwMCB0ZXh0LXNsYXRlLTk1MCB0ZXh0LXhzIGZvbnQtYm9sZCBmbGV4IGl0ZW1zLWNlbnRlciBnYXAtMSBjdXJzb3ItcG9pbnRlclwiPlxuICAgICAgICAgICAgICAgICAgPFVwbG9hZCBzaXplPXsxM30gLz5cbiAgICAgICAgICAgICAgICAgIDxzcGFuPlVwbG9hZCBMb2dvIEvDqm5oPC9zcGFuPlxuICAgICAgICAgICAgICAgICAgPGlucHV0XG4gICAgICAgICAgICAgICAgICAgIHR5cGU9XCJmaWxlXCJcbiAgICAgICAgICAgICAgICAgICAgYWNjZXB0PVwiaW1hZ2UvKlwiXG4gICAgICAgICAgICAgICAgICAgIGNsYXNzTmFtZT1cImhpZGRlblwiXG4gICAgICAgICAgICAgICAgICAgIG9uQ2hhbmdlPXtoYW5kbGVVcGxvYWRMb2dvfVxuICAgICAgICAgICAgICAgICAgLz5cbiAgICAgICAgICAgICAgICA8L2xhYmVsPlxuICAgICAgICAgICAgICA8L2Rpdj5cbiAgICAgICAgICAgIDwvZGl2PlxuICAgICAgICAgIDwvZGl2PlxuICAgICAgICApfVxuICAgICAgPC9EaWFsb2dDb250ZW50PlxuICAgIDwvRGlhbG9nPlxuICApO1xufTtcbiJdLCJmaWxlIjoiRDovc291cmNlIGNvZGUvVmlkZW8gcXVpeiBuZXcvZnJvbnRlbmQvc3JjL2NvbXBvbmVudHMvZWRpdG9yL0Fzc2V0TWFuYWdlck1vZGFsLnRzeCJ9

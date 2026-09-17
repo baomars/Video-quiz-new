@@ -38,8 +38,8 @@ export const QuestionSequenceView: React.FC<QuestionSequenceViewProps> = ({
   const revealProgress = isRevealed ? Math.min(1, (frame - relRevealStart) / (fps * 1.5)) : 0;
 
   const comps = template.components;
-  const primaryColor = branding.colors.primary;
-  const correctColor = branding.colors.correct;
+  const primaryColor = branding?.colors?.primary || '#2563eb';
+  const correctColor = branding?.colors?.correct || '#16a34a';
 
   const hasIllustration = Boolean(question.illustrations && question.illustrations.filter(Boolean).length > 0);
 
@@ -154,7 +154,7 @@ export const QuestionSequenceView: React.FC<QuestionSequenceViewProps> = ({
           display: 'flex',
           alignItems: 'center',
           justifyContent: comps.questionNumber.textAlign === 'left' ? 'flex-start' : comps.questionNumber.textAlign === 'right' ? 'flex-end' : 'center',
-          fontFamily: comps.questionNumber.fontFamily || branding.fonts.primary || 'Be Vietnam Pro, sans-serif',
+          fontFamily: comps.questionNumber.fontFamily || branding?.fonts?.primary || branding?.typography?.headingFont || 'Be Vietnam Pro, sans-serif',
           fontSize: `${comps.questionNumber.fontSize || 20}px`,
           fontWeight: comps.questionNumber.fontWeight || '700',
           color: comps.questionNumber.color || primaryColor,
@@ -203,7 +203,7 @@ export const QuestionSequenceView: React.FC<QuestionSequenceViewProps> = ({
         revealStartFrame={relRevealStart}
         primaryColor={primaryColor}
         correctColor={correctColor}
-        wrongColor={branding.colors.wrong}
+        wrongColor={branding?.colors?.wrong || '#ef4444'}
         delayFrame={cardsDelayFrame}
         contentOpacity={contentOpacity}
       />
@@ -215,41 +215,111 @@ export const QuestionSequenceView: React.FC<QuestionSequenceViewProps> = ({
         countdownStartFrame={relCountdownStart}
         countdownEndFrame={relCountdownEnd}
         primaryColor={primaryColor}
-        warningColor={branding.colors.wrong}
+        warningColor={branding?.colors?.wrong || '#ef4444'}
       />
 
-      {/* 7. Explanation Card upon Reveal (Light Theme) */}
-      {isRevealed && question.explanation && (
-        <div
-          style={{
-            position: 'absolute',
-            left: '6%',
-            bottom: '7%', // Above bottom safe zone
-            width: '88%',
-            backgroundColor: '#ffffff',
-            border: `2px solid ${correctColor}`,
-            borderRadius: '16px',
-            padding: '12px 18px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '12px',
-            boxShadow: `0 8px 25px rgba(22, 163, 74, 0.15)`,
-            zIndex: 30,
-            opacity: expOpacity,
-            transform: `translateY(${interpolate(expEntrance, [0, 1], [15, 0])}px)`
-          }}
-        >
-          <span style={{ fontSize: '26px' }}>💡</span>
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <span style={{ fontSize: '13px', fontWeight: '800', color: correctColor, textTransform: 'uppercase' }}>
-              Giải thích / Explanation
-            </span>
-            <span style={{ fontSize: '15px', color: '#1e293b', lineHeight: 1.35, fontWeight: '600' }}>
-              {question.explanation}
-            </span>
+      {/* 7. Explanation Card upon Reveal (Fully customizable via template.components.explanation) */}
+      {isRevealed && question.explanation && (comps.explanation?.enabled !== false) && (() => {
+        const expStyle = comps.explanation || {};
+        const expX = expStyle.x ?? 6;
+        const expY = expStyle.y ?? 84;
+        const expW = expStyle.width ?? 88;
+        const expH = expStyle.height ?? 9;
+        const expBg = expStyle.backgroundColor || '#ffffff';
+        const expBgOpacity = expStyle.bgOpacity ?? 0.98;
+        const expBorderColor = expStyle.borderColor || correctColor;
+        const expBorderWidth = expStyle.borderWidth ?? 2;
+        const expPadding = expStyle.padding ?? 12;
+        const expTextColor = expStyle.textColor || expStyle.color || '#1e293b';
+        const expFontFamily = expStyle.fontFamily || branding?.fonts?.primary || branding?.typography?.bodyFont || 'Be Vietnam Pro, sans-serif';
+        const expFontSize = expStyle.fontSize ?? 15;
+        const expFontWeight = expStyle.fontWeight || '600';
+        const expTextAlign = expStyle.textAlign || 'left';
+        const expShadow = expStyle.boxShadow || '0 8px 25px rgba(22, 163, 74, 0.18)';
+        const expBlur = expStyle.backdropBlur ?? 0;
+        const showIcon = expStyle.showIcon !== false;
+        const titleText = expStyle.titleText || 'Giải thích / Explanation';
+
+        let bgWithOpacity = expBg;
+        if (expBg.startsWith('#') && expBg.length === 7) {
+          const r = parseInt(expBg.slice(1, 3), 16);
+          const g = parseInt(expBg.slice(3, 5), 16);
+          const b = parseInt(expBg.slice(5, 7), 16);
+          bgWithOpacity = `rgba(${r}, ${g}, ${b}, ${expBgOpacity})`;
+        }
+
+        let expRadius = `${expStyle.borderRadius ?? 16}px`;
+        let expClipPath: string | undefined = undefined;
+        let expBoxShadow = expShadow;
+
+        switch (expStyle.shape) {
+          case 'pill':
+          case 'capsule':
+            expRadius = '9999px';
+            break;
+          case 'speech-bubble':
+          case 'bubble':
+            expRadius = '24px 24px 24px 6px';
+            break;
+          case 'hud': {
+            const chamfer = expStyle.chamferSize || 12;
+            expClipPath = `polygon(${chamfer}px 0%, calc(100% - ${chamfer}px) 0%, 100% ${chamfer}px, 100% calc(100% - ${chamfer}px), calc(100% - ${chamfer}px) 100%, ${chamfer}px 100%, 0% calc(100% - ${chamfer}px), 0% ${chamfer}px)`;
+            expRadius = '4px';
+            break;
+          }
+          case 'color-block':
+            expRadius = '16px';
+            if (expStyle.popShadow) {
+              expBoxShadow = `${expStyle.popShadowOffset || 5}px ${expStyle.popShadowOffset || 5}px 0px ${expStyle.popShadowColor || '#111827'}`;
+            }
+            break;
+          case 'minimal':
+            expBoxShadow = 'none';
+            break;
+          default:
+            expRadius = `${expStyle.borderRadius ?? 16}px`;
+            break;
+        }
+
+        return (
+          <div
+            style={{
+              position: 'absolute',
+              left: `${expX}%`,
+              top: `${expY}%`,
+              width: `${expW}%`,
+              minHeight: `${expH}%`,
+              backgroundColor: bgWithOpacity,
+              backdropFilter: expBlur > 0 ? `blur(${expBlur}px)` : undefined,
+              WebkitBackdropFilter: expBlur > 0 ? `blur(${expBlur}px)` : undefined,
+              border: `${expBorderWidth}px solid ${expBorderColor}`,
+              borderRadius: expRadius,
+              clipPath: expClipPath,
+              padding: `${expPadding}px 18px`,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              boxShadow: expBoxShadow,
+              zIndex: 30,
+              opacity: expOpacity * (expStyle.opacity ?? 1.0),
+              transform: `translateY(${interpolate(expEntrance, [0, 1], [15, 0])}px)`,
+              boxSizing: 'border-box'
+            }}
+          >
+            {showIcon && (
+              <span style={{ fontSize: `${Math.max(18, expFontSize + 8)}px`, flexShrink: 0 }}>💡</span>
+            )}
+            <div style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0, textAlign: expTextAlign }}>
+              <span style={{ fontSize: `${Math.max(11, expFontSize - 2)}px`, fontWeight: '800', color: expBorderColor, textTransform: 'uppercase' }}>
+                {titleText}
+              </span>
+              <span style={{ fontSize: `${expFontSize}px`, color: expTextColor, fontFamily: expFontFamily, lineHeight: 1.35, fontWeight: expFontWeight }}>
+                {question.explanation}
+              </span>
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 };

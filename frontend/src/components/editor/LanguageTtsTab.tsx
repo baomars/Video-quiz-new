@@ -231,8 +231,21 @@ export const LanguageTtsTab: React.FC<LanguageTtsTabProps> = ({
               placeholder="Đáp án chính xác là..."
             />
             <span className="text-[11px] text-slate-400 mt-1 block">
-              Hệ thống sẽ tự động đọc chữ cái đáp án đúng (A, B, hoặc C) và nội dung giải thích.
+              Hệ thống sẽ tự động đọc chữ cái và nội dung đáp án đúng theo mẫu câu trên.
             </span>
+          </div>
+
+          <div className="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-xl">
+            <div>
+              <span className="text-xs font-bold text-slate-700 block">Đọc đáp án đúng bằng AI (Answer TTS)</span>
+              <span className="text-[11px] text-slate-400 block">Tạo giọng đọc công bố đáp án đúng độc lập với phần giải thích</span>
+            </div>
+            <input
+              type="checkbox"
+              checked={langConfig.readAnswer !== false}
+              onChange={(e) => updateConfig('readAnswer', e.target.checked)}
+              className="w-4 h-4 accent-amber-500 rounded cursor-pointer"
+            />
           </div>
 
           <div>

@@ -45,13 +45,13 @@ export const QuizVideoComposition: React.FC<VideoCompositionProps> = ({
         height: `${height}px`,
         backgroundColor: '#000000',
         overflow: 'hidden',
-        fontFamily: channel.branding.fonts.primary || 'Montserrat, sans-serif'
+        fontFamily: channel.branding?.fonts?.primary || channel.branding?.typography?.bodyFont || 'Montserrat, sans-serif'
       }}
     >
       {/* 1. Universal Background with Per-Question Ken Burns Motion */}
       <BackgroundLayer
         style={template.components.background}
-        primaryColor={channel.branding.colors.primary}
+        primaryColor={channel.branding?.colors?.primary || '#2563eb'}
         cues={cues}
         totalDurationFrames={totalDurationFrames}
       />
@@ -60,8 +60,8 @@ export const QuizVideoComposition: React.FC<VideoCompositionProps> = ({
       <QuizTitleLayer
         style={template.components.quizTitle || template.components.header}
         quizTitle={quiz.title}
-        defaultFont={channel.branding.fonts.primary}
-        defaultColor={channel.branding.colors.primary}
+        defaultFont={channel.branding?.fonts?.primary || channel.branding?.typography?.headingFont || 'Montserrat, sans-serif'}
+        defaultColor={channel.branding?.colors?.primary || '#2563eb'}
       />
 
       {/* 3. Simplified Channel Logo & Name (Shown/Hidden Independently) */}

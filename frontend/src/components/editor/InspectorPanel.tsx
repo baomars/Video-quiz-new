@@ -10,8 +10,14 @@ import {
   MotionDirection,
   MotionEffect,
   Quiz,
-  NeonPresetId
+  NeonPresetId,
+  ExplanationConfig,
+  DEFAULT_EXPLANATION_CONFIG,
+  UI_PRESETS,
+  applyUiPreset,
+  UiPreset
 } from '../../../../remotion/types/index';
+import { TEMPLATE_LIBRARY, applyTemplateLayout } from '../../../../remotion/types/templates';
 import {
   Sliders,
   Type,
@@ -30,7 +36,10 @@ import {
   Heading,
   Wand2,
   Loader2,
-  Download
+  Download,
+  Lightbulb,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import { Slider } from '../ui/slider';
 import { Input } from '../ui/input';
@@ -46,16 +55,20 @@ export type ComponentKey =
   | 'questionNumber'
   | 'quizTitle'
   | 'header'
+  | 'explanation'
   | 'logo'
   | 'background';
 
 export type InspectorTab =
+  | 'templates'
+  | 'presets'
   | 'settings'
   | 'title'
   | 'layout'
   | 'typography'
   | 'illustration'
   | 'countdown'
+  | 'explanation'
   | 'audio'
   | 'brand'
   | 'animation';
@@ -133,6 +146,30 @@ export const NEON_PRESETS: NeonPresetItem[] = [
     desc: 'Dải lụa cực quang lượn sóng mềm mại huyền ảo ngọc bích và tím hồng',
     gradientPreview: 'linear-gradient(120deg, #10b981 0%, #06b6d4 40%, #d946ef 100%)',
     icon: '🌌'
+  },
+  {
+    id: 'particles',
+    name: 'Đốm Sáng Bokeh Bay',
+    tag: 'Bay bổng',
+    desc: 'Bụi sáng phát quang trôi nổi tự nhiên trong không gian',
+    gradientPreview: 'radial-gradient(circle, #38bdf8 30%, #a855f7 70%, #030014 100%)',
+    icon: '🔮'
+  },
+  {
+    id: 'light-streaks',
+    name: 'Tia Sáng Siêu Tốc',
+    tag: 'Vũ trụ',
+    desc: 'Chùm tia laser rơi nhanh như du hành không gian',
+    gradientPreview: 'linear-gradient(180deg, #00f0ff 0%, #ff007f 70%, #ffffff 100%)',
+    icon: '🌠'
+  },
+  {
+    id: 'gradient-motion',
+    name: 'Gradient Xoay Đổi Sắc',
+    tag: 'Hiện đại',
+    desc: 'Gradient 3 màu xoay góc mượt mà và biến thiên liên tục',
+    gradientPreview: 'linear-gradient(45deg, #3b82f6 0%, #8b5cf6 50%, #ec4899 100%)',
+    icon: '🌀'
   }
 ];
 
@@ -208,6 +245,7 @@ interface InspectorPanelProps {
   onTemplateChange: (updated: VideoTemplate) => void;
   onChannelChange: (updated: Channel) => void;
   onLanguageChange?: (lang: LanguageCode) => void;
+  onApplyTemplate?: (templateId: string) => void;
   selectedKey?: ComponentKey;
   onSelectKey?: (key: ComponentKey) => void;
 }
@@ -221,11 +259,76 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
   onTemplateChange,
   onChannelChange,
   onLanguageChange,
+  onApplyTemplate,
   selectedKey = 'questionBox',
   onSelectKey
 }) => {
-  const [activeTab, setActiveTab] = useState<InspectorTab>('title');
+  const [activeTab, setActiveTab] = useState<InspectorTab>('templates');
   const [layoutTarget, setLayoutTarget] = useState<'questionBox' | 'answerButtons' | 'questionNumber'>('questionBox');
+  const [activeOptionTab, setActiveOptionTab] = useState<'A' | 'B' | 'C'>('A');
+
+  const handleApplyPresetTemplate = (tmplId: string) => {
+    if (onApplyTemplate) {
+      onApplyTemplate(tmplId);
+    } else {
+      const res = applyTemplateLayout(tmplId, template, channel);
+      onTemplateChange(res.template);
+      onChannelChange(res.channel);
+    }
+    const found = TEMPLATE_LIBRARY.find((t) => t.id === tmplId);
+    setPresetNotice(`Đã áp dụng mẫu "${found?.name || tmplId}" thành công! Bố cục và màu sắc đã đồng bộ.`);
+    setTimeout(() => setPresetNotice(null), 3000);
+  };
+
+  const updateOptionProp = (optKey: 'A' | 'B' | 'C', prop: string, val: any) => {
+    const ansComp = template.components.answerButtons || ({} as any);
+    const existingOptions = ansComp.options || {};
+    const currentOpt = existingOptions[optKey] || {};
+    const updatedOpt = { ...currentOpt, [prop]: val };
+
+    onUpdateTemplate({
+      ...template,
+      components: {
+        ...template.components,
+        answerButtons: {
+          ...ansComp,
+          useIndividualStyles: true,
+          options: {
+            ...existingOptions,
+            [optKey]: updatedOpt
+          }
+        }
+      }
+    });
+  };
+
+  const toggleIndividualAnswerStyles = (enabled: boolean) => {
+    const ansComp = template.components.answerButtons || ({} as any);
+    onUpdateTemplate({
+      ...template,
+      components: {
+        ...template.components,
+        answerButtons: {
+          ...ansComp,
+          useIndividualStyles: enabled
+        }
+      }
+    });
+  };
+
+  const updateLayoutComposition = (comp: any) => {
+    const ansComp = template.components.answerButtons || ({} as any);
+    onUpdateTemplate({
+      ...template,
+      components: {
+        ...template.components,
+        answerButtons: {
+          ...ansComp,
+          layoutComposition: comp
+        }
+      }
+    });
+  };
 
   const bgFileInputRef = useRef<HTMLInputElement | null>(null);
   const logoFileInputRef = useRef<HTMLInputElement | null>(null);
@@ -692,12 +795,14 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
         {/* The ONLY Tab Bar (Single horizontal scrollable row, exactly 1 row) */}
         <div className="flex items-center gap-1 px-2 pb-2 overflow-x-auto scrollbar-none">
           {[
+            { id: 'templates', label: 'Mẫu Template', icon: <Wand2 size={12} /> },
             { id: 'settings', label: 'Cài Đặt', icon: <Sliders size={12} /> },
             { id: 'title', label: 'Tiêu đề', icon: <Heading size={12} /> },
             { id: 'layout', label: 'Bố cục', icon: <Move size={12} /> },
             { id: 'typography', label: 'Kiểu chữ', icon: <Type size={12} /> },
             { id: 'illustration', label: 'Ảnh minh họa', icon: <ImageIcon size={12} /> },
             { id: 'countdown', label: 'Đếm ngược', icon: <Clock size={12} /> },
+            { id: 'explanation', label: 'Giải thích', icon: <Lightbulb size={12} /> },
             { id: 'audio', label: 'Audio & TTS', icon: <Volume2 size={12} /> },
             { id: 'brand', label: 'Logo & Nền', icon: <Palette size={12} /> },
             { id: 'animation', label: 'Hiệu ứng', icon: <Sparkles size={12} /> }
@@ -720,6 +825,112 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
 
       {/* 2. Scrollable Tab Content Body (Strict separation per tab) */}
       <div className="flex-1 overflow-y-auto p-3 space-y-4 scrollbar-thin scrollbar-thumb-slate-800">
+        {/* ========================================================= */}
+        {/* TAB TEMPLATES: 12 THƯ VIỆN TEMPLATE LAYOUT DỰNG SẴN      */}
+        {/* ========================================================= */}
+        {activeTab === 'templates' && (
+          <div className="space-y-3.5">
+            {presetNotice && (
+              <div className="p-2.5 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-bold flex items-center gap-2 animate-in fade-in">
+                <Check size={14} className="text-emerald-400 shrink-0" />
+                <span>{presetNotice}</span>
+              </div>
+            )}
+
+            <div className="bg-slate-900 p-3 rounded-xl border border-slate-800 space-y-1">
+              <span className="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+                <Wand2 size={14} />
+                <span>Thư Viện 12 Template Layout Dựng Sẵn</span>
+              </span>
+              <p className="text-[11px] text-slate-400 leading-relaxed">
+                Mỗi template mang một bố cục (composition), hình khối (shapes) và bảng màu sáng hiện đại hoàn toàn khác biệt. Bấm để áp dụng toàn bộ composition, sau đó bạn có thể tinh chỉnh từng thông số trong tab Bố Cục.
+              </p>
+            </div>
+
+            {/* Template Library Cards */}
+            <div className="space-y-3">
+              {TEMPLATE_LIBRARY.map((p) => {
+                const isActive = template.name === p.name || template.id === p.id;
+                const qShape = p.template.components.questionBox?.shape || 'rounded';
+                const ansComp = p.template.components.answerButtons?.layoutComposition || 'stacked';
+                return (
+                  <div
+                    key={p.id}
+                    className={`bg-slate-900 rounded-xl border transition p-3 space-y-2.5 relative overflow-hidden ${
+                      isActive
+                        ? 'border-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.2)] ring-1 ring-amber-500/50'
+                        : 'border-slate-800 hover:border-slate-700'
+                    }`}
+                  >
+                    {/* Header: Icon, Name, Tag & Active Badge */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="text-xl shrink-0">{p.icon}</span>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <h4 className="text-xs font-extrabold text-white truncate">
+                              {p.name}
+                            </h4>
+                            {isActive && (
+                              <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/40 text-[9px] px-1.5 py-0">
+                                Đang chọn
+                              </Badge>
+                            )}
+                          </div>
+                          <span className="text-[10px] text-amber-400 font-medium block truncate">{p.tag}</span>
+                        </div>
+                      </div>
+
+                      {/* Accent color pills */}
+                      <div className="flex items-center gap-1 shrink-0">
+                        {p.accentColors.map((color, cIdx) => (
+                          <div
+                            key={cIdx}
+                            className="w-3.5 h-3.5 rounded-full border border-white/20 shadow-xs"
+                            style={{ backgroundColor: color }}
+                            title={color}
+                          />
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Gradient preview banner */}
+                    <div
+                      className="h-10 w-full rounded-lg border border-white/10 flex items-center justify-between px-3 text-[11px] font-bold shadow-inner"
+                      style={{ background: p.previewGradient }}
+                    >
+                      <span className="drop-shadow-md text-slate-900 font-extrabold">Aa Bb 123</span>
+                      <div className="flex items-center gap-1.5 text-[9px] opacity-90 drop-shadow-md text-slate-800 font-semibold">
+                        <span className="bg-white/80 px-1.5 py-0.5 rounded border border-black/10">Shape: {qShape}</span>
+                        <span className="bg-white/80 px-1.5 py-0.5 rounded border border-black/10">Bố cục: {ansComp}</span>
+                      </div>
+                    </div>
+
+                    {/* Description */}
+                    <p className="text-[11px] text-slate-400 leading-relaxed">
+                      {p.description}
+                    </p>
+
+                    {/* Action Button */}
+                    <button
+                      type="button"
+                      onClick={() => handleApplyPresetTemplate(p.id)}
+                      className={`w-full py-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                        isActive
+                          ? 'bg-emerald-600/30 text-emerald-300 border border-emerald-500/40'
+                          : 'bg-amber-500 hover:bg-amber-400 text-slate-950 font-black shadow-xs'
+                      }`}
+                    >
+                      <Wand2 size={13} />
+                      <span>{isActive ? 'Đang áp dụng mẫu này' : 'Áp dụng Template này'}</span>
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* ========================================================= */}
         {/* TAB 0: CÀI ĐẶT TOÀN DIỆN & PRESETS (SETTINGS MASTER)        */}
         {/* ========================================================= */}
@@ -1519,6 +1730,411 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
               ))}
             </div>
 
+            {/* Shape Selector */}
+            <div className="bg-slate-900 p-2.5 rounded-xl border border-slate-800 space-y-1.5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-300">Hình Khối Thiết Kế (Shape Style):</span>
+                <span className="text-[10px] text-amber-400 font-mono">
+                  {template.components[layoutTarget]?.shape || 'rounded'}
+                </span>
+              </div>
+              <div className="grid grid-cols-4 sm:grid-cols-5 gap-1">
+                {[
+                  { id: 'rounded', label: 'Bo góc' },
+                  { id: 'pill', label: 'Pill' },
+                  { id: 'bubble', label: 'Bubble' },
+                  { id: 'speech-bubble', label: 'Bóng thoại' },
+                  { id: 'hud', label: 'HUD 45°' },
+                  { id: 'hexagon', label: 'Lục giác' },
+                  { id: 'circle', label: 'Tròn' },
+                  { id: 'ellipse', label: 'Elip' },
+                  { id: 'diamond', label: 'Hình thoi' },
+                  { id: 'blob', label: 'Blob' },
+                  { id: 'ticket', label: 'Vé' },
+                  { id: 'badge', label: 'Huy hiệu' },
+                  { id: 'rectangle', label: 'Chữ nhật' },
+                  { id: 'color-block', label: 'Color Block' },
+                  { id: 'minimal', label: 'Tối giản' },
+                  { id: 'glass', label: 'Kính mờ' },
+                  { id: 'doodle', label: 'Vẽ tay' }
+                ].map((sh) => (
+                  <button
+                    key={sh.id}
+                    onClick={() => updateCompStyle(layoutTarget, 'shape', sh.id)}
+                    className={`py-1.5 px-1 rounded text-[10px] font-bold transition truncate ${
+                      (template.components[layoutTarget]?.shape || 'rounded') === sh.id
+                        ? 'bg-amber-500 text-slate-950 shadow-xs'
+                        : 'bg-slate-950 text-slate-400 hover:text-slate-200 border border-slate-800'
+                    }`}
+                  >
+                    {sh.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Answer Layout Composition & Individual Options Customization */}
+            {layoutTarget === 'answerButtons' && (
+              <div className="space-y-3">
+                {/* Answer TTS Toggle */}
+                <div className="flex items-center justify-between bg-slate-900 p-2.5 rounded-xl border border-slate-800">
+                  <div>
+                    <span className="text-xs font-bold text-slate-200 block">
+                      Đọc đáp án đúng bằng AI (Answer TTS)
+                    </span>
+                    <span className="text-[10px] text-slate-400 block">
+                      Phát giọng đọc đáp án đúng khi hết giờ đếm ngược, độc lập với Giải thích
+                    </span>
+                  </div>
+                  <Switch
+                    checked={(template.components.answerButtons as any)?.readTts !== false}
+                    onCheckedChange={(val) => updateCompStyle('answerButtons', 'readTts', val)}
+                  />
+                </div>
+
+                {/* Bố cục Đáp án (Layout Composition) */}
+                <div className="bg-slate-900 p-2.5 rounded-xl border border-slate-800 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-200">
+                      Bố Cục Phương Án (Composition):
+                    </span>
+                    <span className="text-[10px] text-amber-400 font-mono">
+                      {template.components.answerButtons?.layoutComposition || 'stacked'}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                    {[
+                      { id: 'stacked', label: 'Dọc đều (Stack)' },
+                      { id: 'one-right-two-left', label: '1 Phải - 2 Trái' },
+                      { id: 'triangle', label: 'Tam giác (Tri)' },
+                      { id: 'grid-2-top-1-bottom', label: '2 Trên 1 Dưới' },
+                      { id: 'split-left-right', label: 'Trái - Phải' },
+                      { id: 'circular-arc', label: 'Vòng cung (Arc)' },
+                      { id: 'floating', label: 'Thẻ bay (Float)' },
+                      { id: 'asymmetric', label: 'Bất đối xứng' },
+                      { id: 'staggered', label: 'So le (Ziczac)' },
+                      { id: 'custom', label: 'Tự do (Custom)' }
+                    ].map((comp) => (
+                      <button
+                        key={comp.id}
+                        onClick={() => updateLayoutComposition(comp.id)}
+                        className={`py-1.5 px-1 rounded-lg text-[10px] font-bold transition truncate ${
+                          (template.components.answerButtons?.layoutComposition || 'stacked') === comp.id
+                            ? 'bg-amber-500 text-slate-950 shadow-xs'
+                            : 'bg-slate-950 text-slate-400 hover:text-slate-200 border border-slate-800'
+                        }`}
+                      >
+                        {comp.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Chế độ Chỉnh sửa: Đồng bộ vs Tùy chỉnh riêng */}
+                <div className="bg-slate-900 p-2.5 rounded-xl border border-slate-800 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-xs font-bold text-slate-200 block">
+                        Tùy Chỉnh Riêng Từng Đáp Án (A / B / C)
+                      </span>
+                      <span className="text-[10px] text-slate-400 block">
+                        Cho phép A, B, C có hình khối, màu sắc, vị trí và kích thước khác nhau
+                      </span>
+                    </div>
+                    <Switch
+                      checked={Boolean(template.components.answerButtons?.useIndividualStyles)}
+                      onCheckedChange={(val) => toggleIndividualAnswerStyles(val)}
+                    />
+                  </div>
+
+                  {/* Sub-tabs for A, B, C */}
+                  {template.components.answerButtons?.useIndividualStyles && (
+                    <div className="pt-2 border-t border-slate-800 space-y-3">
+                      <div className="grid grid-cols-3 gap-1.5 bg-slate-950 p-1 rounded-lg border border-slate-800">
+                        {(['A', 'B', 'C'] as const).map((optKey) => {
+                          const optData = template.components.answerButtons?.options?.[optKey];
+                          const optBg = optData?.backgroundColor || template.components.answerButtons?.backgroundColor || '#ffffff';
+                          return (
+                            <button
+                              key={optKey}
+                              onClick={() => setActiveOptionTab(optKey)}
+                              className={`py-1.5 rounded-md text-xs font-bold flex items-center justify-center gap-1.5 transition ${
+                                activeOptionTab === optKey
+                                  ? 'bg-amber-500 text-slate-950 shadow-xs'
+                                  : 'text-slate-400 hover:text-slate-200'
+                              }`}
+                            >
+                              <span
+                                className="w-2.5 h-2.5 rounded-full border border-black/30 inline-block shrink-0"
+                                style={{ backgroundColor: optBg }}
+                              />
+                              <span>Đáp án {optKey}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {/* Controls for current activeOptionTab */}
+                      {(() => {
+                        const opt = template.components.answerButtons?.options?.[activeOptionTab] || {};
+                        return (
+                          <div className="space-y-2.5 bg-slate-950 p-2.5 rounded-lg border border-slate-800">
+                            {/* Shape Selector for this Option */}
+                            <div>
+                              <div className="flex items-center justify-between text-[11px] text-slate-400 mb-1">
+                                <span>Hình khối (Shape) Đáp án {activeOptionTab}:</span>
+                                <span className="font-mono text-amber-400 font-bold">
+                                  {opt.shape || template.components.answerButtons?.shape || 'rounded'}
+                                </span>
+                              </div>
+                              <div className="grid grid-cols-4 sm:grid-cols-5 gap-1">
+                                {[
+                                  { id: 'rounded', label: 'Bo góc' },
+                                  { id: 'pill', label: 'Pill' },
+                                  { id: 'bubble', label: 'Bubble' },
+                                  { id: 'speech-bubble', label: 'Bóng thoại' },
+                                  { id: 'hud', label: 'HUD 45°' },
+                                  { id: 'hexagon', label: 'Lục giác' },
+                                  { id: 'circle', label: 'Tròn' },
+                                  { id: 'ellipse', label: 'Elip' },
+                                  { id: 'diamond', label: 'Hình thoi' },
+                                  { id: 'blob', label: 'Blob' },
+                                  { id: 'ticket', label: 'Vé' },
+                                  { id: 'badge', label: 'Huy hiệu' },
+                                  { id: 'rectangle', label: 'Chữ nhật' },
+                                  { id: 'color-block', label: 'Color Block' },
+                                  { id: 'minimal', label: 'Tối giản' },
+                                  { id: 'glass', label: 'Kính mờ' },
+                                  { id: 'doodle', label: 'Vẽ tay' }
+                                ].map((sh) => (
+                                  <button
+                                    key={sh.id}
+                                    onClick={() => updateOptionProp(activeOptionTab, 'shape', sh.id)}
+                                    className={`py-1 rounded text-[10px] font-bold transition truncate ${
+                                      (opt.shape || template.components.answerButtons?.shape || 'rounded') === sh.id
+                                        ? 'bg-amber-500 text-slate-950'
+                                        : 'bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800'
+                                    }`}
+                                  >
+                                    {sh.label}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Position X and Y */}
+                            <div className="grid grid-cols-2 gap-2">
+                              <div>
+                                <div className="flex items-center justify-between text-[10px] text-slate-400 mb-1">
+                                  <span>Vị trí X:</span>
+                                  <span className="font-mono text-amber-400 font-bold">{opt.x ?? 6}%</span>
+                                </div>
+                                <Slider
+                                  min={0}
+                                  max={100}
+                                  step={0.5}
+                                  value={[opt.x ?? 6]}
+                                  onValueChange={([val]) => updateOptionProp(activeOptionTab, 'x', val)}
+                                />
+                              </div>
+                              <div>
+                                <div className="flex items-center justify-between text-[10px] text-slate-400 mb-1">
+                                  <span>Vị trí Y:</span>
+                                  <span className="font-mono text-amber-400 font-bold">{opt.y ?? 55}%</span>
+                                </div>
+                                <Slider
+                                  min={0}
+                                  max={100}
+                                  step={0.5}
+                                  value={[opt.y ?? 55]}
+                                  onValueChange={([val]) => updateOptionProp(activeOptionTab, 'y', val)}
+                                />
+                              </div>
+                            </div>
+
+                            {/* Dimensions W and H */}
+                            <div className="grid grid-cols-2 gap-2">
+                              <div>
+                                <div className="flex items-center justify-between text-[10px] text-slate-400 mb-1">
+                                  <span>Chiều rộng W:</span>
+                                  <span className="font-mono text-amber-400 font-bold">{opt.width ?? 88}%</span>
+                                </div>
+                                <Slider
+                                  min={15}
+                                  max={100}
+                                  step={1}
+                                  value={[opt.width ?? 88]}
+                                  onValueChange={([val]) => updateOptionProp(activeOptionTab, 'width', val)}
+                                />
+                              </div>
+                              <div>
+                                <div className="flex items-center justify-between text-[10px] text-slate-400 mb-1">
+                                  <span>Chiều cao H:</span>
+                                  <span className="font-mono text-amber-400 font-bold">{opt.height ?? 8}%</span>
+                                </div>
+                                <Slider
+                                  min={4}
+                                  max={40}
+                                  step={0.5}
+                                  value={[opt.height ?? 8]}
+                                  onValueChange={([val]) => updateOptionProp(activeOptionTab, 'height', val)}
+                                />
+                              </div>
+                            </div>
+
+                            {/* Rotation */}
+                            <div>
+                              <div className="flex items-center justify-between text-[10px] text-slate-400 mb-1">
+                                <span>Góc xoay nghiêng (Rotation):</span>
+                                <span className="font-mono text-amber-400 font-bold">{opt.rotation ?? 0}°</span>
+                              </div>
+                              <Slider
+                                min={-15}
+                                max={15}
+                                step={0.5}
+                                value={[opt.rotation ?? 0]}
+                                onValueChange={([val]) => updateOptionProp(activeOptionTab, 'rotation', val)}
+                              />
+                            </div>
+
+                            {/* Background Color & Opacity */}
+                            <div className="grid grid-cols-2 gap-2">
+                              <div>
+                                <span className="text-[10px] text-slate-400 block mb-1">Màu nền:</span>
+                                <div className="flex items-center gap-1.5">
+                                  <input
+                                    type="color"
+                                    value={opt.backgroundColor?.slice(0, 7) || '#ffffff'}
+                                    onChange={(e) => updateOptionProp(activeOptionTab, 'backgroundColor', e.target.value)}
+                                    className="w-7 h-7 rounded border border-slate-700 bg-transparent cursor-pointer shrink-0"
+                                  />
+                                  <Input
+                                    value={opt.backgroundColor || '#ffffff'}
+                                    onChange={(e) => updateOptionProp(activeOptionTab, 'backgroundColor', e.target.value)}
+                                    className="h-7 text-xs bg-slate-900 border-slate-800"
+                                  />
+                                </div>
+                              </div>
+                              <div>
+                                <div className="flex items-center justify-between text-[10px] text-slate-400 mb-1">
+                                  <span>Độ mờ nền:</span>
+                                  <span className="font-mono text-amber-400 font-bold">
+                                    {Math.round((opt.bgOpacity ?? 0.88) * 100)}%
+                                  </span>
+                                </div>
+                                <Slider
+                                  min={0}
+                                  max={100}
+                                  step={1}
+                                  value={[Math.round((opt.bgOpacity ?? 0.88) * 100)]}
+                                  onValueChange={([val]) => updateOptionProp(activeOptionTab, 'bgOpacity', val / 100)}
+                                />
+                              </div>
+                            </div>
+
+                            {/* Border Color & Width */}
+                            <div className="grid grid-cols-2 gap-2">
+                              <div>
+                                <span className="text-[10px] text-slate-400 block mb-1">Màu viền:</span>
+                                <div className="flex items-center gap-1.5">
+                                  <input
+                                    type="color"
+                                    value={opt.borderColor?.slice(0, 7) || '#38bdf8'}
+                                    onChange={(e) => updateOptionProp(activeOptionTab, 'borderColor', e.target.value)}
+                                    className="w-7 h-7 rounded border border-slate-700 bg-transparent cursor-pointer shrink-0"
+                                  />
+                                  <Input
+                                    value={opt.borderColor || '#38bdf8'}
+                                    onChange={(e) => updateOptionProp(activeOptionTab, 'borderColor', e.target.value)}
+                                    className="h-7 text-xs bg-slate-900 border-slate-800"
+                                  />
+                                </div>
+                              </div>
+                              <div>
+                                <div className="flex items-center justify-between text-[10px] text-slate-400 mb-1">
+                                  <span>Độ dày viền:</span>
+                                  <span className="font-mono text-amber-400 font-bold">{opt.borderWidth ?? 2}px</span>
+                                </div>
+                                <Slider
+                                  min={0}
+                                  max={8}
+                                  step={0.5}
+                                  value={[opt.borderWidth ?? 2]}
+                                  onValueChange={([val]) => updateOptionProp(activeOptionTab, 'borderWidth', val)}
+                                />
+                              </div>
+                            </div>
+
+                            {/* Text Color & Size */}
+                            <div className="grid grid-cols-2 gap-2">
+                              <div>
+                                <span className="text-[10px] text-slate-400 block mb-1">Màu chữ:</span>
+                                <div className="flex items-center gap-1.5">
+                                  <input
+                                    type="color"
+                                    value={opt.textColor?.slice(0, 7) || '#0f172a'}
+                                    onChange={(e) => updateOptionProp(activeOptionTab, 'textColor', e.target.value)}
+                                    className="w-7 h-7 rounded border border-slate-700 bg-transparent cursor-pointer shrink-0"
+                                  />
+                                  <Input
+                                    value={opt.textColor || '#0f172a'}
+                                    onChange={(e) => updateOptionProp(activeOptionTab, 'textColor', e.target.value)}
+                                    className="h-7 text-xs bg-slate-900 border-slate-800"
+                                  />
+                                </div>
+                              </div>
+                              <div>
+                                <div className="flex items-center justify-between text-[10px] text-slate-400 mb-1">
+                                  <span>Cỡ chữ:</span>
+                                  <span className="font-mono text-amber-400 font-bold">{opt.fontSize ?? 20}px</span>
+                                </div>
+                                <Slider
+                                  min={12}
+                                  max={36}
+                                  step={1}
+                                  value={[opt.fontSize ?? 20]}
+                                  onValueChange={([val]) => updateOptionProp(activeOptionTab, 'fontSize', val)}
+                                />
+                              </div>
+                            </div>
+
+                            {/* Label Badge Customization */}
+                            <div className="pt-2 border-t border-slate-800 space-y-1.5">
+                              <span className="text-[11px] font-bold text-slate-300 block">
+                                Nhãn Ký Hiệu ({activeOptionTab}):
+                              </span>
+                              <div className="grid grid-cols-3 sm:grid-cols-6 gap-1">
+                                {[
+                                  { id: 'circle', label: 'Tròn' },
+                                  { id: 'square', label: 'Vuông' },
+                                  { id: 'pill', label: 'Pill' },
+                                  { id: 'hexagon', label: 'Lục giác' },
+                                  { id: 'diamond', label: 'Thoi' },
+                                  { id: 'badge', label: 'Huy hiệu' }
+                                ].map((lb) => (
+                                  <button
+                                    key={lb.id}
+                                    onClick={() => updateOptionProp(activeOptionTab, 'labelShape', lb.id)}
+                                    className={`py-1 rounded text-[10px] font-bold transition truncate ${
+                                      (opt.labelShape || 'circle') === lb.id
+                                        ? 'bg-amber-500 text-slate-950'
+                                        : 'bg-slate-900 text-slate-400 border border-slate-800'
+                                    }`}
+                                  >
+                                    {lb.label}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Position X / Y */}
             <div className="grid grid-cols-2 gap-2 bg-slate-900 p-2.5 rounded-xl border border-slate-800">
               <div>
@@ -2061,19 +2677,102 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                   </div>
                 )}
               </div>
+              {/* Answer Cards Text Shadow Controls */}
+              <div className="pt-2 border-t border-slate-800 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-xs font-bold text-slate-300 block">
+                      Đổ bóng chữ đáp án (Text Shadow):
+                    </span>
+                    <span className="text-[10px] text-slate-500">
+                      Mặc định tắt (không bóng). Bật khi nền sáng hoặc muốn chữ nổi khối.
+                    </span>
+                  </div>
+                  <Switch
+                    checked={Boolean(
+                      template.components.answerButtons?.textShadow &&
+                      template.components.answerButtons?.textShadow !== 'none'
+                    )}
+                    onCheckedChange={(chk) => {
+                      updateCompStyle(
+                        'answerButtons',
+                        'textShadow',
+                        chk ? '0 2px 8px rgba(0,0,0,0.85)' : undefined
+                      );
+                    }}
+                  />
+                </div>
+
+                {Boolean(
+                  template.components.answerButtons?.textShadow &&
+                  template.components.answerButtons?.textShadow !== 'none'
+                ) && (
+                  <div className="space-y-2 bg-slate-950 p-2.5 rounded-lg border border-slate-800/80 animate-in fade-in">
+                    <span className="text-[10px] text-slate-400 font-bold block">Preset bóng chữ:</span>
+                    <div className="grid grid-cols-3 gap-1 text-[11px] font-bold">
+                      {[
+                        { label: 'Nhẹ', val: '0 1px 4px rgba(0,0,0,0.6)' },
+                        { label: 'Vừa', val: '0 2px 8px rgba(0,0,0,0.85)' },
+                        { label: 'Đậm', val: '0 4px 14px rgba(0,0,0,0.95)' }
+                      ].map((preset) => (
+                        <button
+                          key={preset.label}
+                          type="button"
+                          onClick={() => updateCompStyle('answerButtons', 'textShadow', preset.val)}
+                          className={`py-1 rounded border text-center transition ${
+                            template.components.answerButtons?.textShadow === preset.val
+                              ? 'border-amber-400 bg-amber-500/20 text-amber-300'
+                              : 'border-slate-800 text-slate-400 hover:text-slate-200'
+                          }`}
+                        >
+                          {preset.label}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="space-y-1 pt-1">
+                      <label className="text-[10px] text-slate-400">Tùy chỉnh CSS Text-Shadow:</label>
+                      <Input
+                        value={template.components.answerButtons?.textShadow || '0 2px 8px rgba(0,0,0,0.85)'}
+                        onChange={(e) => updateCompStyle('answerButtons', 'textShadow', e.target.value)}
+                        className="h-7 text-xs bg-slate-900 border-slate-700 text-slate-100 font-mono"
+                        placeholder="0 2px 8px rgba(0,0,0,0.85)"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
 
-            {/* Text Shadow */}
-            <div className="flex items-center justify-between bg-slate-900 p-2.5 rounded-xl border border-slate-800">
-              <span className="text-xs font-bold text-slate-300">Đổ bóng chữ (Text Shadow):</span>
-              <Switch
-                checked={Boolean(template.components.questionBox?.textShadow)}
-                onCheckedChange={(chk) => {
-                  const shadow = chk ? '0 2px 8px rgba(0,0,0,0.85)' : undefined;
-                  updateCompStyle('questionBox', 'textShadow', shadow);
-                  updateCompStyle('answerButtons', 'textShadow', shadow);
-                }}
-              />
+            {/* Question Box Text Shadow */}
+            <div className="bg-slate-900 p-2.5 rounded-xl border border-slate-800 space-y-2">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-xs font-bold text-slate-300 block">Đổ bóng chữ câu hỏi:</span>
+                  <span className="text-[10px] text-slate-500">Giúp chữ câu hỏi nổi bật trên nền video</span>
+                </div>
+                <Switch
+                  checked={Boolean(
+                    template.components.questionBox?.textShadow &&
+                    template.components.questionBox?.textShadow !== 'none'
+                  )}
+                  onCheckedChange={(chk) => {
+                    updateCompStyle('questionBox', 'textShadow', chk ? '0 2px 8px rgba(0,0,0,0.85)' : undefined);
+                  }}
+                />
+              </div>
+              {Boolean(
+                template.components.questionBox?.textShadow &&
+                template.components.questionBox?.textShadow !== 'none'
+              ) && (
+                <div className="space-y-1 bg-slate-950 p-2 rounded-lg border border-slate-800">
+                  <Input
+                    value={template.components.questionBox?.textShadow || '0 2px 8px rgba(0,0,0,0.85)'}
+                    onChange={(e) => updateCompStyle('questionBox', 'textShadow', e.target.value)}
+                    className="h-6 text-[11px] bg-slate-900 border-slate-700 text-slate-100 font-mono"
+                    placeholder="0 2px 8px rgba(0,0,0,0.85)"
+                  />
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -2378,6 +3077,447 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                 />
               </div>
             </div>
+          </div>
+        )}
+
+        {/* ========================================================= */}
+        {/* TAB 4.5: THẺ GIẢI THÍCH (EXPLANATION CARD)                */}
+        {/* ========================================================= */}
+        {activeTab === 'explanation' && (
+          <div className="space-y-3.5">
+            {(() => {
+              const exp = template.components.explanation || DEFAULT_EXPLANATION_CONFIG;
+              const updateExp = (prop: string, val: any) => {
+                onTemplateChange({
+                  ...template,
+                  components: {
+                    ...template.components,
+                    explanation: {
+                      ...(template.components.explanation || DEFAULT_EXPLANATION_CONFIG),
+                      [prop]: val
+                    }
+                  }
+                });
+              };
+
+              const isEnabled = exp.enabled !== false;
+              const isTtsEnabled = exp.readTts !== false;
+              const currentDuration = exp.displayDurationSec ?? 3.0;
+
+              return (
+                <>
+                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
+                    Cấu Hình Thẻ Giải Thích & Giọng Đọc TTS:
+                  </span>
+
+                  {/* 1. KÍCH HOẠT & GIỌNG ĐỌC TTS */}
+                  <div className="bg-slate-900 p-3 rounded-xl border border-slate-800 space-y-3">
+                    {/* Bật/Tắt Hiển Thị Giải Thích */}
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="text-xs font-bold text-slate-200 block">
+                          Hiển thị Giải thích (Show Explanation)
+                        </span>
+                        <span className="text-[10px] text-slate-400 block">
+                          Bật/tắt hiển thị thẻ giải thích trên video khi công bố đáp án
+                        </span>
+                      </div>
+                      <Switch
+                        checked={isEnabled}
+                        onCheckedChange={(val) => updateExp('enabled', val)}
+                      />
+                    </div>
+
+                    {/* Bật/Tắt Đọc TTS Giải Thích */}
+                    <div className="flex items-center justify-between pt-2 border-t border-slate-800/80">
+                      <div>
+                        <span className="text-xs font-bold text-slate-200 block">
+                          Đọc giọng TTS giải thích (Explanation TTS)
+                        </span>
+                        <span className="text-[10px] text-slate-400 block">
+                          Tắt nếu chỉ muốn người xem tự đọc trên màn hình mà không cần giọng đọc
+                        </span>
+                      </div>
+                      <Switch
+                        checked={isTtsEnabled}
+                        onCheckedChange={(val) => updateExp('readTts', val)}
+                      />
+                    </div>
+
+                    {/* Thời Gian Giữ Thẻ (Display Duration) */}
+                    <div className={`p-2.5 rounded-xl border transition ${
+                      !isTtsEnabled
+                        ? 'bg-amber-500/10 border-amber-500/40'
+                        : 'bg-slate-950/60 border-slate-800'
+                    }`}>
+                      <div className="flex items-center justify-between text-xs font-bold mb-1.5">
+                        <span className="text-slate-300">
+                          Thời gian hiển thị thẻ:
+                        </span>
+                        <span className="font-mono text-amber-400 font-bold">
+                          {currentDuration.toFixed(1)} giây
+                        </span>
+                      </div>
+                      <Slider
+                        min={1.0}
+                        max={10.0}
+                        step={0.5}
+                        value={[currentDuration]}
+                        onValueChange={([val]) => updateExp('displayDurationSec', val)}
+                      />
+                      <span className="text-[10px] text-slate-400 block mt-1.5 leading-relaxed">
+                        {!isTtsEnabled
+                          ? '⭐ Đang áp dụng: Khi tắt TTS, thẻ giải thích sẽ dừng đúng thời gian này để người xem đọc trước khi sang câu mới.'
+                          : 'Thời lượng giữ màn hình khi không có audio TTS giải thích.'}
+                      </span>
+                    </div>
+
+                    {/* Tiêu đề & Icon bóng đèn */}
+                    <div className="pt-2 border-t border-slate-800/80 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-semibold text-slate-300">
+                          Hiện icon bóng đèn 💡
+                        </span>
+                        <Switch
+                          checked={exp.showIcon !== false}
+                          onCheckedChange={(val) => updateExp('showIcon', val)}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-semibold text-slate-400">
+                          Tiêu đề phụ trên thẻ:
+                        </label>
+                        <Input
+                          value={exp.titleText ?? 'Giải thích / Explanation'}
+                          onChange={(e) => updateExp('titleText', e.target.value)}
+                          placeholder="Ví dụ: GIẢI THÍCH CHI TIẾT"
+                          className="h-7 text-xs bg-slate-950 border-slate-700 text-slate-200"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 2. VỊ TRÍ & KÍCH THƯỚC */}
+                  <div className="bg-slate-900 p-3 rounded-xl border border-slate-800 space-y-2.5">
+                    <span className="text-xs font-bold text-amber-400 uppercase tracking-wider block">
+                      Vị trí & Kích thước:
+                    </span>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <div className="flex items-center justify-between text-[11px] text-slate-400 mb-1">
+                          <span>Vị trí X (Ngang):</span>
+                          <span className="font-mono text-amber-400 font-bold">{exp.x ?? 6}%</span>
+                        </div>
+                        <Slider
+                          min={0}
+                          max={60}
+                          step={1}
+                          value={[exp.x ?? 6]}
+                          onValueChange={([val]) => updateExp('x', val)}
+                        />
+                      </div>
+                      <div>
+                        <div className="flex items-center justify-between text-[11px] text-slate-400 mb-1">
+                          <span>Vị trí Y (Dọc):</span>
+                          <span className="font-mono text-amber-400 font-bold">{exp.y ?? 84}%</span>
+                        </div>
+                        <Slider
+                          min={10}
+                          max={90}
+                          step={1}
+                          value={[exp.y ?? 84]}
+                          onValueChange={([val]) => updateExp('y', val)}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 pt-1">
+                      <div>
+                        <div className="flex items-center justify-between text-[11px] text-slate-400 mb-1">
+                          <span>Chiều rộng:</span>
+                          <span className="font-mono text-amber-400 font-bold">{exp.width ?? 88}%</span>
+                        </div>
+                        <Slider
+                          min={40}
+                          max={100}
+                          step={1}
+                          value={[exp.width ?? 88]}
+                          onValueChange={([val]) => updateExp('width', val)}
+                        />
+                      </div>
+                      <div>
+                        <div className="flex items-center justify-between text-[11px] text-slate-400 mb-1">
+                          <span>Chiều cao tối thiểu:</span>
+                          <span className="font-mono text-amber-400 font-bold">{exp.height ?? 9}%</span>
+                        </div>
+                        <Slider
+                          min={5}
+                          max={30}
+                          step={1}
+                          value={[exp.height ?? 9]}
+                          onValueChange={([val]) => updateExp('height', val)}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Quick Align Buttons */}
+                    <div className="flex items-center gap-2 pt-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const w = exp.width ?? 88;
+                          const newX = Math.round(((100 - w) / 2) * 10) / 10;
+                          updateExp('x', newX);
+                        }}
+                        className="flex-1 py-1 px-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-bold transition text-center"
+                      >
+                        Căn giữa ngang
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onTemplateChange({
+                            ...template,
+                            components: {
+                              ...template.components,
+                              explanation: {
+                                ...(template.components.explanation || DEFAULT_EXPLANATION_CONFIG),
+                                x: 6,
+                                y: 84,
+                                width: 88,
+                                height: 9
+                              }
+                            }
+                          });
+                        }}
+                        className="flex-1 py-1 px-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-bold transition text-center"
+                      >
+                        Dưới cùng (Mặc định)
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* 3. KIỂU CHỮ & CĂN LỀ */}
+                  <div className="bg-slate-900 p-3 rounded-xl border border-slate-800 space-y-2.5">
+                    <span className="text-xs font-bold text-amber-400 uppercase tracking-wider block">
+                      Kiểu Chữ & Căn Lề:
+                    </span>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <div className="flex items-center justify-between text-[11px] text-slate-400 mb-1">
+                          <span>Cỡ chữ:</span>
+                          <span className="font-mono text-amber-400 font-bold">{exp.fontSize ?? 15}px</span>
+                        </div>
+                        <Slider
+                          min={11}
+                          max={28}
+                          step={1}
+                          value={[exp.fontSize ?? 15]}
+                          onValueChange={([val]) => updateExp('fontSize', val)}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[11px] text-slate-400 block mb-1">Độ đậm:</label>
+                        <select
+                          value={exp.fontWeight || '600'}
+                          onChange={(e) => updateExp('fontWeight', e.target.value)}
+                          className="w-full bg-slate-950 border border-slate-700 text-slate-100 rounded-md p-1.5 text-xs font-bold"
+                        >
+                          <option value="400">Regular (400)</option>
+                          <option value="500">Medium (500)</option>
+                          <option value="600">SemiBold (600)</option>
+                          <option value="700">Bold (700)</option>
+                          <option value="800">ExtraBold (800)</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Text Alignment */}
+                    <div className="pt-1">
+                      <label className="text-[11px] text-slate-400 block mb-1">Căn lề chữ:</label>
+                      <div className="grid grid-cols-3 gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800 text-xs font-bold">
+                        {(['left', 'center', 'right'] as const).map((align) => (
+                          <button
+                            key={align}
+                            type="button"
+                            onClick={() => updateExp('textAlign', align)}
+                            className={`py-1 rounded text-center transition ${
+                              (exp.textAlign || 'left') === align
+                                ? 'bg-amber-500 text-slate-950 shadow-xs'
+                                : 'text-slate-400 hover:text-slate-200'
+                            }`}
+                          >
+                            {align === 'left' ? 'Trái' : align === 'center' ? 'Giữa' : 'Phải'}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Màu chữ */}
+                    <div className="pt-1">
+                      <label className="text-[11px] text-slate-400 block mb-1">Màu chữ giải thích:</label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="color"
+                          value={exp.textColor || exp.color || '#1e293b'}
+                          onChange={(e) => {
+                            updateExp('textColor', e.target.value);
+                            updateExp('color', e.target.value);
+                          }}
+                          className="w-7 h-7 rounded border border-slate-700 cursor-pointer bg-transparent"
+                        />
+                        <Input
+                          value={exp.textColor || exp.color || '#1e293b'}
+                          onChange={(e) => {
+                            updateExp('textColor', e.target.value);
+                            updateExp('color', e.target.value);
+                          }}
+                          className="h-7 text-xs bg-slate-950 border-slate-700 text-slate-100 font-mono"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 4. NỀN, BO GÓC, VIỀN & HIỆU ỨNG */}
+                  <div className="bg-slate-900 p-3 rounded-xl border border-slate-800 space-y-2.5">
+                    <span className="text-xs font-bold text-amber-400 uppercase tracking-wider block">
+                      Nền, Bo Góc & Viền Thẻ:
+                    </span>
+
+                    {/* Màu nền & Độ mờ nền */}
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-[11px] text-slate-400 block mb-1">Màu nền:</label>
+                        <div className="flex items-center gap-1.5">
+                          <input
+                            type="color"
+                            value={exp.backgroundColor || '#ffffff'}
+                            onChange={(e) => updateExp('backgroundColor', e.target.value)}
+                            className="w-7 h-7 rounded border border-slate-700 cursor-pointer bg-transparent"
+                          />
+                          <Input
+                            value={exp.backgroundColor || '#ffffff'}
+                            onChange={(e) => updateExp('backgroundColor', e.target.value)}
+                            className="h-7 text-xs bg-slate-950 border-slate-700 text-slate-100 font-mono"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="flex items-center justify-between text-[11px] text-slate-400 mb-1">
+                          <span>Độ mờ nền:</span>
+                          <span className="font-mono text-amber-400 font-bold">
+                            {Math.round((exp.bgOpacity ?? 0.98) * 100)}%
+                          </span>
+                        </div>
+                        <Slider
+                          min={20}
+                          max={100}
+                          step={5}
+                          value={[Math.round((exp.bgOpacity ?? 0.98) * 100)]}
+                          onValueChange={([val]) => updateExp('bgOpacity', val / 100)}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Màu viền & Độ dày viền */}
+                    <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-800/80">
+                      <div>
+                        <label className="text-[11px] text-slate-400 block mb-1">Màu viền thẻ:</label>
+                        <div className="flex items-center gap-1.5">
+                          <input
+                            type="color"
+                            value={exp.borderColor || '#22c55e'}
+                            onChange={(e) => updateExp('borderColor', e.target.value)}
+                            className="w-7 h-7 rounded border border-slate-700 cursor-pointer bg-transparent"
+                          />
+                          <Input
+                            value={exp.borderColor || '#22c55e'}
+                            onChange={(e) => updateExp('borderColor', e.target.value)}
+                            className="h-7 text-xs bg-slate-950 border-slate-700 text-slate-100 font-mono"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="flex items-center justify-between text-[11px] text-slate-400 mb-1">
+                          <span>Độ dày viền:</span>
+                          <span className="font-mono text-amber-400 font-bold">{exp.borderWidth ?? 2}px</span>
+                        </div>
+                        <Slider
+                          min={0}
+                          max={8}
+                          step={1}
+                          value={[exp.borderWidth ?? 2]}
+                          onValueChange={([val]) => updateExp('borderWidth', val)}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Bo góc & Padding */}
+                    <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-800/80">
+                      <div>
+                        <div className="flex items-center justify-between text-[11px] text-slate-400 mb-1">
+                          <span>Bo góc:</span>
+                          <span className="font-mono text-amber-400 font-bold">{exp.borderRadius ?? 16}px</span>
+                        </div>
+                        <Slider
+                          min={0}
+                          max={32}
+                          step={2}
+                          value={[exp.borderRadius ?? 16]}
+                          onValueChange={([val]) => updateExp('borderRadius', val)}
+                        />
+                      </div>
+                      <div>
+                        <div className="flex items-center justify-between text-[11px] text-slate-400 mb-1">
+                          <span>Đệm trong:</span>
+                          <span className="font-mono text-amber-400 font-bold">{exp.padding ?? 12}px</span>
+                        </div>
+                        <Slider
+                          min={6}
+                          max={28}
+                          step={2}
+                          value={[exp.padding ?? 12]}
+                          onValueChange={([val]) => updateExp('padding', val)}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Làm mờ kính (Backdrop Blur) & Đổ bóng (Shadow) */}
+                    <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-800/80">
+                      <div>
+                        <div className="flex items-center justify-between text-[11px] text-slate-400 mb-1">
+                          <span>Mờ kính (Blur):</span>
+                          <span className="font-mono text-amber-400 font-bold">{exp.backdropBlur ?? 0}px</span>
+                        </div>
+                        <Slider
+                          min={0}
+                          max={24}
+                          step={2}
+                          value={[exp.backdropBlur ?? 0]}
+                          onValueChange={([val]) => updateExp('backdropBlur', val)}
+                        />
+                      </div>
+                      <div className="flex flex-col justify-between">
+                        <span className="text-[11px] text-slate-400 mb-1">Đổ bóng thẻ:</span>
+                        <div className="flex items-center justify-between bg-slate-950 p-1.5 rounded-lg border border-slate-800">
+                          <span className="text-[11px] text-slate-300 font-medium">Bật shadow</span>
+                          <Switch
+                            checked={Boolean(exp.boxShadow && exp.boxShadow !== 'none')}
+                            onCheckedChange={(val) =>
+                              updateExp('boxShadow', val ? '0 8px 25px rgba(22, 163, 74, 0.22)' : 'none')
+                            }
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              );
+            })()}
           </div>
         )}
 
@@ -2999,40 +4139,205 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                       </div>
                     </div>
 
-                    {/* Color Overrides for Neon */}
+                    {/* Color Overrides for Neon (3 colors) */}
+                    <div className="space-y-2 pt-1 border-t border-slate-800">
+                      <span className="text-[11px] font-bold text-slate-300 block">Bộ 3 Màu Neon Động:</span>
+                      <div className="grid grid-cols-3 gap-1.5">
+                        <div>
+                          <label className="text-[10px] text-slate-400 block mb-1">Màu 1:</label>
+                          <div className="flex items-center gap-1">
+                            <input
+                              type="color"
+                              value={template.components.background?.neonColor1 || '#00f0ff'}
+                              onChange={(e) => updateCompStyle('background', 'neonColor1', e.target.value)}
+                              className="w-5 h-5 rounded border border-slate-700 cursor-pointer bg-transparent shrink-0"
+                            />
+                            <Input
+                              value={template.components.background?.neonColor1 || '#00f0ff'}
+                              onChange={(e) => updateCompStyle('background', 'neonColor1', e.target.value)}
+                              className="h-6 text-[9px] bg-slate-900 border-slate-700 text-slate-100 font-mono px-1"
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="text-[10px] text-slate-400 block mb-1">Màu 2:</label>
+                          <div className="flex items-center gap-1">
+                            <input
+                              type="color"
+                              value={template.components.background?.neonColor2 || '#ff007f'}
+                              onChange={(e) => updateCompStyle('background', 'neonColor2', e.target.value)}
+                              className="w-5 h-5 rounded border border-slate-700 cursor-pointer bg-transparent shrink-0"
+                            />
+                            <Input
+                              value={template.components.background?.neonColor2 || '#ff007f'}
+                              onChange={(e) => updateCompStyle('background', 'neonColor2', e.target.value)}
+                              className="h-6 text-[9px] bg-slate-900 border-slate-700 text-slate-100 font-mono px-1"
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="text-[10px] text-slate-400 block mb-1">Màu 3:</label>
+                          <div className="flex items-center gap-1">
+                            <input
+                              type="color"
+                              value={template.components.background?.neonColor3 || '#7928ca'}
+                              onChange={(e) => updateCompStyle('background', 'neonColor3', e.target.value)}
+                              className="w-5 h-5 rounded border border-slate-700 cursor-pointer bg-transparent shrink-0"
+                            />
+                            <Input
+                              value={template.components.background?.neonColor3 || '#7928ca'}
+                              onChange={(e) => updateCompStyle('background', 'neonColor3', e.target.value)}
+                              className="h-6 text-[9px] bg-slate-900 border-slate-700 text-slate-100 font-mono px-1"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Direction / Flow */}
+                    <div className="pt-1 border-t border-slate-800 space-y-1">
+                      <span className="text-[11px] font-bold text-slate-300 block">Hướng chuyển động:</span>
+                      <div className="grid grid-cols-4 gap-1 text-[10px] font-bold">
+                        {[
+                          { id: 'down', label: '⬇️ Xuống' },
+                          { id: 'up', label: '⬆️ Lên' },
+                          { id: 'left', label: '⬅️ Trái' },
+                          { id: 'right', label: '➡️ Phải' }
+                        ].map((d) => {
+                          const curDir = template.components.background?.motion?.direction || 'down';
+                          const isSel = curDir === d.id;
+                          return (
+                            <button
+                              key={d.id}
+                              type="button"
+                              onClick={() => {
+                                const curMotion = template.components.background?.motion || {};
+                                onTemplateChange({
+                                  ...template,
+                                  components: {
+                                    ...template.components,
+                                    background: {
+                                      ...template.components.background,
+                                      motion: {
+                                        ...curMotion,
+                                        direction: d.id as MotionDirection
+                                      }
+                                    }
+                                  }
+                                });
+                              }}
+                              className={`py-1 rounded border text-center transition ${
+                                isSel
+                                  ? 'border-amber-400 bg-amber-500/20 text-amber-300'
+                                  : 'border-slate-800 text-slate-400 hover:text-slate-200'
+                              }`}
+                            >
+                              {d.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Movement Amplitude & Blur */}
                     <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-800">
                       <div>
-                        <label className="text-[10px] text-slate-400 block mb-1">Màu Neon 1:</label>
-                        <div className="flex items-center gap-1.5">
-                          <input
-                            type="color"
-                            value={template.components.background?.neonColor1 || '#00f0ff'}
-                            onChange={(e) => updateCompStyle('background', 'neonColor1', e.target.value)}
-                            className="w-6 h-6 rounded border border-slate-700 cursor-pointer bg-transparent"
-                          />
-                          <Input
-                            value={template.components.background?.neonColor1 || '#00f0ff'}
-                            onChange={(e) => updateCompStyle('background', 'neonColor1', e.target.value)}
-                            className="h-6 text-[10px] bg-slate-900 border-slate-700 text-slate-100 font-mono"
-                          />
+                        <div className="flex items-center justify-between text-[11px] text-slate-400 mb-1">
+                          <span>Biên độ sóng:</span>
+                          <span className="font-mono text-amber-400 font-bold">
+                            {template.components.background?.motion?.movement ?? 25}
+                          </span>
                         </div>
+                        <Slider
+                          min={5}
+                          max={50}
+                          step={5}
+                          value={[template.components.background?.motion?.movement ?? 25]}
+                          onValueChange={([val]) => {
+                            const curMotion = template.components.background?.motion || {};
+                            onTemplateChange({
+                              ...template,
+                              components: {
+                                ...template.components,
+                                background: {
+                                  ...template.components.background,
+                                  motion: {
+                                    ...curMotion,
+                                    movement: val
+                                  }
+                                }
+                              }
+                            });
+                          }}
+                        />
                       </div>
 
                       <div>
-                        <label className="text-[10px] text-slate-400 block mb-1">Màu Neon 2:</label>
-                        <div className="flex items-center gap-1.5">
-                          <input
-                            type="color"
-                            value={template.components.background?.neonColor2 || '#ff007f'}
-                            onChange={(e) => updateCompStyle('background', 'neonColor2', e.target.value)}
-                            className="w-6 h-6 rounded border border-slate-700 cursor-pointer bg-transparent"
-                          />
-                          <Input
-                            value={template.components.background?.neonColor2 || '#ff007f'}
-                            onChange={(e) => updateCompStyle('background', 'neonColor2', e.target.value)}
-                            className="h-6 text-[10px] bg-slate-900 border-slate-700 text-slate-100 font-mono"
-                          />
+                        <div className="flex items-center justify-between text-[11px] text-slate-400 mb-1">
+                          <span>Làm mờ (Blur):</span>
+                          <span className="font-mono text-amber-400 font-bold">
+                            {template.components.background?.blur ?? 0}px
+                          </span>
                         </div>
+                        <Slider
+                          min={0}
+                          max={30}
+                          step={2}
+                          value={[template.components.background?.blur ?? 0]}
+                          onValueChange={([val]) => updateCompStyle('background', 'blur', val)}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Opacity & Zoom */}
+                    <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-800">
+                      <div>
+                        <div className="flex items-center justify-between text-[11px] text-slate-400 mb-1">
+                          <span>Độ rõ nền (Opacity):</span>
+                          <span className="font-mono text-amber-400 font-bold">
+                            {Math.round((template.components.background?.opacity ?? 1.0) * 100)}%
+                          </span>
+                        </div>
+                        <Slider
+                          min={20}
+                          max={100}
+                          step={5}
+                          value={[Math.round((template.components.background?.opacity ?? 1.0) * 100)]}
+                          onValueChange={([val]) => updateCompStyle('background', 'opacity', val / 100)}
+                        />
+                      </div>
+
+                      <div>
+                        <div className="flex items-center justify-between text-[11px] text-slate-400 mb-1">
+                          <span>Zoom nền:</span>
+                          <span className="font-mono text-amber-400 font-bold">
+                            {(template.components.background?.motion?.zoomScale ?? 1.0).toFixed(2)}x
+                          </span>
+                        </div>
+                        <Slider
+                          min={1.0}
+                          max={1.4}
+                          step={0.02}
+                          value={[template.components.background?.motion?.zoomScale ?? 1.0]}
+                          onValueChange={([val]) => {
+                            const curMotion = template.components.background?.motion || {};
+                            onTemplateChange({
+                              ...template,
+                              components: {
+                                ...template.components,
+                                background: {
+                                  ...template.components.background,
+                                  motion: {
+                                    ...curMotion,
+                                    zoomScale: val
+                                  }
+                                }
+                              }
+                            });
+                          }}
+                        />
                       </div>
                     </div>
 

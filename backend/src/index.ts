@@ -61,6 +61,10 @@ app.use('/cache', express.static(cacheDir));
 app.use('/uploads', express.static(uploadDir));
 app.use('/renders', express.static(rendersDir));
 
+// Health check routes
+app.get('/api/health', (req, res) => res.json({ status: 'ok', timestamp: Date.now() }));
+app.get('/api/system/health', (req, res) => res.json({ status: 'ok', timestamp: Date.now() }));
+
 // --- Channel Endpoints ---
 app.get('/api/channels', (req, res) => {
   try {
@@ -475,7 +479,32 @@ app.post('/api/quiz/estimate-batch', (req, res) => {
   }
 });
 
+// Serve Frontend Production Bundle (All-in-one Production Server)
+const clientDistDir = [
+  path.join(rootDir, 'frontend', 'dist'),
+  path.join(rootDir, 'dist')
+].find(d => fs.existsSync(path.join(d, 'index.html')));
+
+if (clientDistDir) {
+  app.use(express.static(clientDistDir));
+  app.get('*', (req, res, next) => {
+    if (
+      req.path.startsWith('/api') ||
+      req.path.startsWith('/uploads') ||
+      req.path.startsWith('/cache') ||
+      req.path.startsWith('/renders') ||
+      req.path.startsWith('/assets')
+    ) {
+      return next();
+    }
+    res.sendFile(path.join(clientDistDir, 'index.html'));
+  });
+}
+
 // Start Express Server
 app.listen(PORT, () => {
   console.log(`Quiz Video Generator API Server running on port ${PORT}`);
+  if (clientDistDir) {
+    console.log(`Serving Frontend Production UI from: ${clientDistDir}`);
+  }
 });

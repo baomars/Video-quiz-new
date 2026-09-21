@@ -4,212 +4,21 @@ import {
   VideoTemplate,
   TimelineQuestionCue
 } from '../../../remotion/types/index';
+import { TEMPLATE_LIBRARY } from '../../../remotion/types/templates';
 
-export const DEFAULT_FALLBACK_TEMPLATE: VideoTemplate = {
-  id: 'split-modern',
-  name: 'A2 — Trẻ Trung Tươi Sáng (Vibrant Light)',
-  layoutType: 'split-modern',
-  illustrationLayout: 'single',
-  answerLayout: 'vertical-list',
-  countdownStyle: 'circle-radial',
-  transitionType: 'slide',
-  timing: {
-    countdownSeconds: 5,
-    revealSeconds: 2.5,
-    transitionFrames: 15,
-    endBufferSeconds: 2.5
-  },
-  components: {
-    background: {
-      x: 0,
-      y: 0,
-      width: 100,
-      height: 100,
-      type: 'image',
-      backgroundColor: '#fffbeb',
-      secondaryColor: '#fef3c7',
-      gradientAngle: 135,
-      opacity: 1,
-      imageUrl: '/assets/backgrounds/bg_modern_geometric.svg',
-      motion: {
-        enabled: true,
-        effects: ['zoom-in'],
-        intensity: 20,
-        zoomScale: 1.15,
-        speed: 1.0,
-        aiWatermarkZoom: true
-      }
-    },
-    header: {
-      x: 7,
-      y: 4,
-      width: 86,
-      height: 5,
-      fontSize: 20,
-      fontWeight: '800',
-      color: '#0f172a',
-      backgroundColor: '#ffffff',
-      borderRadius: 14,
-      borderWidth: 1,
-      borderColor: '#fde68a',
-      padding: 8,
-      textAlign: 'center',
-      horizontalAlign: 'center',
-      verticalAlign: 'center',
-      badgeStyle: true,
-      animation: 'slide-up'
-    },
-    quizTitle: {
-      x: 7,
-      y: 7,
-      width: 86,
-      height: 6,
-      fontSize: 24,
-      fontWeight: '900',
-      color: '#b45309',
-      backgroundColor: 'rgba(255, 255, 255, 0.95)',
-      borderRadius: 16,
-      borderWidth: 1.5,
-      borderColor: '#fde68a',
-      padding: 8,
-      textAlign: 'center',
-      horizontalAlign: 'center',
-      verticalAlign: 'center',
-      badgeStyle: true,
-      enabled: true,
-      text: 'Kiến Thức Tổng Hợp Vui'
-    },
-    questionNumber: {
-      x: 10,
-      y: 15,
-      width: 80,
-      height: 4,
-      fontSize: 20,
-      fontWeight: '800',
-      color: '#d97706',
-      textAlign: 'center',
-      horizontalAlign: 'center',
-      format: 'câu-n'
-    },
-    illustration: {
-      x: 11,
-      y: 19,
-      width: 78,
-      height: 24,
-      borderRadius: 18,
-      borderWidth: 2,
-      borderColor: '#fef08a',
-      boxShadow: '0 8px 24px rgba(217, 119, 6, 0.12)',
-      objectFit: 'contain',
-      zoomEffect: true,
-      animation: 'pop',
-      paddingFrame: 6
-    },
-    questionBox: {
-      x: 8,
-      y: 45,
-      width: 84,
-      height: 15,
-      fontSize: 24,
-      fontWeight: '800',
-      color: '#0f172a',
-      backgroundColor: '#ffffff',
-      bgOpacity: 0.92,
-      backdropBlur: 14,
-      borderRadius: 20,
-      borderWidth: 2,
-      borderColor: '#38bdf8',
-      boxShadow: '0 8px 30px rgba(0, 0, 0, 0.15)',
-      glowRadius: 12,
-      glowColor: 'rgba(56, 189, 248, 0.35)',
-      padding: 16,
-      textAlign: 'center',
-      horizontalAlign: 'center',
-      verticalAlign: 'center',
-      lineHeight: 1.35,
-      animation: 'scale-in',
-      glassmorphism: true
-    },
-    answerButtons: {
-      x: 8,
-      y: 62,
-      width: 84,
-      height: 23,
-      fontSize: 20,
-      fontWeight: '700',
-      color: '#0f172a',
-      backgroundColor: '#ffffff',
-      bgOpacity: 0.88,
-      backdropBlur: 12,
-      borderRadius: 16,
-      borderWidth: 2,
-      borderColor: '#94a3b8',
-      boxShadow: '0 4px 18px rgba(0, 0, 0, 0.12)',
-      glowRadius: 8,
-      glowColor: 'rgba(148, 163, 184, 0.3)',
-      padding: 12,
-      textAlign: 'left',
-      gap: 10,
-      optionBadgeShape: 'circle',
-      animation: 'slide-up'
-    },
-    countdown: {
-      x: 40,
-      y: 85.5,
-      width: 20,
-      height: 4,
-      color: '#d97706',
-      backgroundColor: '#fef3c7',
-      fontSize: 20,
-      fontWeight: '900',
-      showMiliseconds: false,
-      soundEnabled: true,
-      style: 'circle-radial',
-      horizontalAlign: 'center'
-    },
-    logo: {
-      x: 8,
-      y: 8,
-      width: 14,
-      height: 5,
-      opacity: 0.85,
-      watermark: false
-    },
-    explanation: {
-      enabled: true,
-      readTts: true,
-      displayDurationSec: 3.0,
-      showIcon: true,
-      x: 6,
-      y: 84,
-      width: 88,
-      height: 9,
-      fontSize: 15,
-      fontWeight: '600',
-      color: '#1e293b',
-      textColor: '#1e293b',
-      backgroundColor: '#ffffff',
-      bgOpacity: 0.98,
-      borderRadius: 16,
-      borderWidth: 2,
-      borderColor: '#22c55e',
-      boxShadow: '0 8px 25px rgba(22, 163, 74, 0.18)',
-      padding: 12,
-      textAlign: 'left'
-    }
-  }
-};
+const defaultTmplItem = TEMPLATE_LIBRARY.find(t => t.id === 'tmpl-gameshow-pop-sticker') || TEMPLATE_LIBRARY[0];
+export const DEFAULT_FALLBACK_TEMPLATE: VideoTemplate = JSON.parse(JSON.stringify(defaultTmplItem.template));
 
 export const DEFAULT_FALLBACK_CHANNEL: Channel = {
-  id: 'channel_tech_pulse',
-  name: 'Thế Giới Công Nghệ (Vibrant Youth)',
-  description: 'Kênh công nghệ khám phá phong cách tươi sáng, năng động và bắt mắt.',
+  id: 'channel_gameshow_pop',
+  name: 'GameShow Pop (Default)',
+  description: 'Kênh đố vui phong cách Neo-Brutalism & Sticker cực kỳ bắt mắt trên TikTok & Reels.',
   createdAt: '2026-09-01T00:00:00.000Z',
   updatedAt: '2026-09-01T00:00:00.000Z',
   branding: {
     identity: {
-      channelName: 'TECH VIBRANT',
-      description: 'Đột phá công nghệ tương lai',
+      channelName: 'GAMESHOW POP',
+      description: 'Đố vui phong cách triệu view',
       avatarUrl: '/assets/default_avatar_cyber.svg',
       logoUrl: '/assets/default_logo_cyber.svg',
       watermarkUrl: '',
@@ -218,27 +27,27 @@ export const DEFAULT_FALLBACK_CHANNEL: Channel = {
       showWatermark: true
     },
     colors: {
-      primary: '#d97706',
-      secondary: '#fffbeb',
-      accent: '#0284c7',
-      background: '#fffbeb',
-      cardBg: '#ffffff',
-      text: '#0f172a',
+      primary: '#facc15',
+      secondary: '#f43f5e',
+      accent: '#06b6d4',
+      background: '#3b0764',
+      cardBg: '#facc15',
+      text: '#000000',
       textMuted: '#64748b',
-      correct: '#16a34a',
-      wrong: '#dc2626',
+      correct: '#22c55e',
+      wrong: '#ef4444',
       buttonBg: '#ffffff',
-      border: '#fde68a'
+      border: '#000000'
     },
     fonts: {
-      primary: 'Montserrat',
-      secondary: 'Noto Sans',
-      headingWeight: '800',
-      bodyWeight: '600'
+      primary: 'Montserrat, sans-serif',
+      secondary: 'Be Vietnam Pro, sans-serif',
+      headingWeight: '900',
+      bodyWeight: '700'
     },
     effects: {
       shadowStyle: 'glow',
-      borderRadius: 20,
+      borderRadius: 14,
       glassmorphism: false
     }
   },
@@ -250,8 +59,8 @@ export const DEFAULT_FALLBACK_CHANNEL: Channel = {
       pitch: '+0Hz',
       volume: '+0%',
       readOptions: false,
-      introScript: 'Chào mừng các bạn đến với thử thách công nghệ!',
-      outroScript: 'Nhớ follow kênh để cập nhật xu hướng AI mỗi ngày!',
+      introScript: 'Chào mừng các bạn đến với thử thách đố vui!',
+      outroScript: 'Nhớ follow kênh để đón xem câu đố tiếp theo!',
       revealScript: 'Đáp án chính xác là'
     },
     en: {
@@ -261,8 +70,8 @@ export const DEFAULT_FALLBACK_CHANNEL: Channel = {
       pitch: '+0Hz',
       volume: '+0%',
       readOptions: false,
-      introScript: 'Welcome to the tech and AI challenge!',
-      outroScript: 'Follow us for daily high-tech insights!',
+      introScript: 'Welcome to the pop trivia challenge!',
+      outroScript: 'Follow for more daily fun quizzes!',
       revealScript: 'The correct answer is'
     }
   },
@@ -285,7 +94,7 @@ export const DEFAULT_FALLBACK_CHANNEL: Channel = {
       transition: 0.5
     }
   },
-  activeTemplateId: 'split-modern',
+  activeTemplateId: 'tmpl-gameshow-pop-sticker',
   templates: [DEFAULT_FALLBACK_TEMPLATE]
 };
 

@@ -359,6 +359,7 @@ export function drawShapePath(
   const shape = style?.shape;
   switch (shape) {
     case 'rectangle':
+    case 'sharp':
       ctx.beginPath();
       ctx.rect(x, y, width, height);
       ctx.closePath();

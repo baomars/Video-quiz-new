@@ -730,6 +730,130 @@ export const NeonBackground: React.FC<NeonBackgroundProps> = ({
     );
   }
 
+  // =========================================================================
+  // 10 BRIGHT NATURE & STUDIO DYNAMIC BACKGROUNDS (NỀN SÁNG / THIÊN NHIÊN)
+  // =========================================================================
+
+  // 9. SUNNY NATURE (Nắng dọi qua lá cây)
+  if (effectivePreset === 'sunny-nature') {
+    const t = frame * 0.02 * effectiveSpeed;
+    const dappleX = Math.sin(t) * 25;
+    const dappleY = Math.cos(t * 0.8) * 20;
+    return (
+      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: 'linear-gradient(145deg, #fef9c3 0%, #dcfce7 50%, #bbf7d0 100%)' }}>
+        <div style={{ position: 'absolute', top: `${-10 + dappleY}%`, left: `${-10 + dappleX}%`, width: '80%', height: '80%', background: 'radial-gradient(circle, rgba(254, 240, 138, 0.7) 0%, rgba(254, 240, 138, 0) 70%)', filter: 'blur(40px)' }} />
+        <div style={{ position: 'absolute', bottom: `${-15 - dappleY}%`, right: `${-15 - dappleX}%`, width: '85%', height: '85%', background: 'radial-gradient(circle, rgba(134, 239, 172, 0.6) 0%, rgba(134, 239, 172, 0) 70%)', filter: 'blur(50px)' }} />
+      </div>
+    );
+  }
+
+  // 10. SPRING GARDEN (Vườn hoa mùa xuân tươi mới)
+  if (effectivePreset === 'spring-garden') {
+    const t = frame * 0.025 * effectiveSpeed;
+    const breeze = Math.sin(t) * 30;
+    return (
+      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: 'linear-gradient(135deg, #fdf2f8 0%, #f0fdf4 45%, #dcfce7 100%)' }}>
+        <div style={{ position: 'absolute', top: '10%', left: `${20 + breeze}%`, width: '60%', height: '60%', background: 'radial-gradient(circle, rgba(251, 207, 232, 0.6) 0%, transparent 70%)', filter: 'blur(45px)' }} />
+        <div style={{ position: 'absolute', bottom: '15%', right: `${15 - breeze * 0.7}%`, width: '65%', height: '65%', background: 'radial-gradient(circle, rgba(187, 247, 208, 0.7) 0%, transparent 70%)', filter: 'blur(50px)' }} />
+      </div>
+    );
+  }
+
+  // 11. PASTEL CLOUDS (Mây trời bồng bềnh)
+  if (effectivePreset === 'pastel-clouds') {
+    const t = frame * 0.015 * effectiveSpeed;
+    const cloud1X = ((t * 20) % 120) - 20;
+    const cloud2X = (((t * 15) + 50) % 130) - 30;
+    return (
+      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: 'linear-gradient(180deg, #bae6fd 0%, #e0f2fe 50%, #fed7aa 100%)' }}>
+        <div style={{ position: 'absolute', top: '20%', left: `${cloud1X}%`, width: '70%', height: '35%', background: 'radial-gradient(ellipse at center, rgba(255, 255, 255, 0.85) 0%, transparent 75%)', filter: 'blur(35px)' }} />
+        <div style={{ position: 'absolute', top: '55%', left: `${cloud2X}%`, width: '80%', height: '40%', background: 'radial-gradient(ellipse at center, rgba(255, 247, 237, 0.8) 0%, transparent 70%)', filter: 'blur(40px)' }} />
+      </div>
+    );
+  }
+
+  // 12. BRIGHT STUDIO (Studio trắng sáng tối giản)
+  if (effectivePreset === 'bright-studio') {
+    const t = frame * 0.03 * effectiveSpeed;
+    const breath = 1.0 + Math.sin(t) * 0.05;
+    return (
+      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: '#f8fafc' }}>
+        <div style={{ position: 'absolute', top: '25%', left: '15%', width: '70%', height: '50%', transform: `scale(${breath})`, background: 'radial-gradient(circle, rgba(255, 255, 255, 1) 0%, rgba(241, 245, 249, 0.8) 60%, transparent 80%)', filter: 'blur(25px)' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at center, transparent 40%, rgba(226, 232, 240, 0.6) 100%)' }} />
+      </div>
+    );
+  }
+
+  // 13. GOLDEN SUNRAY (Tia nắng ban mai)
+  if (effectivePreset === 'golden-sunray') {
+    const t = frame * 0.02 * effectiveSpeed;
+    const rayAngle = 115 + Math.sin(t) * 15;
+    return (
+      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: `linear-gradient(${rayAngle}deg, #fef3c7 0%, #fef9c3 40%, #ffffff 80%, #fde68a 100%)` }}>
+        <div style={{ position: 'absolute', top: '-20%', right: '-20%', width: '90%', height: '90%', background: 'radial-gradient(circle, rgba(253, 224, 71, 0.45) 0%, transparent 70%)', filter: 'blur(45px)' }} />
+      </div>
+    );
+  }
+
+  // 14. WATERCOLOR BLOOM (Vệt màu nước nghệ thuật)
+  if (effectivePreset === 'watercolor-bloom') {
+    const t = frame * 0.02 * effectiveSpeed;
+    const flow1 = Math.sin(t) * 20;
+    const flow2 = Math.cos(t * 0.9) * 25;
+    return (
+      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: '#fcfcfd' }}>
+        <div style={{ position: 'absolute', top: `${15 + flow1}%`, left: `${10 + flow2}%`, width: '65%', height: '55%', background: 'radial-gradient(circle, rgba(224, 231, 255, 0.75) 0%, transparent 70%)', filter: 'blur(50px)' }} />
+        <div style={{ position: 'absolute', bottom: `${15 - flow1}%`, right: `${10 - flow2}%`, width: '70%', height: '60%', background: 'radial-gradient(circle, rgba(204, 251, 241, 0.75) 0%, transparent 70%)', filter: 'blur(55px)' }} />
+      </div>
+    );
+  }
+
+  // 15. CLEAN PAPER (Giấy sáng & nắng ấm)
+  if (effectivePreset === 'clean-paper') {
+    const t = frame * 0.02 * effectiveSpeed;
+    const sunShift = Math.sin(t) * 15;
+    return (
+      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: '#fafaf9' }}>
+        <div style={{ position: 'absolute', top: `${5 + sunShift}%`, left: `${20 + sunShift}%`, width: '60%', height: '50%', background: 'radial-gradient(circle, rgba(254, 243, 199, 0.6) 0%, transparent 75%)', filter: 'blur(40px)' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(circle at center, transparent 60%, rgba(231, 229, 228, 0.4) 100%)' }} />
+      </div>
+    );
+  }
+
+  // 16. FRESH MINT (Làn sóng bạc hà tươi mát)
+  if (effectivePreset === 'fresh-mint') {
+    const t = frame * 0.025 * effectiveSpeed;
+    const wave = Math.sin(t) * 35;
+    return (
+      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 50%, #a7f3d0 100%)' }}>
+        <div style={{ position: 'absolute', top: `${20 + wave * 0.3}%`, left: '-10%', width: '120%', height: '40%', background: 'radial-gradient(ellipse at center, rgba(167, 243, 208, 0.8) 0%, transparent 75%)', filter: 'blur(45px)' }} />
+      </div>
+    );
+  }
+
+  // 17. BAMBOO GROVE (Rừng trúc xanh mát)
+  if (effectivePreset === 'bamboo-grove') {
+    const t = frame * 0.02 * effectiveSpeed;
+    const sway = Math.sin(t) * 20;
+    return (
+      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: 'linear-gradient(145deg, #f0fdf4 0%, #dcfce7 50%, #86efac 100%)' }}>
+        <div style={{ position: 'absolute', top: '-10%', left: `${15 + sway}%`, width: '45%', height: '120%', background: 'radial-gradient(ellipse at center, rgba(134, 239, 172, 0.6) 0%, transparent 75%)', filter: 'blur(50px)' }} />
+        <div style={{ position: 'absolute', top: '10%', right: `${10 - sway}%`, width: '50%', height: '110%', background: 'radial-gradient(ellipse at center, rgba(187, 247, 208, 0.7) 0%, transparent 75%)', filter: 'blur(45px)' }} />
+      </div>
+    );
+  }
+
+  // 18. WARM SUNRISE (Bình minh rạng rỡ)
+  if (effectivePreset === 'warm-sunrise') {
+    const t = frame * 0.02 * effectiveSpeed;
+    const sunRise = Math.sin(t) * 15;
+    return (
+      <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', background: 'linear-gradient(180deg, #fff7ed 0%, #ffedd5 45%, #fed7aa 100%)' }}>
+        <div style={{ position: 'absolute', bottom: `${10 + sunRise}%`, left: '20%', width: '60%', height: '45%', background: 'radial-gradient(circle, rgba(251, 146, 60, 0.55) 0%, rgba(253, 186, 116, 0.25) 50%, transparent 75%)', filter: 'blur(35px)' }} />
+      </div>
+    );
+  }
+
   // Fallback
   return <div style={{ position: 'absolute', inset: 0, backgroundColor: '#050515' }} />;
 };

@@ -373,7 +373,166 @@ function drawProceduralDynamicBackground(
     ctx.fillStyle = aGrad2;
     ctx.fillRect(0, 0, width, height);
   }
-  // 9. GRADIENT MOTION
+  // 9. SUNNY NATURE (Nắng dọi qua lá cây)
+  else if (presetId === 'sunny-nature') {
+    const bgGrad = ctx.createLinearGradient(0, 0, width, height);
+    bgGrad.addColorStop(0, '#fef9c3');
+    bgGrad.addColorStop(0.5, '#dcfce7');
+    bgGrad.addColorStop(1, '#bbf7d0');
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, width, height);
+
+    const dappleX = Math.sin(t * 0.6) * 30;
+    const dappleY = Math.cos(t * 0.5) * 25;
+    const g1 = ctx.createRadialGradient(width * 0.3 + dappleX, height * 0.25 + dappleY, 10, width * 0.3 + dappleX, height * 0.25 + dappleY, width * 0.5);
+    g1.addColorStop(0, 'rgba(254, 240, 138, 0.65)');
+    g1.addColorStop(1, 'rgba(254, 240, 138, 0)');
+    ctx.fillStyle = g1;
+    ctx.fillRect(0, 0, width, height);
+
+    const g2 = ctx.createRadialGradient(width * 0.7 - dappleX, height * 0.75 - dappleY, 10, width * 0.7 - dappleX, height * 0.75 - dappleY, width * 0.6);
+    g2.addColorStop(0, 'rgba(134, 239, 172, 0.55)');
+    g2.addColorStop(1, 'rgba(134, 239, 172, 0)');
+    ctx.fillStyle = g2;
+    ctx.fillRect(0, 0, width, height);
+  }
+  // 10. SPRING GARDEN (Vườn hoa xuân tươi sáng)
+  else if (presetId === 'spring-garden') {
+    const bgGrad = ctx.createLinearGradient(0, 0, width, height);
+    bgGrad.addColorStop(0, '#fdf2f8');
+    bgGrad.addColorStop(0.45, '#f0fdf4');
+    bgGrad.addColorStop(1, '#dcfce7');
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, width, height);
+
+    const breeze = Math.sin(t * 0.7) * 40;
+    const g1 = ctx.createRadialGradient(width * 0.4 + breeze, height * 0.3, 10, width * 0.4 + breeze, height * 0.3, width * 0.45);
+    g1.addColorStop(0, 'rgba(251, 207, 232, 0.55)');
+    g1.addColorStop(1, 'rgba(251, 207, 232, 0)');
+    ctx.fillStyle = g1;
+    ctx.fillRect(0, 0, width, height);
+  }
+  // 11. PASTEL CLOUDS (Mây trời bồng bềnh)
+  else if (presetId === 'pastel-clouds') {
+    const bgGrad = ctx.createLinearGradient(0, 0, 0, height);
+    bgGrad.addColorStop(0, '#bae6fd');
+    bgGrad.addColorStop(0.5, '#e0f2fe');
+    bgGrad.addColorStop(1, '#fed7aa');
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, width, height);
+
+    const cloudX = ((t * 25) % (width + 200)) - 100;
+    const g1 = ctx.createRadialGradient(cloudX, height * 0.35, 10, cloudX, height * 0.35, width * 0.4);
+    g1.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
+    g1.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    ctx.fillStyle = g1;
+    ctx.fillRect(0, 0, width, height);
+  }
+  // 12. BRIGHT STUDIO (Studio trắng sáng)
+  else if (presetId === 'bright-studio') {
+    ctx.fillStyle = '#f8fafc';
+    ctx.fillRect(0, 0, width, height);
+
+    const breath = 1.0 + Math.sin(t * 0.8) * 0.06;
+    const g1 = ctx.createRadialGradient(width / 2, height * 0.4, 20, width / 2, height * 0.4, (width * 0.5) * breath);
+    g1.addColorStop(0, 'rgba(255, 255, 255, 1)');
+    g1.addColorStop(0.7, 'rgba(241, 245, 249, 0.7)');
+    g1.addColorStop(1, 'rgba(226, 232, 240, 0.5)');
+    ctx.fillStyle = g1;
+    ctx.fillRect(0, 0, width, height);
+  }
+  // 13. GOLDEN SUNRAY (Tia nắng ban mai)
+  else if (presetId === 'golden-sunray') {
+    const angle = (115 + Math.sin(t * 0.5) * 15) * (Math.PI / 180);
+    const bgGrad = ctx.createLinearGradient(0, 0, Math.cos(angle) * width, Math.sin(angle) * height);
+    bgGrad.addColorStop(0, '#fef3c7');
+    bgGrad.addColorStop(0.4, '#fef9c3');
+    bgGrad.addColorStop(0.8, '#ffffff');
+    bgGrad.addColorStop(1, '#fde68a');
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, width, height);
+  }
+  // 14. WATERCOLOR BLOOM (Vệt màu nước nghệ thuật)
+  else if (presetId === 'watercolor-bloom') {
+    ctx.fillStyle = '#fcfcfd';
+    ctx.fillRect(0, 0, width, height);
+
+    const flow1 = Math.sin(t * 0.6) * 30;
+    const flow2 = Math.cos(t * 0.5) * 30;
+    const g1 = ctx.createRadialGradient(width * 0.35 + flow1, height * 0.3 + flow2, 10, width * 0.35 + flow1, height * 0.3 + flow2, width * 0.5);
+    g1.addColorStop(0, 'rgba(224, 231, 255, 0.7)');
+    g1.addColorStop(1, 'rgba(224, 231, 255, 0)');
+    ctx.fillStyle = g1;
+    ctx.fillRect(0, 0, width, height);
+
+    const g2 = ctx.createRadialGradient(width * 0.65 - flow1, height * 0.7 - flow2, 10, width * 0.65 - flow1, height * 0.7 - flow2, width * 0.55);
+    g2.addColorStop(0, 'rgba(204, 251, 241, 0.7)');
+    g2.addColorStop(1, 'rgba(204, 251, 241, 0)');
+    ctx.fillStyle = g2;
+    ctx.fillRect(0, 0, width, height);
+  }
+  // 15. CLEAN PAPER (Giấy sáng & nắng ấm)
+  else if (presetId === 'clean-paper') {
+    ctx.fillStyle = '#fafaf9';
+    ctx.fillRect(0, 0, width, height);
+
+    const sunShift = Math.sin(t * 0.5) * 20;
+    const g1 = ctx.createRadialGradient(width * 0.4 + sunShift, height * 0.3 + sunShift, 10, width * 0.4 + sunShift, height * 0.3 + sunShift, width * 0.6);
+    g1.addColorStop(0, 'rgba(254, 243, 199, 0.55)');
+    g1.addColorStop(1, 'rgba(254, 243, 199, 0)');
+    ctx.fillStyle = g1;
+    ctx.fillRect(0, 0, width, height);
+  }
+  // 16. FRESH MINT (Sóng bạc hà tươi mát)
+  else if (presetId === 'fresh-mint') {
+    const bgGrad = ctx.createLinearGradient(0, 0, width, height);
+    bgGrad.addColorStop(0, '#ecfdf5');
+    bgGrad.addColorStop(0.5, '#d1fae5');
+    bgGrad.addColorStop(1, '#a7f3d0');
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, width, height);
+
+    const wave = Math.sin(t * 0.7) * 40;
+    const g1 = ctx.createRadialGradient(width / 2, height * 0.4 + wave, 20, width / 2, height * 0.4 + wave, width * 0.6);
+    g1.addColorStop(0, 'rgba(167, 243, 208, 0.7)');
+    g1.addColorStop(1, 'rgba(167, 243, 208, 0)');
+    ctx.fillStyle = g1;
+    ctx.fillRect(0, 0, width, height);
+  }
+  // 17. BAMBOO GROVE (Rừng trúc xanh mát)
+  else if (presetId === 'bamboo-grove') {
+    const bgGrad = ctx.createLinearGradient(0, 0, width, height);
+    bgGrad.addColorStop(0, '#f0fdf4');
+    bgGrad.addColorStop(0.5, '#dcfce7');
+    bgGrad.addColorStop(1, '#86efac');
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, width, height);
+
+    const sway = Math.sin(t * 0.6) * 25;
+    const g1 = ctx.createRadialGradient(width * 0.3 + sway, height / 2, 20, width * 0.3 + sway, height / 2, width * 0.45);
+    g1.addColorStop(0, 'rgba(134, 239, 172, 0.6)');
+    g1.addColorStop(1, 'rgba(134, 239, 172, 0)');
+    ctx.fillStyle = g1;
+    ctx.fillRect(0, 0, width, height);
+  }
+  // 18. WARM SUNRISE (Bình minh rạng rỡ)
+  else if (presetId === 'warm-sunrise') {
+    const bgGrad = ctx.createLinearGradient(0, 0, 0, height);
+    bgGrad.addColorStop(0, '#fff7ed');
+    bgGrad.addColorStop(0.45, '#ffedd5');
+    bgGrad.addColorStop(1, '#fed7aa');
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, width, height);
+
+    const sunRise = Math.sin(t * 0.5) * 20;
+    const g1 = ctx.createRadialGradient(width / 2, height * 0.65 - sunRise, 10, width / 2, height * 0.65 - sunRise, width * 0.5);
+    g1.addColorStop(0, 'rgba(251, 146, 60, 0.5)');
+    g1.addColorStop(0.6, 'rgba(253, 186, 116, 0.2)');
+    g1.addColorStop(1, 'rgba(253, 186, 116, 0)');
+    ctx.fillStyle = g1;
+    ctx.fillRect(0, 0, width, height);
+  }
+  // GRADIENT MOTION / OTHER
   else {
     const angle = (t * 45) % 360;
     const rad = angle * (Math.PI / 180);
@@ -548,7 +707,13 @@ function drawQuestionSequence(
   const correctColor = channel.branding.colors.correct || '#16a34a';
   const wrongColor = channel.branding.colors.wrong || '#dc2626';
 
-  const hasIllustration = Boolean(question.illustrations && question.illustrations.filter(Boolean).length > 0);
+  const hasIllustration = Boolean(
+    comps.illustration?.enabled !== false &&
+    (comps.illustration as any)?.show !== false &&
+    question.illustrations &&
+    question.illustrations.filter(Boolean).length > 0 &&
+    (question as any).showIllustration !== false
+  );
 
   // Transition handling between questions
   const transitionFrames = template.timing?.transitionFrames || 15;
@@ -670,6 +835,7 @@ function drawIllustrationFrame(
   primaryColor: string,
   loadedImages: Map<string, Image>
 ): void {
+  if (style?.enabled === false || style?.show === false) return;
   const cardW = ((style.width ?? 84) / 100) * width;
   const cardH = ((style.height ?? 24) / 100) * height;
   const left = style.x !== undefined ? (style.x / 100) * width : (width - cardW) / 2;
@@ -1071,6 +1237,8 @@ function drawCountdownTimer(
   primaryColor: string,
   warningColor: string
 ): void {
+  if (!style || style.show === false || style.enabled === false) return;
+
   const totalFrames = Math.max(1, countdownEndFrame - countdownStartFrame);
   const elapsed = Math.max(0, Math.min(totalFrames, relFrame - countdownStartFrame));
   const remainingFraction = Math.max(0, Math.min(1, 1 - elapsed / totalFrames));
@@ -1080,40 +1248,115 @@ function drawCountdownTimer(
   const isUrgent = remainingSec <= 2;
   const activeColor = isUrgent ? warningColor : (style.color || primaryColor);
 
-  const centerX = width / 2;
-  const centerY = ((style.y ?? 42) / 100) * height;
-  const size = 84;
-  const strokeW = style.strokeWidth || 6;
-  const radius = size / 2 - strokeW;
+  const hAlign = style.horizontalAlign || (style.x === undefined ? 'center' : (style.x > 60 ? 'right' : (style.x < 30 ? 'left' : 'center')));
+  const vAlign = style.verticalAlign || (style.y === undefined ? 'center' : (style.y > 60 ? 'bottom' : (style.y < 30 ? 'top' : 'center')));
+
+  const widthPct = style.width ?? 30;
+  const heightPct = style.height ?? 6;
+  const widthPx = (widthPct / 100) * width;
+  const heightPx = (heightPct / 100) * height;
+
+  let centerX: number;
+  if (hAlign === 'center') {
+    centerX = ((style.x !== undefined ? style.x : 50) / 100) * width;
+  } else if (hAlign === 'right') {
+    centerX = ((style.x !== undefined ? style.x : (100 - widthPct - 6)) / 100) * width + widthPx / 2;
+  } else {
+    centerX = ((style.x !== undefined ? style.x : 6) / 100) * width + widthPx / 2;
+  }
+
+  let centerY: number;
+  if (vAlign === 'center') {
+    centerY = ((style.y !== undefined ? style.y : 50) / 100) * height;
+  } else if (vAlign === 'bottom') {
+    centerY = ((style.y !== undefined ? style.y : (100 - heightPct - 10)) / 100) * height + heightPx / 2;
+  } else {
+    centerY = ((style.y !== undefined ? style.y : 10) / 100) * height + heightPx / 2;
+  }
 
   ctx.save();
+  ctx.globalAlpha = style.opacity ?? 1.0;
   ctx.translate(centerX, centerY);
 
-  // Background track
-  ctx.beginPath();
-  ctx.arc(0, 0, radius, 0, Math.PI * 2);
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
-  ctx.fill();
-  ctx.strokeStyle = '#e2e8f0';
-  ctx.lineWidth = strokeW;
-  ctx.stroke();
+  const styleType = countdownStyle || style.countdownStyle || 'clean-text';
 
-  // Progress arc
-  const startAngle = -Math.PI / 2;
-  const endAngle = startAngle + remainingFraction * (Math.PI * 2);
-  ctx.beginPath();
-  ctx.arc(0, 0, radius, startAngle, endAngle, false);
-  ctx.strokeStyle = activeColor;
-  ctx.lineWidth = strokeW;
-  ctx.lineCap = 'round';
-  ctx.stroke();
+  if (
+    styleType === 'circle-radial' ||
+    styleType === 'bar-horizontal' ||
+    styleType === 'circle' ||
+    styleType === 'bar'
+  ) {
+    const isLegacyWide = (style.width || 0) > 40;
+    const size = isLegacyWide ? 84 : Math.max(64, Math.min(widthPx, 110));
+    const strokeW = style.strokeWidth || 6;
+    const radius = size / 2 - strokeW;
 
-  // Number
-  ctx.fillStyle = activeColor;
-  ctx.font = `900 ${style.fontSize || 32}px "Be Vietnam Pro", sans-serif`;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(String(remainingSec), 0, 0);
+    // Background track
+    ctx.beginPath();
+    ctx.arc(0, 0, radius, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+    ctx.fill();
+    ctx.strokeStyle = '#e2e8f0';
+    ctx.lineWidth = strokeW;
+    ctx.stroke();
+
+    // Progress arc
+    const startAngle = -Math.PI / 2;
+    const endAngle = startAngle + remainingFraction * (Math.PI * 2);
+    ctx.beginPath();
+    ctx.arc(0, 0, radius, startAngle, endAngle, false);
+    ctx.strokeStyle = activeColor;
+    ctx.lineWidth = strokeW;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+
+    // Number
+    ctx.fillStyle = activeColor;
+    ctx.font = `900 ${style.fontSize || 32}px "Be Vietnam Pro", sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(String(remainingSec), 0, 0);
+  } else if (styleType === 'pill-timer' || styleType === 'badge') {
+    const pillW = Math.max(widthPx, 110);
+    const pillH = Math.max(heightPx, 40);
+    const rad = style.borderRadius ?? (pillH / 2);
+    const bW = style.borderWidth ?? 2;
+    const bCol = style.borderColor || activeColor;
+    const bgCol = parseColor(style.backgroundColor || 'rgba(255, 255, 255, 0.95)', 0.95);
+
+    ctx.save();
+    if (style.boxShadow && style.boxShadow !== 'none') {
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.08)';
+      ctx.shadowBlur = 16;
+      ctx.shadowOffsetY = 4;
+    }
+    ctx.fillStyle = bgCol;
+    drawRoundedRect(ctx, -pillW / 2, -pillH / 2, pillW, pillH, rad);
+    ctx.fill();
+    ctx.strokeStyle = bCol;
+    ctx.lineWidth = bW;
+    ctx.stroke();
+    ctx.restore();
+
+    const fSize = style.fontSize || 20;
+    ctx.font = `800 ${fSize}px "Be Vietnam Pro", sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = activeColor;
+    const showIcon = style.showIcon !== false;
+    const text = showIcon ? `⏱️ ${remainingSec}s` : `${remainingSec}s`;
+    ctx.fillText(text, 0, 0);
+  } else {
+    // clean-text
+    const fSize = style.fontSize || 24;
+    ctx.font = `800 ${fSize}px "Be Vietnam Pro", sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = activeColor;
+    const showIcon = style.showIcon !== false;
+    const text = showIcon ? `⏱️ ${remainingSec}s` : `${remainingSec}s`;
+    ctx.fillText(text, 0, 0);
+  }
 
   ctx.restore();
 }

@@ -44,6 +44,7 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Textarea } from '../ui/textarea';
 import { Badge } from '../ui/badge';
+import { Switch } from '../ui/switch';
 import {
   Dialog,
   DialogContent,
@@ -324,16 +325,25 @@ const SortableCard: React.FC<SortableCardProps> = ({
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
                   <ImageIcon size={12} className="text-amber-400" />
-                  Ảnh minh họa (Tùy chọn - Tối đa 1 ảnh):
+                  Ảnh minh họa (Tùy chọn):
                 </span>
-                {q.illustrations && q.illustrations[0] && (
-                  <span className="text-[10px] text-emerald-400 font-semibold flex items-center gap-1">
-                    <Check size={11} /> Đã có ảnh
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] text-slate-400 font-medium">
+                    {(q as any).showIllustration !== false ? 'Hiển thị' : 'Ẩn'}
                   </span>
-                )}
+                  <Switch
+                    checked={(q as any).showIllustration !== false}
+                    onCheckedChange={(val) => onUpdate({ showIllustration: val } as any)}
+                    className="scale-75"
+                  />
+                </div>
               </div>
 
-              {q.illustrations && q.illustrations[0] ? (
+              {(q as any).showIllustration === false ? (
+                <div className="text-center py-2 text-[11px] text-slate-500 bg-slate-950/40 rounded-lg border border-dashed border-slate-800">
+                  Ảnh minh họa đã được tắt cho câu hỏi này
+                </div>
+              ) : q.illustrations && q.illustrations[0] ? (
                 <div className="relative border border-slate-700 rounded-lg p-2 flex items-center gap-3 bg-slate-950/70">
                   <div className="relative w-16 h-16 rounded-md overflow-hidden shrink-0 border border-slate-700">
                     <img

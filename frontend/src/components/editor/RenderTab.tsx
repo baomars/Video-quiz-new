@@ -9,8 +9,10 @@ import {
   getBatchRenderStatus,
   listBatchRenderJobs,
   fetchBackgrounds,
-  uploadBackgroundBatch
+  uploadBackgroundBatch,
+  uploadImage
 } from '../../services/api';
+import { NEON_PRESETS } from './InspectorPanel';
 import {
   estimateBatch,
   generateBatchQuestionSets,
@@ -312,6 +314,108 @@ export const RenderTab: React.FC<RenderTabProps> = ({
     return allocateBatchBackgrounds(selectedBatchBackgrounds, videoCount);
   }, [selectedBatchBackgrounds, videoCount]);
 
+  // Export Background Mode (Requirement 5: Động, Tĩnh, hoặc Upload)
+  const singleBgInputRef = useRef<HTMLInputElement>(null);
+  const [exportBgMode, setExportBgMode] = useState<'animated' | 'static' | 'upload'>(() => {
+    if (template.components.background?.type === 'solid' || template.components.background?.type === 'gradient') {
+      return 'static';
+    }
+    if (template.components.background?.type === 'image') {
+      return 'upload';
+    }
+    return 'animated';
+  });
+
+  const [exportNeonPreset, setExportNeonPreset] = useState<string>(
+    template.components.background?.neonPresetId || 'sunny-nature'
+  );
+  const [exportStaticType, setExportStaticType] = useState<'solid' | 'gradient'>('solid');
+  const [exportStaticColor, setExportStaticColor] = useState<string>(
+    template.components.background?.backgroundColor || '#ffffff'
+  );
+  const [exportSecondaryColor, setExportSecondaryColor] = useState<string>(
+    template.components.background?.secondaryColor || '#f1f5f9'
+  );
+  const [exportUploadedBgUrl, setExportUploadedBgUrl] = useState<string>(
+    template.components.background?.imageUrl || ''
+  );
+
+  const handleSingleBgUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      setIsUploadingBgs(true);
+      const res = await uploadImage(file);
+      if (res.url) {
+        setExportUploadedBgUrl(res.url);
+        setExportBgMode('upload');
+      }
+    } catch (err: any) {
+      alert(`Lỗi tải lên ảnh nền: ${err.message}`);
+    } finally {
+      setIsUploadingBgs(false);
+      if (e.target) e.target.value = '';
+    }
+  };
+
+  const getTemplateWithExportBackground = (baseTemplate: VideoTemplate): VideoTemplate => {
+    const currentBg = baseTemplate.components.background || { type: 'neon' };
+    let updatedBg: any = { ...currentBg };
+
+    if (exportBgMode === 'animated') {
+      updatedBg = {
+        ...updatedBg,
+        type: 'neon',
+        neonPresetId: exportNeonPreset,
+        neonSpeed: updatedBg.neonSpeed ?? 1.0,
+        neonIntensity: updatedBg.neonIntensity ?? 1.0
+      };
+    } else if (exportBgMode === 'static') {
+      if (exportStaticType === 'solid') {
+        updatedBg = {
+          ...updatedBg,
+          type: 'solid',
+          backgroundColor: exportStaticColor
+        };
+      } else {
+        updatedBg = {
+          ...updatedBg,
+          type: 'gradient',
+          backgroundColor: exportStaticColor,
+          secondaryColor: exportSecondaryColor,
+          gradientAngle: 135
+        };
+      }
+    } else if (exportBgMode === 'upload') {
+      if (exportUploadedBgUrl) {
+        updatedBg = {
+          ...updatedBg,
+          type: 'image',
+          imageUrl: exportUploadedBgUrl
+        };
+      }
+    }
+
+    return {
+      ...baseTemplate,
+      components: {
+        ...baseTemplate.components,
+        background: updatedBg
+      }
+    };
+  };
+
+  const RENDER_QUICK_COLORS = [
+    '#ffffff', // Trắng sáng
+    '#f8fafc', // Trắng xám
+    '#fef3c7', // Vàng nhạt ấm
+    '#dcfce7', // Xanh lá pastel
+    '#e0f2fe', // Xanh dương pastel
+    '#0f172a', // Đen slate
+    '#1e1b4b', // Xanh đen indigo
+    '#312e81'  // Tím đậm
+  ];
+
   const activeJobId = propsActiveJobId !== undefined ? propsActiveJobId : localActiveJobId;
   const setActiveJobId = propsSetActiveJobId || setLocalActiveJobId;
   const jobState = propsJobState !== undefined ? propsJobState : localJobState;
@@ -453,9 +557,11 @@ export const RenderTab: React.FC<RenderTabProps> = ({
         questions: questionsToRender
       };
 
+      const templateToRender = getTemplateWithExportBackground(template);
+
       const jobId = await startRender({
         channel,
-        template,
+        template: templateToRender,
         quiz: singleQuizPayload,
         language,
         customFileName: singleFileName,
@@ -521,9 +627,11 @@ export const RenderTab: React.FC<RenderTabProps> = ({
     };
 
     try {
+      const templateToRender = getTemplateWithExportBackground(template);
+
       const batchId = await startBatchRender({
         channel,
-        template,
+        template: templateToRender,
         quiz,
         language,
         config,
@@ -722,6 +830,267 @@ export const RenderTab: React.FC<RenderTabProps> = ({
               * Hàng đợi FIFO: tự động xếp hàng và xử lý từng video lần lượt tránh treo máy
             </span>
           </div>
+        </div>
+
+        {/* EXPORT BACKGROUND SELECTOR (Requirement 5: Chọn nền động, tĩnh, hoặc upload khi xuất video) */}
+        <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 pb-2.5">
+            <div>
+              <span className="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                <ImageIcon size={14} className="text-amber-600" />
+                <span>Lựa Chọn Nền Video Trước Khi Xuất (Background Mode)</span>
+              </span>
+              <p className="text-[11px] text-slate-500 mt-0.5">
+                Chọn kiểu nền áp dụng cho video khi xuất: Nền Động (18 preset), Nền Tĩnh (Màu/Gradient) hoặc Tải Lên Nền
+              </p>
+            </div>
+
+            {/* 3 Mode Switcher Tabs */}
+            <div className="flex bg-white p-1 rounded-xl border border-slate-200 shrink-0">
+              <button
+                type="button"
+                disabled={isRendering}
+                onClick={() => setExportBgMode('animated')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                  exportBgMode === 'animated'
+                    ? 'bg-amber-500 text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <Sparkles size={13} />
+                <span>Nền Động</span>
+              </button>
+              <button
+                type="button"
+                disabled={isRendering}
+                onClick={() => setExportBgMode('static')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                  exportBgMode === 'static'
+                    ? 'bg-amber-500 text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <Layers size={13} />
+                <span>Nền Tĩnh</span>
+              </button>
+              <button
+                type="button"
+                disabled={isRendering}
+                onClick={() => setExportBgMode('upload')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                  exportBgMode === 'upload'
+                    ? 'bg-amber-500 text-white shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <FolderUp size={13} />
+                <span>Tải Lên Nền</span>
+              </button>
+            </div>
+          </div>
+
+          {/* 1. NỀN ĐỘNG */}
+          {exportBgMode === 'animated' && (
+            <div className="space-y-3 pt-1">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-bold text-slate-700">
+                  Chọn Preset Nền Động (Đang chọn: <span className="text-amber-700 font-extrabold">{NEON_PRESETS.find(p => p.id === exportNeonPreset)?.name || exportNeonPreset}</span>):
+                </span>
+                <span className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                  🌿 10 Preset Nền Sáng Tự Nhiên & 8 Preset Neon
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 max-h-56 overflow-y-auto p-1 scrollbar-thin">
+                {NEON_PRESETS.map((p) => {
+                  const isCur = exportNeonPreset === p.id;
+                  return (
+                    <button
+                      key={p.id}
+                      type="button"
+                      disabled={isRendering}
+                      onClick={() => setExportNeonPreset(p.id)}
+                      className={`p-2 rounded-xl border text-left transition flex flex-col gap-1 cursor-pointer ${
+                        isCur
+                          ? 'border-amber-500 bg-amber-50/80 ring-2 ring-amber-400/50 shadow-xs'
+                          : 'border-slate-200 bg-white hover:border-slate-300'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">{p.icon}</span>
+                        <span className="text-[9px] text-amber-700 font-bold truncate max-w-[80px]">{p.tag}</span>
+                      </div>
+                      <div className="font-bold text-slate-900 text-[11px] truncate" title={p.name}>
+                        {p.name}
+                      </div>
+                      <div
+                        className="h-2 rounded-full w-full mt-0.5 border border-slate-200/50"
+                        style={{ background: p.gradientPreview }}
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* 2. NỀN TĨNH */}
+          {exportBgMode === 'static' && (
+            <div className="space-y-3 pt-1">
+              <div className="flex items-center gap-3">
+                <span className="text-[11px] font-bold text-slate-700">Dạng nền tĩnh:</span>
+                <div className="flex items-center gap-2">
+                  <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="exportStaticType"
+                      checked={exportStaticType === 'solid'}
+                      onChange={() => setExportStaticType('solid')}
+                      className="text-amber-600 focus:ring-amber-500"
+                    />
+                    <span>Màu Đơn (Solid Color)</span>
+                  </label>
+                  <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="exportStaticType"
+                      checked={exportStaticType === 'gradient'}
+                      onChange={() => setExportStaticType('gradient')}
+                      className="text-amber-600 focus:ring-amber-500"
+                    />
+                    <span>Chuyển Sắc (Gradient)</span>
+                  </label>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[10px] text-slate-500 font-bold block mb-1">
+                    {exportStaticType === 'solid' ? 'Màu nền' : 'Màu chính'}
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={exportStaticColor}
+                      onChange={(e) => setExportStaticColor(e.target.value)}
+                      className="w-8 h-8 rounded-lg border border-slate-300 bg-transparent cursor-pointer shrink-0"
+                    />
+                    <div className="flex items-center gap-1 flex-1 overflow-x-auto py-0.5">
+                      {RENDER_QUICK_COLORS.map((c) => (
+                        <button
+                          key={c}
+                          type="button"
+                          onClick={() => setExportStaticColor(c)}
+                          style={{ backgroundColor: c }}
+                          className={`w-5 h-5 rounded-md border shrink-0 transition ${
+                            exportStaticColor.toLowerCase() === c.toLowerCase()
+                              ? 'border-amber-500 ring-2 ring-amber-400'
+                              : 'border-slate-300 hover:scale-105'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {exportStaticType === 'gradient' && (
+                  <div>
+                    <label className="text-[10px] text-slate-500 font-bold block mb-1">Màu phụ</label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        value={exportSecondaryColor}
+                        onChange={(e) => setExportSecondaryColor(e.target.value)}
+                        className="w-8 h-8 rounded-lg border border-slate-300 bg-transparent cursor-pointer shrink-0"
+                      />
+                      <div className="flex items-center gap-1 flex-1 overflow-x-auto py-0.5">
+                        {RENDER_QUICK_COLORS.map((c) => (
+                          <button
+                            key={c}
+                            type="button"
+                            onClick={() => setExportSecondaryColor(c)}
+                            style={{ backgroundColor: c }}
+                            className={`w-5 h-5 rounded-md border shrink-0 transition ${
+                              exportSecondaryColor.toLowerCase() === c.toLowerCase()
+                                ? 'border-amber-500 ring-2 ring-amber-400'
+                                : 'border-slate-300 hover:scale-105'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* 3. TẢI LÊN NỀN */}
+          {exportBgMode === 'upload' && (
+            <div className="space-y-3 pt-1">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <span className="text-[11px] font-bold text-slate-700">
+                  Tải Lên Ảnh Nền Mới Hoặc Chọn Từ Thư Viện:
+                </span>
+                <div>
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/jpg,image/webp,image/svg+xml"
+                    ref={singleBgInputRef}
+                    onChange={handleSingleBgUpload}
+                    className="hidden"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => singleBgInputRef.current?.click()}
+                    disabled={isUploadingBgs || isRendering}
+                    className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition cursor-pointer disabled:opacity-50"
+                  >
+                    {isUploadingBgs ? <Loader2 size={13} className="animate-spin" /> : <FolderUp size={13} />}
+                    <span>{isUploadingBgs ? 'Đang tải lên...' : 'Tải ảnh nền mới'}</span>
+                  </button>
+                </div>
+              </div>
+
+              {exportUploadedBgUrl && (
+                <div className="flex items-center gap-3 p-2 bg-white rounded-xl border border-slate-200">
+                  <img
+                    src={exportUploadedBgUrl}
+                    alt="Current Background"
+                    className="w-14 h-14 rounded-lg object-cover border border-slate-200"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <span className="text-xs font-bold text-slate-900 block">Nền đang chọn</span>
+                    <span className="text-[10px] text-slate-500 block truncate">{exportUploadedBgUrl}</span>
+                  </div>
+                </div>
+              )}
+
+              {availableBackgrounds.length > 0 && (
+                <div className="space-y-1">
+                  <span className="text-[10px] text-slate-500 font-bold block">Thư viện ảnh nền đã tải lên:</span>
+                  <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-thin">
+                    {availableBackgrounds.map((bg) => {
+                      const isSel = exportUploadedBgUrl === bg.url;
+                      return (
+                        <div
+                          key={bg.url}
+                          onClick={() => setExportUploadedBgUrl(bg.url)}
+                          className={`relative w-14 h-14 rounded-lg overflow-hidden border-2 shrink-0 cursor-pointer transition ${
+                            isSel
+                              ? 'border-amber-500 ring-2 ring-amber-400 shadow-xs'
+                              : 'border-slate-200 opacity-60 hover:opacity-100'
+                          }`}
+                        >
+                          <img src={bg.url} alt={bg.name} className="w-full h-full object-cover" />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* MODE A: Single Video Configuration */}

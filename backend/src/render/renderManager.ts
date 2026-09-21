@@ -70,9 +70,9 @@ export const RENDER_PRESETS: Record<RenderPresetType, RenderPresetConfig> = {
     height: 1280,
     fps: 30,
     jpegQuality: 80,
-    x264Preset: 'veryfast',
+    x264Preset: 'superfast',
     videoBitrate: '4500k',
-    crf: 23
+    crf: 22
   },
   high_quality: {
     name: 'Chất lượng cao (1080p)',

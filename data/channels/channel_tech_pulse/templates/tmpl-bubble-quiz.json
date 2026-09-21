@@ -4,7 +4,7 @@
   "layoutType": "split-modern",
   "illustrationLayout": "single",
   "answerLayout": "vertical-list",
-  "countdownStyle": "badge",
+  "countdownStyle": "clean-text",
   "transitionType": "zoom",
   "timing": {
     "countdownSeconds": 5,
@@ -101,7 +101,7 @@
       "y": 43,
       "width": 88,
       "height": 38,
-      "shape": "bubble",
+      "shape": "pill",
       "layoutComposition": "stacked",
       "optionBadgeShape": "pill",
       "readTts": true,

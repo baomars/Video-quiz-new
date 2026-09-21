@@ -9,6 +9,10 @@ interface CountdownTimerProps {
     showIcon?: boolean;
     iconSize?: number;
     hideBox?: boolean;
+    show?: boolean;
+    enabled?: boolean;
+    horizontalAlign?: 'left' | 'center' | 'right';
+    verticalAlign?: 'top' | 'center' | 'bottom';
   };
   countdownStyle: CountdownStyle;
   countdownStartFrame: number;
@@ -32,6 +36,11 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
     return null;
   }
 
+  // Explicit show/hide or enabled toggle
+  if (style.show === false || style.enabled === false) {
+    return null;
+  }
+
   const totalFrames = Math.max(1, countdownEndFrame - countdownStartFrame);
   const elapsed = Math.max(0, Math.min(totalFrames, frame - countdownStartFrame));
   const remainingFraction = Math.max(0, Math.min(1, 1 - elapsed / totalFrames));
@@ -42,36 +51,58 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
   const isUrgent = remainingSec <= 2;
   const activeColor = isUrgent ? warningColor : (style.color || primaryColor);
 
-  // Horizontal Alignment
-  const width = style.width ?? 30;
-  const leftPos = style.x !== undefined
-    ? `${style.x}%`
-    : style.horizontalAlign === 'center'
-    ? `${(100 - width) / 2}%`
-    : style.horizontalAlign === 'right'
-    ? `${100 - width - 6}%`
-    : '6%';
+  const hAlign = style.horizontalAlign || (style.x === undefined ? 'center' : (style.x > 60 ? 'right' : (style.x < 30 ? 'left' : 'center')));
+  const vAlign = style.verticalAlign || (style.y === undefined ? 'center' : (style.y > 60 ? 'bottom' : (style.y < 30 ? 'top' : 'center')));
 
-  const justifyAlign = style.horizontalAlign === 'left'
+  const width = style.width ?? 30;
+  const height = style.height ?? 6;
+
+  // Symmetric Horizontal Alignment
+  let leftPos: string;
+  let transformX = '';
+  if (hAlign === 'center') {
+    leftPos = style.x !== undefined ? `${style.x}%` : '50%';
+    transformX = 'translateX(-50%)';
+  } else if (hAlign === 'right') {
+    leftPos = style.x !== undefined ? `${style.x}%` : `${100 - width - 6}%`;
+  } else {
+    leftPos = style.x !== undefined ? `${style.x}%` : '6%';
+  }
+
+  // Symmetric Vertical Alignment
+  let topPos: string;
+  let transformY = '';
+  if (vAlign === 'center') {
+    topPos = style.y !== undefined ? `${style.y}%` : '50%';
+    transformY = 'translateY(-50%)';
+  } else if (vAlign === 'bottom') {
+    topPos = style.y !== undefined ? `${style.y}%` : `${100 - height - 10}%`;
+  } else {
+    topPos = style.y !== undefined ? `${style.y}%` : '10%';
+  }
+
+  const transform = [transformX, transformY].filter(Boolean).join(' ') || undefined;
+
+  const justifyAlign = hAlign === 'left'
     ? 'flex-start'
-    : style.horizontalAlign === 'right'
+    : hAlign === 'right'
     ? 'flex-end'
     : 'center';
 
   const showIcon = style.showIcon !== false;
   const fontSize = style.fontSize || 32;
   const iconSize = style.iconSize || Math.round(fontSize * 0.95);
+  const opacity = style.opacity ?? 1.0;
 
-  // 1. Circle Radial Style (Default for circle, radial, and legacy bar-horizontal to prevent any progress bar)
+  // 1. Circle Radial Style
   if (
     countdownStyle === 'circle-radial' ||
     countdownStyle === 'bar-horizontal' ||
     (countdownStyle as any) === 'circle' ||
     (countdownStyle as any) === 'bar'
   ) {
-    // If old template set width: 86 for horizontal bar, ensure circular timer has proper compact dimensions
     const isLegacyWide = (style.width || 0) > 40;
-    const size = isLegacyWide ? 84 : Math.max(64, Math.min(style.width * 7.2, 110));
+    const size = isLegacyWide ? 84 : Math.max(64, Math.min(width * 7.2, 110));
     const strokeW = style.strokeWidth || 6;
     const radius = size / 2 - strokeW;
     const circumference = 2 * Math.PI * radius;
@@ -81,14 +112,15 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
       <div
         style={{
           position: 'absolute',
-          left: isLegacyWide ? '50%' : leftPos,
-          transform: isLegacyWide ? 'translateX(-50%)' : undefined,
-          top: `${style.y}%`,
-          width: isLegacyWide ? `${size}px` : `${style.width}%`,
-          height: isLegacyWide ? `${size}px` : `${style.height}%`,
+          left: leftPos,
+          top: topPos,
+          transform,
+          width: isLegacyWide ? `${size}px` : `${width}%`,
+          height: isLegacyWide ? `${size}px` : `${height}%`,
           display: 'flex',
           alignItems: 'center',
-          justifyContent: isLegacyWide ? 'center' : justifyAlign,
+          justifyContent: justifyAlign,
+          opacity,
           zIndex: 15
         }}
       >
@@ -103,7 +135,7 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
               stroke="#e2e8f0"
               strokeWidth={strokeW}
             />
-            {/* Animated progress circle - Pure Remotion frame sync, NO CSS transition */}
+            {/* Animated progress circle */}
             <circle
               cx={size / 2}
               cy={size / 2}
@@ -136,19 +168,21 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
     );
   }
 
-  // 3. Pill Timer (Subtle capsule badge - NO box around icon)
-  if (countdownStyle === 'pill-timer') {
+  // 2. Pill Timer / Badge (Capsule with icon + remaining seconds)
+  if (countdownStyle === 'pill-timer' || countdownStyle === 'badge') {
     return (
       <div
         style={{
           position: 'absolute',
           left: leftPos,
-          top: `${style.y}%`,
-          width: `${style.width}%`,
-          height: `${style.height}%`,
+          top: topPos,
+          transform,
+          width: `${width}%`,
+          height: `${height}%`,
           display: 'flex',
           alignItems: 'center',
           justifyContent: justifyAlign,
+          opacity,
           zIndex: 15
         }}
       >
@@ -160,8 +194,8 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
             padding: '6px 18px',
             backgroundColor: style.backgroundColor || 'rgba(255, 255, 255, 0.95)',
             borderRadius: `${style.borderRadius ?? 24}px`,
-            border: `2px solid ${activeColor}`,
-            boxShadow: '0 4px 16px rgba(0, 0, 0, 0.08)'
+            border: `${style.borderWidth ?? 2}px solid ${style.borderColor || activeColor}`,
+            boxShadow: style.boxShadow || '0 4px 16px rgba(0, 0, 0, 0.08)'
           }}
         >
           {showIcon && (
@@ -185,19 +219,21 @@ export const CountdownTimer: React.FC<CountdownTimerProps> = ({
     );
   }
 
-  // 4. Clean Text / Direct Icon + Number (Default - Clean, no surrounding box)
+  // 3. Clean Text / Direct Icon + Number
   return (
     <div
       style={{
         position: 'absolute',
         left: leftPos,
-        top: `${style.y}%`,
-        width: `${style.width}%`,
-        height: `${style.height}%`,
+        top: topPos,
+        transform,
+        width: `${width}%`,
+        height: `${height}%`,
         display: 'flex',
         alignItems: 'center',
         justifyContent: justifyAlign,
         gap: '8px',
+        opacity,
         zIndex: 15,
         pointerEvents: 'none'
       }}

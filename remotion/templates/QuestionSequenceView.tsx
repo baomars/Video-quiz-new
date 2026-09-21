@@ -41,7 +41,13 @@ export const QuestionSequenceView: React.FC<QuestionSequenceViewProps> = ({
   const primaryColor = branding?.colors?.primary || '#2563eb';
   const correctColor = branding?.colors?.correct || '#16a34a';
 
-  const hasIllustration = Boolean(question.illustrations && question.illustrations.filter(Boolean).length > 0);
+  const hasIllustration = Boolean(
+    comps.illustration?.enabled !== false &&
+    (comps.illustration as any)?.show !== false &&
+    question.illustrations &&
+    question.illustrations.filter(Boolean).length > 0 &&
+    (question as any).showIllustration !== false
+  );
 
   // Transition handling between questions
   const isLastQuestion = questionIndex === totalQuestions - 1;

@@ -1,10 +1,19 @@
 export type LanguageCode = 'vi' | 'en';
 
-export type LayoutType = 'classic-stacked' | 'split-modern' | 'image-focus' | 'custom';
+export type LayoutType =
+  | 'classic-stacked'
+  | 'split-modern'
+  | 'image-focus'
+  | 'custom'
+  | 'neon-pulse'
+  | 'pop-sticker'
+  | 'cinematic-mystery'
+  | 'bento-grid'
+  | 'retro-arcade';
 export type IllustrationLayout = 'single' | 'split-2-horizontal' | 'split-2-vertical' | 'overlay';
 export type AnswerLayout = 'vertical-list' | 'grid-2x2' | 'compact-pills';
 export type CountdownStyle = 'clean-text' | 'bar-horizontal' | 'circle-radial' | 'pill-timer' | 'badge';
-export type TransitionType = 'fade' | 'slide' | 'zoom' | 'wipe';
+export type TransitionType = 'fade' | 'slide' | 'zoom' | 'wipe' | 'bounce' | 'pop';
 export type AnimationType = 'fade' | 'slide-up' | 'pop' | 'scale-in' | 'bounce';
 export type MotionDirection = 'zoom-in' | 'zoom-out' | 'pan-left' | 'pan-right' | 'pan-up' | 'pan-down';
 export type MotionEffect =
@@ -13,7 +22,7 @@ export type MotionEffect =
   | 'zoom-out'
   | 'pan-left'
   | 'pan-right'
-  | 'pan-up'
+  | 'pan-up';
 export type HorizontalAlign = 'left' | 'center' | 'right';
 export type VerticalAlign = 'top' | 'center' | 'bottom';
 export type OptionKey = 'A' | 'B' | 'C';
@@ -29,7 +38,19 @@ export type NeonPresetId =
   | 'aurora-neon'
   | 'particles'
   | 'light-streaks'
-  | 'gradient-motion';
+  | 'gradient-motion'
+  | 'grid-wave'
+  // 10 Bright Nature & Studio Presets (Nền sáng / Thiên nhiên / Cây cối)
+  | 'sunny-nature'
+  | 'spring-garden'
+  | 'pastel-clouds'
+  | 'bright-studio'
+  | 'golden-sunray'
+  | 'watercolor-bloom'
+  | 'clean-paper'
+  | 'fresh-mint'
+  | 'bamboo-grove'
+  | 'warm-sunrise';
 
 export type ComponentShape =
   | 'rectangle'
@@ -49,7 +70,8 @@ export type ComponentShape =
   | 'diamond'
   | 'blob'
   | 'ticket'
-  | 'badge';
+  | 'badge'
+  | 'sharp';
 
 export type ComponentBorderStyle = 'solid' | 'dashed' | 'dotted' | 'double' | 'doodle' | 'none';
 

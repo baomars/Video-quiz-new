@@ -78,6 +78,43 @@ export const App: React.FC = () => {
   const [isRightInspectorOpen, setIsRightInspectorOpen] = useState<boolean>(true);
   const [isTimelineCollapsed, setIsTimelineCollapsed] = useState<boolean>(false);
 
+  // Inspector Panel Resizing State (learned from Quiz vẽ giấy)
+  const [inspectorWidth, setInspectorWidth] = useState<number>(() => {
+    try {
+      const saved = localStorage.getItem('video_studio_inspector_width');
+      if (saved) {
+        const parsed = parseInt(saved, 10);
+        if (!isNaN(parsed) && parsed >= 320 && parsed <= 750) return parsed;
+      }
+    } catch {}
+    return 360;
+  });
+  const [isDraggingInspector, setIsDraggingInspector] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (!isDraggingInspector) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const maxAllowed = Math.min(750, Math.floor(window.innerWidth * 0.6));
+      const newWidth = Math.min(Math.max(window.innerWidth - e.clientX, 320), maxAllowed);
+      setInspectorWidth(newWidth);
+    };
+
+    const handleMouseUp = () => {
+      setIsDraggingInspector(false);
+      try {
+        localStorage.setItem('video_studio_inspector_width', inspectorWidth.toString());
+      } catch {}
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDraggingInspector, inspectorWidth]);
+
   // Modals
   const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
   const [isAssetsModalOpen, setIsAssetsModalOpen] = useState<boolean>(false);
@@ -478,6 +515,23 @@ export const App: React.FC = () => {
           />
         </main>
 
+        {/* Draggable Divider between Viewport & Inspector (learned from Quiz vẽ giấy) */}
+        {isRightInspectorOpen && (
+          <div
+            onMouseDown={() => setIsDraggingInspector(true)}
+            onDoubleClick={() => {
+              setInspectorWidth(360);
+              try { localStorage.setItem('video_studio_inspector_width', '360'); } catch {}
+            }}
+            className={`hidden xl:flex items-center justify-center w-2 cursor-col-resize z-30 transition-colors group select-none hover:bg-indigo-500/30 ${
+              isDraggingInspector ? 'bg-indigo-600' : 'bg-transparent'
+            }`}
+            title="Kéo trái/phải để đổi độ rộng Inspector (Nháy đúp để reset về 360px)"
+          >
+            <div className={`w-[2px] h-12 rounded-full transition-colors ${isDraggingInspector ? 'bg-white' : 'bg-slate-700 group-hover:bg-indigo-400'}`} />
+          </div>
+        )}
+
         {/* ================================================================= */}
         {/* RIGHT PANEL: CapCut / Canva Style Properties Inspector           */}
         {/* ================================================================= */}
@@ -495,9 +549,10 @@ export const App: React.FC = () => {
             {isRightInspectorOpen && (
               <motion.div
                 initial={{ width: 0, opacity: 0 }}
-                animate={{ width: 340, opacity: 1 }}
+                animate={{ width: inspectorWidth, opacity: 1 }}
                 exit={{ width: 0, opacity: 0 }}
-                transition={{ duration: 0.2 }}
+                transition={isDraggingInspector ? { duration: 0 } : { duration: 0.2 }}
+                style={{ width: `${inspectorWidth}px` }}
                 className="h-full overflow-hidden shrink-0 shadow-xl border-l border-slate-800 flex flex-col"
               >
                 <InspectorPanel

@@ -107,9 +107,40 @@ export const VideoCanvas: React.FC<VideoCanvasProps> = ({
   onSelectComponentKey
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const [fittedDimensions, setFittedDimensions] = useState<{ width: number; height: number }>({
+    width: 360,
+    height: 640
+  });
   const [zoomLevel, setZoomLevel] = useState<'fit' | 0.5 | 0.75 | 1.0>('fit');
   const [showSafeZone, setShowSafeZone] = useState<boolean>(true);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+
+  // Auto-fit 9:16 portrait viewport calculation (learned from Quiz vẽ giấy CanvasPreview.tsx)
+  useEffect(() => {
+    if (!viewportRef.current) return;
+    const updateDimensions = () => {
+      if (!viewportRef.current) return;
+      const { clientWidth, clientHeight } = viewportRef.current;
+      const targetW = 720;
+      const targetH = 1280;
+      const isMobile = clientWidth < 640;
+      const padW = isMobile ? 16 : 32;
+      const padH = isMobile ? 16 : 32;
+      const availW = Math.max(120, clientWidth - padW);
+      const availH = Math.max(200, clientHeight - padH);
+      const scale = Math.min(availW / targetW, availH / targetH);
+      setFittedDimensions({
+        width: Math.round(targetW * scale),
+        height: Math.round(targetH * scale)
+      });
+    };
+
+    updateDimensions();
+    const observer = new ResizeObserver(updateDimensions);
+    observer.observe(viewportRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   const formatSeconds = (f: number) => {
     const totalSec = f / 30;
@@ -233,12 +264,16 @@ export const VideoCanvas: React.FC<VideoCanvasProps> = ({
       </div>
 
       {/* 2. Center Viewport with Dot Grid & Phone Canvas */}
-      <div className="flex-1 overflow-hidden relative flex items-center justify-center p-2 sm:p-4 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:16px_16px]">
+      <div
+        ref={viewportRef}
+        className="flex-1 overflow-hidden relative flex items-center justify-center p-2 sm:p-4 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:16px_16px]"
+      >
         <div
-          className="relative rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl border-4 border-slate-800 bg-black transition-all"
+          className="relative rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl border-4 border-slate-800 bg-black transition-all flex items-center justify-center shrink-0"
           style={{
-            width: zoomLevel === 'fit' ? 'auto' : `${720 * (zoomLevel as number)}px`,
-            height: zoomLevel === 'fit' ? '100%' : `${1280 * (zoomLevel as number)}px`,
+            width: zoomLevel === 'fit' ? `${fittedDimensions.width}px` : `${720 * (zoomLevel as number)}px`,
+            height: zoomLevel === 'fit' ? `${fittedDimensions.height}px` : `${1280 * (zoomLevel as number)}px`,
+            maxWidth: '100%',
             maxHeight: '100%',
             aspectRatio: '720 / 1280'
           }}

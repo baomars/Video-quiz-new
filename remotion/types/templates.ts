@@ -178,693 +178,6 @@ export const TEMPLATE_LIBRARY: LayoutTemplateItem[] = [
   },
 
   // ---------------------------------------------------------------------------
-  // TEMPLATE 02 — SPLIT SCREEN (Sky Blue + Yellow / Chia Đôi Cột)
-  // ---------------------------------------------------------------------------
-  {
-    id: 'tmpl-split-screen',
-    name: '02. Split Screen',
-    tag: 'Chia Đôi • Sky Blue + Yellow',
-    badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
-    description: 'Cột trái chứa Câu hỏi & Ảnh minh họa, cột phải xếp 3 đáp án dạng Pill kéo dài không theo card 3 hàng thông thường.',
-    icon: '⚡',
-    previewGradient: 'linear-gradient(135deg, #e0f2fe 0%, #bae6fd 50%, #fef08a 100%)',
-    accentColors: ['#0284c7', '#fde047', '#f59e0b'],
-    branding: {
-      colors: {
-        primary: '#0284c7',
-        secondary: '#fde047',
-        accent: '#f59e0b',
-        background: '#f0f9ff',
-        cardBg: '#ffffff',
-        text: '#0c4a6e',
-        correct: '#15803d',
-        wrong: '#b91c1c',
-        border: '#7dd3fc'
-      }
-    },
-    template: {
-      id: 'tmpl-split-screen',
-      name: 'Split Screen',
-      layoutType: 'split-modern',
-      illustrationLayout: 'single',
-      answerLayout: 'vertical-list',
-      countdownStyle: 'badge',
-      transitionType: 'slide',
-      timing: {
-        countdownSeconds: 5,
-        revealSeconds: 3,
-        transitionFrames: 15,
-        endBufferSeconds: 2.5,
-        explanationDisplayDuration: 3.0
-      },
-      components: {
-        background: {
-          x: 0, y: 0, width: 100, height: 100,
-          type: 'gradient',
-          backgroundColor: '#f0f9ff',
-          secondaryColor: '#fef9c3',
-          gradientAngle: 120
-        },
-        quizTitle: {
-          x: 5, y: 5, width: 44, height: 6,
-          enabled: true,
-          fontFamily: 'Montserrat, sans-serif',
-          fontSize: 16,
-          fontWeight: '900',
-          color: '#0369a1',
-          backgroundColor: '#e0f2fe',
-          borderRadius: 14,
-          borderWidth: 1.5,
-          borderColor: '#7dd3fc'
-        },
-        questionNumber: {
-          x: 5, y: 12, width: 44, height: 4,
-          format: 'q-n',
-          fontFamily: 'Montserrat, sans-serif',
-          fontSize: 13,
-          fontWeight: '800',
-          color: '#0284c7'
-        },
-        questionBox: {
-          x: 5, y: 17, width: 44, height: 32,
-          shape: 'rounded',
-          borderRadius: 22,
-          borderWidth: 2,
-          borderColor: '#38bdf8',
-          backgroundColor: '#ffffff',
-          bgOpacity: 0.98,
-          color: '#0c4a6e',
-          textColor: '#0c4a6e',
-          fontFamily: 'Be Vietnam Pro, sans-serif',
-          fontSize: 20,
-          fontWeight: '700',
-          boxShadow: '0 8px 24px rgba(2, 132, 199, 0.12)',
-          padding: 16,
-          animation: 'pop'
-        },
-        illustration: {
-          x: 5, y: 51, width: 44, height: 32,
-          borderRadius: 20,
-          borderWidth: 2,
-          borderColor: '#fde047',
-          objectFit: 'cover'
-        },
-        answerButtons: {
-          x: 51, y: 17, width: 44, height: 66,
-          shape: 'pill',
-          layoutComposition: 'stacked',
-          optionBadgeShape: 'circle',
-          readTts: true,
-          gap: 14,
-          borderRadius: 9999,
-          borderWidth: 2,
-          borderColor: '#fde047',
-          backgroundColor: '#ffffff',
-          bgOpacity: 0.98,
-          color: '#1e293b',
-          textColor: '#1e293b',
-          fontFamily: 'Be Vietnam Pro, sans-serif',
-          fontSize: 17,
-          fontWeight: '700',
-          boxShadow: '0 4px 14px rgba(245, 158, 11, 0.15)',
-          padding: 14,
-          animation: 'slide-up'
-        },
-        countdown: {
-          x: 51, y: 8, width: 44, height: 6,
-          countdownStyle: 'badge',
-          strokeWidth: 2,
-          color: '#0369a1',
-          warningColor: '#dc2626',
-          fontSize: 18,
-          fontWeight: '800'
-        },
-        explanation: {
-          enabled: true,
-          readTts: true,
-          displayDurationSec: 3.0,
-          showIcon: true,
-          x: 5, y: 85, width: 90, height: 11,
-          shape: 'rounded',
-          borderRadius: 16,
-          borderWidth: 1.5,
-          borderColor: '#86efac',
-          backgroundColor: '#ffffff',
-          color: '#14532d',
-          textColor: '#14532d',
-          fontFamily: 'Be Vietnam Pro, sans-serif',
-          fontSize: 14,
-          fontWeight: '500',
-          boxShadow: '0 6px 20px rgba(0, 0, 0, 0.08)',
-          padding: 12
-        }
-      }
-    }
-  },
-
-  // ---------------------------------------------------------------------------
-  // TEMPLATE 03 — TRIANGLE (Cream + Orange / Tam Giác Ba Góc)
-  // ---------------------------------------------------------------------------
-  {
-    id: 'tmpl-triangle',
-    name: '03. Triangle',
-    tag: 'Tam Giác • Cream + Orange',
-    badgeColor: 'bg-orange-500/20 text-orange-300 border-orange-500/40',
-    description: 'Câu hỏi ở trung tâm, A ở đỉnh tam giác trên, B & C ở 2 góc đáy, đồng hồ đếm ngược radial ở giữa.',
-    icon: '🔺',
-    previewGradient: 'linear-gradient(135deg, #fff7ed 0%, #ffedd5 50%, #fed7aa 100%)',
-    accentColors: ['#f97316', '#ea580c', '#fb923c'],
-    branding: {
-      colors: {
-        primary: '#ea580c',
-        secondary: '#f97316',
-        accent: '#fb923c',
-        background: '#fff7ed',
-        cardBg: '#ffffff',
-        text: '#431407',
-        correct: '#16a34a',
-        wrong: '#dc2626',
-        border: '#fed7aa'
-      }
-    },
-    template: {
-      id: 'tmpl-triangle',
-      name: 'Triangle',
-      layoutType: 'split-modern',
-      illustrationLayout: 'single',
-      answerLayout: 'vertical-list',
-      countdownStyle: 'circle-radial',
-      transitionType: 'zoom',
-      timing: {
-        countdownSeconds: 5,
-        revealSeconds: 3,
-        transitionFrames: 15,
-        endBufferSeconds: 2.5,
-        explanationDisplayDuration: 3.0
-      },
-      components: {
-        background: {
-          x: 0, y: 0, width: 100, height: 100,
-          type: 'gradient',
-          backgroundColor: '#fff7ed',
-          secondaryColor: '#fef3c7',
-          gradientAngle: 150
-        },
-        quizTitle: {
-          x: 6, y: 5, width: 88, height: 5,
-          enabled: true,
-          fontFamily: 'Montserrat, sans-serif',
-          fontSize: 17,
-          fontWeight: '900',
-          color: '#9a3412',
-          backgroundColor: '#ffedd5',
-          borderRadius: 14,
-          borderWidth: 1.5,
-          borderColor: '#fdba74'
-        },
-        questionNumber: {
-          x: 6, y: 11, width: 88, height: 4,
-          format: 'câu-n',
-          fontFamily: 'Montserrat, sans-serif',
-          fontSize: 14,
-          fontWeight: '800',
-          color: '#ea580c'
-        },
-        questionBox: {
-          x: 8, y: 16, width: 84, height: 23,
-          shape: 'rounded',
-          borderRadius: 24,
-          borderWidth: 2,
-          borderColor: '#fb923c',
-          backgroundColor: '#ffffff',
-          bgOpacity: 0.98,
-          color: '#431407',
-          textColor: '#431407',
-          fontFamily: 'Be Vietnam Pro, sans-serif',
-          fontSize: 22,
-          fontWeight: '700',
-          boxShadow: '0 10px 25px rgba(234, 88, 12, 0.1)',
-          padding: 16,
-          animation: 'pop'
-        },
-        answerButtons: {
-          x: 6, y: 43, width: 88, height: 38,
-          shape: 'pill',
-          layoutComposition: 'triangle',
-          optionBadgeShape: 'pill',
-          readTts: true,
-          borderRadius: 9999,
-          borderWidth: 2,
-          borderColor: '#fdba74',
-          backgroundColor: '#ffffff',
-          bgOpacity: 0.98,
-          color: '#7c2d12',
-          textColor: '#7c2d12',
-          fontFamily: 'Be Vietnam Pro, sans-serif',
-          fontSize: 17,
-          fontWeight: '700',
-          boxShadow: '0 6px 16px rgba(234, 88, 12, 0.12)',
-          padding: 12,
-          animation: 'slide-up'
-        },
-        countdown: {
-          x: 38, y: 64, width: 24, height: 8,
-          countdownStyle: 'circle-radial',
-          strokeWidth: 3.5,
-          color: '#ea580c',
-          warningColor: '#dc2626',
-          fontSize: 18,
-          fontWeight: '900'
-        },
-        explanation: {
-          enabled: true,
-          readTts: true,
-          displayDurationSec: 3.0,
-          showIcon: true,
-          x: 6, y: 84, width: 88, height: 11,
-          shape: 'rounded',
-          borderRadius: 18,
-          borderWidth: 1.5,
-          borderColor: '#86efac',
-          backgroundColor: '#ffffff',
-          color: '#14532d',
-          textColor: '#14532d',
-          fontFamily: 'Be Vietnam Pro, sans-serif',
-          fontSize: 14,
-          fontWeight: '500',
-          boxShadow: '0 8px 20px rgba(0, 0, 0, 0.08)',
-          padding: 12
-        }
-      }
-    }
-  },
-
-  // ---------------------------------------------------------------------------
-  // TEMPLATE 04 — ONE RIGHT TWO LEFT (Mint + Green / 1 Phải 2 Trái)
-  // ---------------------------------------------------------------------------
-  {
-    id: 'tmpl-one-right-two-left',
-    name: '04. One Right Two Left',
-    tag: '1 Phải 2 Trái • Mint + Green',
-    badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
-    description: 'A và C nằm cột bên trái, B nằm bên phải dạng thẻ cao nổi bật (tall featured card), bố cục lệch tự nhiên.',
-    icon: '🌿',
-    previewGradient: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 50%, #a7f3d0 100%)',
-    accentColors: ['#10b981', '#059669', '#34d399'],
-    branding: {
-      colors: {
-        primary: '#059669',
-        secondary: '#10b981',
-        accent: '#34d399',
-        background: '#ecfdf5',
-        cardBg: '#ffffff',
-        text: '#064e3b',
-        correct: '#15803d',
-        wrong: '#dc2626',
-        border: '#a7f3d0'
-      }
-    },
-    template: {
-      id: 'tmpl-one-right-two-left',
-      name: 'One Right Two Left',
-      layoutType: 'split-modern',
-      illustrationLayout: 'single',
-      answerLayout: 'vertical-list',
-      countdownStyle: 'pill-timer',
-      transitionType: 'slide',
-      timing: {
-        countdownSeconds: 5,
-        revealSeconds: 3,
-        transitionFrames: 15,
-        endBufferSeconds: 2.5,
-        explanationDisplayDuration: 3.0
-      },
-      components: {
-        background: {
-          x: 0, y: 0, width: 100, height: 100,
-          type: 'gradient',
-          backgroundColor: '#ecfdf5',
-          secondaryColor: '#f0fdf4',
-          gradientAngle: 135
-        },
-        quizTitle: {
-          x: 6, y: 5, width: 88, height: 5,
-          enabled: true,
-          fontFamily: 'Montserrat, sans-serif',
-          fontSize: 17,
-          fontWeight: '900',
-          color: '#065f46',
-          backgroundColor: '#d1fae5',
-          borderRadius: 14,
-          borderWidth: 1.5,
-          borderColor: '#6ee7b7'
-        },
-        questionNumber: {
-          x: 6, y: 11, width: 88, height: 4,
-          format: 'câu-n',
-          fontFamily: 'Montserrat, sans-serif',
-          fontSize: 14,
-          fontWeight: '800',
-          color: '#059669'
-        },
-        questionBox: {
-          x: 6, y: 16, width: 88, height: 22,
-          shape: 'rounded',
-          borderRadius: 22,
-          borderWidth: 2,
-          borderColor: '#6ee7b7',
-          backgroundColor: '#ffffff',
-          bgOpacity: 0.98,
-          color: '#064e3b',
-          textColor: '#064e3b',
-          fontFamily: 'Be Vietnam Pro, sans-serif',
-          fontSize: 22,
-          fontWeight: '700',
-          boxShadow: '0 10px 24px rgba(5, 150, 105, 0.1)',
-          padding: 16,
-          animation: 'pop'
-        },
-        answerButtons: {
-          x: 6, y: 42, width: 88, height: 38,
-          shape: 'rounded',
-          layoutComposition: 'one-right-two-left',
-          optionBadgeShape: 'square',
-          readTts: true,
-          borderRadius: 18,
-          borderWidth: 2,
-          borderColor: '#a7f3d0',
-          backgroundColor: '#ffffff',
-          bgOpacity: 0.98,
-          color: '#064e3b',
-          textColor: '#064e3b',
-          fontFamily: 'Be Vietnam Pro, sans-serif',
-          fontSize: 17,
-          fontWeight: '700',
-          boxShadow: '0 6px 18px rgba(16, 185, 129, 0.12)',
-          padding: 12,
-          animation: 'slide-up'
-        },
-        countdown: {
-          x: 34, y: 8, width: 32, height: 5,
-          countdownStyle: 'pill-timer',
-          strokeWidth: 2,
-          color: '#059669',
-          warningColor: '#dc2626',
-          fontSize: 18,
-          fontWeight: '800'
-        },
-        explanation: {
-          enabled: true,
-          readTts: true,
-          displayDurationSec: 3.0,
-          showIcon: true,
-          x: 6, y: 83, width: 88, height: 11,
-          shape: 'rounded',
-          borderRadius: 16,
-          borderWidth: 1.5,
-          borderColor: '#6ee7b7',
-          backgroundColor: '#ffffff',
-          color: '#065f46',
-          textColor: '#065f46',
-          fontFamily: 'Be Vietnam Pro, sans-serif',
-          fontSize: 14,
-          fontWeight: '500',
-          boxShadow: '0 8px 20px rgba(0, 0, 0, 0.08)',
-          padding: 12
-        }
-      }
-    }
-  },
-
-  // ---------------------------------------------------------------------------
-  // TEMPLATE 05 — CIRCULAR QUIZ (Lavender + White / Vòng Cung)
-  // ---------------------------------------------------------------------------
-  {
-    id: 'tmpl-circular-quiz',
-    name: '05. Circular Quiz',
-    tag: 'Vòng Cung • Lavender + Violet',
-    badgeColor: 'bg-purple-500/20 text-purple-300 border-purple-500/40',
-    description: 'Khung câu hỏi hình Oval/Circle trung tâm, 3 đáp án uốn lượn so le theo vòng cung mềm mại, Countdown radial ở đỉnh.',
-    icon: '🔮',
-    previewGradient: 'linear-gradient(135deg, #faf5ff 0%, #f3e8ff 50%, #e9d5ff 100%)',
-    accentColors: ['#8b5cf6', '#7c3aed', '#c084fc'],
-    branding: {
-      colors: {
-        primary: '#7c3aed',
-        secondary: '#8b5cf6',
-        accent: '#c084fc',
-        background: '#faf5ff',
-        cardBg: '#ffffff',
-        text: '#2e1065',
-        correct: '#16a34a',
-        wrong: '#dc2626',
-        border: '#ddd6fe'
-      }
-    },
-    template: {
-      id: 'tmpl-circular-quiz',
-      name: 'Circular Quiz',
-      layoutType: 'split-modern',
-      illustrationLayout: 'single',
-      answerLayout: 'vertical-list',
-      countdownStyle: 'circle-radial',
-      transitionType: 'zoom',
-      timing: {
-        countdownSeconds: 5,
-        revealSeconds: 3,
-        transitionFrames: 15,
-        endBufferSeconds: 2.5,
-        explanationDisplayDuration: 3.0
-      },
-      components: {
-        background: {
-          x: 0, y: 0, width: 100, height: 100,
-          type: 'gradient',
-          backgroundColor: '#faf5ff',
-          secondaryColor: '#ede9fe',
-          gradientAngle: 160
-        },
-        quizTitle: {
-          x: 6, y: 5, width: 88, height: 5,
-          enabled: true,
-          fontFamily: 'Montserrat, sans-serif',
-          fontSize: 17,
-          fontWeight: '900',
-          color: '#5b21b6',
-          backgroundColor: '#ede9fe',
-          borderRadius: 14,
-          borderWidth: 1.5,
-          borderColor: '#c4b5fd'
-        },
-        countdown: {
-          x: 38, y: 13, width: 24, height: 9,
-          countdownStyle: 'circle-radial',
-          strokeWidth: 3.5,
-          color: '#7c3aed',
-          warningColor: '#dc2626',
-          fontSize: 18,
-          fontWeight: '900'
-        },
-        questionBox: {
-          x: 8, y: 24, width: 84, height: 23,
-          shape: 'pill',
-          borderRadius: 9999,
-          borderWidth: 2.5,
-          borderColor: '#c4b5fd',
-          backgroundColor: '#ffffff',
-          bgOpacity: 0.98,
-          color: '#2e1065',
-          textColor: '#2e1065',
-          fontFamily: 'Be Vietnam Pro, sans-serif',
-          fontSize: 22,
-          fontWeight: '700',
-          boxShadow: '0 12px 28px rgba(124, 58, 237, 0.12)',
-          padding: 18,
-          animation: 'pop'
-        },
-        answerButtons: {
-          x: 6, y: 50, width: 88, height: 32,
-          shape: 'pill',
-          layoutComposition: 'circular-arc',
-          optionBadgeShape: 'circle',
-          readTts: true,
-          borderRadius: 9999,
-          borderWidth: 1.5,
-          borderColor: '#ddd6fe',
-          backgroundColor: '#ffffff',
-          bgOpacity: 0.98,
-          color: '#2e1065',
-          textColor: '#2e1065',
-          fontFamily: 'Be Vietnam Pro, sans-serif',
-          fontSize: 18,
-          fontWeight: '600',
-          boxShadow: '0 6px 18px rgba(124, 58, 237, 0.1)',
-          padding: 12,
-          animation: 'slide-up'
-        },
-        explanation: {
-          enabled: true,
-          readTts: true,
-          displayDurationSec: 3.0,
-          showIcon: true,
-          x: 6, y: 84, width: 88, height: 11,
-          shape: 'pill',
-          borderRadius: 9999,
-          borderWidth: 1.5,
-          borderColor: '#86efac',
-          backgroundColor: '#ffffff',
-          color: '#14532d',
-          textColor: '#14532d',
-          fontFamily: 'Be Vietnam Pro, sans-serif',
-          fontSize: 14,
-          fontWeight: '500',
-          boxShadow: '0 8px 20px rgba(0, 0, 0, 0.08)',
-          padding: 12
-        }
-      }
-    }
-  },
-
-  // ---------------------------------------------------------------------------
-  // TEMPLATE 06 — FLOATING CARDS (Coral + Cream / Thẻ Bay Đa Chiều)
-  // ---------------------------------------------------------------------------
-  {
-    id: 'tmpl-floating-cards',
-    name: '06. Floating Cards',
-    tag: 'Thẻ Bay • Coral + Cream',
-    badgeColor: 'bg-rose-500/20 text-rose-300 border-rose-500/40',
-    description: '3 thẻ đáp án A, B, C bay lơ lửng lệch vị trí và xoay góc nhẹ (-1.2°, +1.5°, -0.8°) tạo chiều sâu không gian.',
-    icon: '🪶',
-    previewGradient: 'linear-gradient(135deg, #fff1f2 0%, #ffe4e6 50%, #fecdd3 100%)',
-    accentColors: ['#f43f5e', '#fb7185', '#e11d48'],
-    branding: {
-      colors: {
-        primary: '#f43f5e',
-        secondary: '#fb7185',
-        accent: '#e11d48',
-        background: '#fff1f2',
-        cardBg: '#ffffff',
-        text: '#881337',
-        correct: '#16a34a',
-        wrong: '#dc2626',
-        border: '#fecdd3'
-      }
-    },
-    template: {
-      id: 'tmpl-floating-cards',
-      name: 'Floating Cards',
-      layoutType: 'split-modern',
-      illustrationLayout: 'single',
-      answerLayout: 'vertical-list',
-      countdownStyle: 'pill-timer',
-      transitionType: 'fade',
-      timing: {
-        countdownSeconds: 5,
-        revealSeconds: 3,
-        transitionFrames: 15,
-        endBufferSeconds: 2.5,
-        explanationDisplayDuration: 3.0
-      },
-      components: {
-        background: {
-          x: 0, y: 0, width: 100, height: 100,
-          type: 'gradient',
-          backgroundColor: '#fff1f2',
-          secondaryColor: '#fffbeb',
-          gradientAngle: 140
-        },
-        quizTitle: {
-          x: 6, y: 5, width: 88, height: 5,
-          enabled: true,
-          fontFamily: 'Montserrat, sans-serif',
-          fontSize: 17,
-          fontWeight: '900',
-          color: '#9f1239',
-          backgroundColor: '#ffe4e6',
-          borderRadius: 14,
-          borderWidth: 1.5,
-          borderColor: '#fda4af'
-        },
-        questionNumber: {
-          x: 6, y: 11, width: 88, height: 4,
-          format: 'câu-n',
-          fontFamily: 'Montserrat, sans-serif',
-          fontSize: 14,
-          fontWeight: '800',
-          color: '#f43f5e'
-        },
-        questionBox: {
-          x: 6, y: 16, width: 88, height: 23,
-          shape: 'rounded',
-          borderRadius: 24,
-          borderWidth: 2,
-          borderColor: '#fda4af',
-          backgroundColor: '#ffffff',
-          bgOpacity: 0.98,
-          color: '#881337',
-          textColor: '#881337',
-          fontFamily: 'Be Vietnam Pro, sans-serif',
-          fontSize: 22,
-          fontWeight: '700',
-          boxShadow: '0 12px 28px rgba(244, 63, 94, 0.12)',
-          padding: 16,
-          animation: 'pop'
-        },
-        answerButtons: {
-          x: 6, y: 43, width: 88, height: 38,
-          shape: 'rounded',
-          layoutComposition: 'floating',
-          optionBadgeShape: 'pill',
-          popShadow: true,
-          popShadowOffset: 4,
-          popShadowColor: 'rgba(244, 63, 94, 0.25)',
-          readTts: true,
-          borderRadius: 20,
-          borderWidth: 1.5,
-          borderColor: '#fecdd3',
-          backgroundColor: '#ffffff',
-          bgOpacity: 0.98,
-          color: '#881337',
-          textColor: '#881337',
-          fontFamily: 'Be Vietnam Pro, sans-serif',
-          fontSize: 18,
-          fontWeight: '700',
-          padding: 12,
-          animation: 'slide-up'
-        },
-        countdown: {
-          x: 32, y: 8, width: 36, height: 5,
-          countdownStyle: 'pill-timer',
-          strokeWidth: 2,
-          color: '#f43f5e',
-          warningColor: '#dc2626',
-          fontSize: 18,
-          fontWeight: '800'
-        },
-        explanation: {
-          enabled: true,
-          readTts: true,
-          displayDurationSec: 3.0,
-          showIcon: true,
-          x: 6, y: 83, width: 88, height: 11,
-          shape: 'rounded',
-          borderRadius: 18,
-          borderWidth: 1.5,
-          borderColor: '#86efac',
-          backgroundColor: '#ffffff',
-          color: '#14532d',
-          textColor: '#14532d',
-          fontFamily: 'Be Vietnam Pro, sans-serif',
-          fontSize: 14,
-          fontWeight: '500',
-          boxShadow: '0 8px 20px rgba(0, 0, 0, 0.08)',
-          padding: 12
-        }
-      }
-    }
-  },
-
-  // ---------------------------------------------------------------------------
   // TEMPLATE 07 — BUBBLE QUIZ (Pink + Purple / Bóng Thoại Hoạt Hình)
   // ---------------------------------------------------------------------------
   {
@@ -1032,38 +345,38 @@ export const TEMPLATE_LIBRARY: LayoutTemplateItem[] = [
   },
 
   // ---------------------------------------------------------------------------
-  // TEMPLATE 08 — GAME HUD (Cyan + Dark Neon / Giao Diện Game Sci-Fi)
+  // TEMPLATE 03 — TIKTOK NEON PULSE (Cyan + Magenta / Trending Trivia)
   // ---------------------------------------------------------------------------
   {
-    id: 'tmpl-game-hud',
-    name: '08. Game HUD',
-    tag: 'Sci-Fi • Cyan + Dark Neon',
+    id: 'tmpl-tiktok-neon-pulse',
+    name: '03. TikTok Neon Pulse',
+    tag: 'Trending Trivia • Neon Cyan & Magenta',
     badgeColor: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40',
-    description: 'Khung vát góc HUD 45°, nhãn Lục giác (Hexagon), đường kẻ radar cybernetic, Countdown radar tròn phong cách game tương lai.',
-    icon: '🎮',
-    previewGradient: 'linear-gradient(135deg, #050b14 0%, #0a192f 50%, #00f0ff 100%)',
-    accentColors: ['#00f0ff', '#a855f7', '#00f59b'],
+    description: 'Khung câu hỏi lớn bo tròn viền neon kép; Ring Timer phát sáng ở trung tâm; 3 thẻ đáp án Floating Pills bo cong hiện đại.',
+    icon: '⚡',
+    previewGradient: 'linear-gradient(135deg, #050b14 0%, #0d1b2a 50%, #1b263b 100%)',
+    accentColors: ['#00f0ff', '#ff007f', '#7928ca'],
     branding: {
       colors: {
         primary: '#00f0ff',
-        secondary: '#a855f7',
-        accent: '#00f59b',
+        secondary: '#ff007f',
+        accent: '#7928ca',
         background: '#050b14',
-        cardBg: '#0f172a',
+        cardBg: '#0a1628',
         text: '#ffffff',
-        correct: '#00f59b',
-        wrong: '#ff0055',
+        correct: '#00f0ff',
+        wrong: '#ff007f',
         border: '#00f0ff'
       }
     },
     template: {
-      id: 'tmpl-game-hud',
-      name: 'Game HUD',
-      layoutType: 'split-modern',
+      id: 'tmpl-tiktok-neon-pulse',
+      name: 'TikTok Neon Pulse',
+      layoutType: 'neon-pulse',
       illustrationLayout: 'single',
       answerLayout: 'vertical-list',
       countdownStyle: 'circle-radial',
-      transitionType: 'slide',
+      transitionType: 'zoom',
       timing: {
         countdownSeconds: 5,
         revealSeconds: 3,
@@ -1075,133 +388,319 @@ export const TEMPLATE_LIBRARY: LayoutTemplateItem[] = [
         background: {
           x: 0, y: 0, width: 100, height: 100,
           type: 'neon',
-          neonPresetId: 'cyber-glow',
-          neonColor1: '#00f0ff',
-          neonColor2: '#a855f7',
-          neonColor3: '#050b14',
+          neonPresetId: 'neon-gradient',
           neonSpeed: 1.0,
-          neonIntensity: 25
+          neonIntensity: 1.2,
+          neonColor1: '#00f0ff',
+          neonColor2: '#ff007f',
+          neonColor3: '#7928ca',
+          backgroundColor: '#050b14'
         },
         quizTitle: {
-          x: 6, y: 5, width: 88, height: 6,
+          x: 6, y: 5, width: 88, height: 5,
           enabled: true,
           fontFamily: 'Montserrat, sans-serif',
-          fontSize: 17,
+          fontSize: 16,
           fontWeight: '900',
           color: '#00f0ff',
-          backgroundColor: '#0a192f',
-          borderRadius: 4,
+          backgroundColor: 'rgba(0, 240, 255, 0.1)',
+          borderRadius: 14,
           borderWidth: 1.5,
-          borderColor: '#00f0ff',
-          shape: 'hud',
-          chamferSize: 10
+          borderColor: '#00f0ff'
         },
         questionNumber: {
-          x: 6, y: 12, width: 88, height: 4,
-          format: 'q-n',
+          x: 6, y: 11, width: 88, height: 4,
+          format: 'câu-n',
           fontFamily: 'Montserrat, sans-serif',
-          fontSize: 13,
+          fontSize: 14,
           fontWeight: '800',
-          color: '#00f0ff'
+          color: '#ff007f'
         },
         questionBox: {
-          x: 6, y: 17, width: 88, height: 23,
-          shape: 'hud',
-          chamferSize: 16,
-          borderWidth: 2,
+          x: 6, y: 16, width: 88, height: 20,
+          shape: 'rounded',
+          borderRadius: 24,
+          borderWidth: 2.5,
           borderColor: '#00f0ff',
-          backgroundColor: '#070d19',
+          backgroundColor: 'rgba(10, 22, 40, 0.88)',
           bgOpacity: 0.92,
           color: '#ffffff',
           textColor: '#ffffff',
-          fontFamily: 'Montserrat, sans-serif',
-          fontSize: 22,
+          fontFamily: 'Be Vietnam Pro, sans-serif',
+          fontSize: 23,
           fontWeight: '800',
-          boxShadow: '0 0 20px rgba(0, 240, 255, 0.35)',
+          boxShadow: '0 0 25px rgba(0, 240, 255, 0.3)',
           padding: 16,
           animation: 'pop'
         },
+        illustration: {
+          x: 37, y: 38, width: 26, height: 14,
+          borderRadius: 16,
+          borderWidth: 2,
+          borderColor: '#ff007f',
+          objectFit: 'cover'
+        },
+        countdown: {
+          x: 50, y: 44, width: 24, height: 12,
+          countdownStyle: 'circle-radial',
+          strokeWidth: 5,
+          color: '#00f0ff',
+          warningColor: '#ff007f',
+          fontSize: 22,
+          fontWeight: '900'
+        },
         answerButtons: {
-          x: 6, y: 44, width: 88, height: 38,
-          shape: 'hud',
-          layoutComposition: 'split-left-right',
-          optionBadgeShape: 'hexagon',
-          chamferSize: 12,
+          x: 6, y: 59, width: 88, height: 27,
+          shape: 'pill',
+          layoutComposition: 'stacked',
+          optionBadgeShape: 'circle',
           readTts: true,
-          borderWidth: 1.5,
+          gap: 10,
+          borderRadius: 30,
+          borderWidth: 2,
           borderColor: '#00f0ff',
-          backgroundColor: '#0a1526',
+          backgroundColor: 'rgba(10, 22, 40, 0.88)',
           bgOpacity: 0.9,
           color: '#ffffff',
           textColor: '#ffffff',
-          fontFamily: 'Montserrat, sans-serif',
-          fontSize: 17,
+          fontFamily: 'Be Vietnam Pro, sans-serif',
+          fontSize: 19,
           fontWeight: '700',
-          boxShadow: '0 0 15px rgba(0, 240, 255, 0.2)',
+          boxShadow: '0 0 15px rgba(0, 240, 255, 0.15)',
           padding: 12,
           animation: 'slide-up'
-        },
-        countdown: {
-          x: 38, y: 7, width: 24, height: 8,
-          countdownStyle: 'circle-radial',
-          strokeWidth: 3.5,
-          color: '#00f0ff',
-          warningColor: '#ff0055',
-          fontSize: 18,
-          fontWeight: '900'
         },
         explanation: {
           enabled: true,
           readTts: true,
           displayDurationSec: 3.0,
           showIcon: true,
-          x: 6, y: 84, width: 88, height: 11,
-          shape: 'hud',
-          chamferSize: 12,
+          x: 6, y: 88, width: 88, height: 9,
+          shape: 'pill',
+          borderRadius: 20,
           borderWidth: 1.5,
-          borderColor: '#00f59b',
-          backgroundColor: '#071618',
-          color: '#00f59b',
-          textColor: '#00f59b',
-          fontFamily: 'Montserrat, sans-serif',
-          fontSize: 13,
+          borderColor: '#00f0ff',
+          backgroundColor: '#0a1628',
+          color: '#00f0ff',
+          textColor: '#00f0ff',
+          fontFamily: 'Be Vietnam Pro, sans-serif',
+          fontSize: 14,
           fontWeight: '600',
-          boxShadow: '0 0 20px rgba(0, 245, 155, 0.25)',
-          padding: 12
+          padding: 10
         }
       }
     }
   },
 
   // ---------------------------------------------------------------------------
-  // TEMPLATE 09 — KNOWLEDGE BOARD (White + Purple / Bảng Tri Thức)
+  // TEMPLATE 04 — GAMESHOW POP STICKER (Neo-Brutalism / MrBeast Style)
   // ---------------------------------------------------------------------------
   {
-    id: 'tmpl-knowledge-board',
-    name: '09. Knowledge Board',
-    tag: 'Bảng Tri Thức • White + Purple',
-    badgeColor: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/40',
-    description: 'Ảnh minh họa lớn làm tâm điểm tri thức, Khung câu hỏi dạng bảng thông tin khoa học, Đáp án xếp viền trang nhã.',
-    icon: '📚',
-    previewGradient: 'linear-gradient(135deg, #ffffff 0%, #f5f3ff 50%, #ede9fe 100%)',
-    accentColors: ['#6366f1', '#7c3aed', '#4f46e5'],
+    id: 'tmpl-gameshow-pop-sticker',
+    name: '04. GameShow Pop Sticker',
+    tag: 'Neo-Brutalism • MrBeast Style',
+    badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
+    description: 'Khung thoại Sticker vàng rực rỡ, viền đen dày và bóng đổ cứng; Đồng hồ quả bom ngộ nghĩnh; 3 thẻ đáp án dạng khối 3D đa sắc.',
+    icon: '💥',
+    previewGradient: 'linear-gradient(135deg, #3b0764 0%, #581c87 50%, #7e22ce 100%)',
+    accentColors: ['#facc15', '#f43f5e', '#06b6d4'],
     branding: {
       colors: {
-        primary: '#4f46e5',
-        secondary: '#6366f1',
-        accent: '#7c3aed',
-        background: '#ffffff',
-        cardBg: '#faf5ff',
-        text: '#1e1b4b',
-        correct: '#15803d',
-        wrong: '#b91c1c',
-        border: '#c7d2fe'
+        primary: '#facc15',
+        secondary: '#f43f5e',
+        accent: '#06b6d4',
+        background: '#3b0764',
+        cardBg: '#facc15',
+        text: '#000000',
+        correct: '#22c55e',
+        wrong: '#ef4444',
+        border: '#000000'
       }
     },
     template: {
-      id: 'tmpl-knowledge-board',
-      name: 'Knowledge Board',
-      layoutType: 'classic-stacked',
+      id: 'tmpl-gameshow-pop-sticker',
+      name: 'GameShow Pop Sticker',
+      layoutType: 'pop-sticker',
+      illustrationLayout: 'single',
+      answerLayout: 'vertical-list',
+      countdownStyle: 'badge',
+      transitionType: 'bounce',
+      timing: {
+        countdownSeconds: 5,
+        revealSeconds: 3,
+        transitionFrames: 15,
+        endBufferSeconds: 2.5,
+        explanationDisplayDuration: 3.0
+      },
+      components: {
+        background: {
+          x: 0, y: 0, width: 100, height: 100,
+          type: 'solid',
+          backgroundColor: '#3b0764'
+        },
+        quizTitle: {
+          x: 6, y: 4, width: 88, height: 5,
+          enabled: true,
+          fontFamily: 'Montserrat, sans-serif',
+          fontSize: 16,
+          fontWeight: '900',
+          color: '#ffffff',
+          backgroundColor: '#000000',
+          borderRadius: 8,
+          borderWidth: 2.5,
+          borderColor: '#ffffff',
+          boxShadow: '3px 3px 0px #000000'
+        },
+        questionNumber: {
+          x: 6, y: 10, width: 88, height: 4,
+          format: 'câu-n',
+          fontFamily: 'Montserrat, sans-serif',
+          fontSize: 14,
+          fontWeight: '900',
+          color: '#facc15'
+        },
+        questionBox: {
+          x: 6, y: 15, width: 88, height: 21,
+          shape: 'speech-bubble',
+          borderRadius: 14,
+          borderWidth: 3.5,
+          borderColor: '#000000',
+          backgroundColor: '#facc15',
+          bgOpacity: 1.0,
+          color: '#000000',
+          textColor: '#000000',
+          fontFamily: 'Be Vietnam Pro, sans-serif',
+          fontSize: 24,
+          fontWeight: '900',
+          boxShadow: '6px 6px 0px #000000',
+          padding: 16,
+          animation: 'pop'
+        },
+        illustration: {
+          x: 10, y: 38, width: 42, height: 18,
+          borderRadius: 12,
+          borderWidth: 3,
+          borderColor: '#000000',
+          boxShadow: '4px 4px 0px #000000',
+          objectFit: 'cover'
+        },
+        countdown: {
+          x: 65, y: 41, width: 25, height: 14,
+          countdownStyle: 'badge',
+          strokeWidth: 3,
+          color: '#f43f5e',
+          warningColor: '#ef4444',
+          fontSize: 24,
+          fontWeight: '900'
+        },
+        answerButtons: {
+          x: 6, y: 59, width: 88, height: 28,
+          shape: 'sharp',
+          layoutComposition: 'stacked',
+          optionBadgeShape: 'square',
+          readTts: true,
+          useIndividualStyles: true,
+          options: {
+            A: {
+              x: 6, y: 59, width: 88, height: 8.5,
+              shape: 'rounded',
+              backgroundColor: '#f87171',
+              borderColor: '#000000',
+              borderWidth: 3,
+              borderRadius: 10,
+              textColor: '#000000',
+              fontSize: 19,
+              fontWeight: '900',
+              labelShape: 'square',
+              labelBgColor: '#000000',
+              labelColor: '#ffffff',
+              boxShadow: '4px 4px 0px #000000'
+            },
+            B: {
+              x: 6, y: 69, width: 88, height: 8.5,
+              shape: 'rounded',
+              backgroundColor: '#38bdf8',
+              borderColor: '#000000',
+              borderWidth: 3,
+              borderRadius: 10,
+              textColor: '#000000',
+              fontSize: 19,
+              fontWeight: '900',
+              labelShape: 'square',
+              labelBgColor: '#000000',
+              labelColor: '#ffffff',
+              boxShadow: '4px 4px 0px #000000'
+            },
+            C: {
+              x: 6, y: 79, width: 88, height: 8.5,
+              shape: 'rounded',
+              backgroundColor: '#a3e635',
+              borderColor: '#000000',
+              borderWidth: 3,
+              borderRadius: 10,
+              textColor: '#000000',
+              fontSize: 19,
+              fontWeight: '900',
+              labelShape: 'square',
+              labelBgColor: '#000000',
+              labelColor: '#ffffff',
+              boxShadow: '4px 4px 0px #000000'
+            }
+          },
+          animation: 'pop'
+        },
+        explanation: {
+          enabled: true,
+          readTts: true,
+          displayDurationSec: 3.0,
+          showIcon: true,
+          x: 6, y: 89, width: 88, height: 8,
+          shape: 'rounded',
+          borderRadius: 8,
+          borderWidth: 2.5,
+          borderColor: '#000000',
+          backgroundColor: '#ffffff',
+          color: '#000000',
+          textColor: '#000000',
+          fontFamily: 'Be Vietnam Pro, sans-serif',
+          fontSize: 14,
+          fontWeight: '700',
+          boxShadow: '4px 4px 0px #000000',
+          padding: 10
+        }
+      }
+    }
+  },
+
+  // ---------------------------------------------------------------------------
+  // TEMPLATE 05 — CINEMATIC DARK MYSTERY (Lịch Sử & Bí Ẩn / Brushed Gold)
+  // ---------------------------------------------------------------------------
+  {
+    id: 'tmpl-cinematic-dark-mystery',
+    name: '05. Cinematic Dark Mystery',
+    tag: 'Lịch Sử & Bí Ẩn • Brushed Gold',
+    badgeColor: 'bg-amber-600/20 text-amber-200 border-amber-600/40',
+    description: 'Thẻ kính mờ viền chỉ vàng kim; Thanh đếm ngược vàng kim nằm ngang; Khung ảnh tròn điện ảnh; 3 thanh kính tối nằm ngang.',
+    icon: '🏛️',
+    previewGradient: 'linear-gradient(135deg, #090a0f 0%, #12141d 50%, #1a1c24 100%)',
+    accentColors: ['#d4af37', '#e5c158', '#997a15'],
+    branding: {
+      colors: {
+        primary: '#d4af37',
+        secondary: '#e5c158',
+        accent: '#997a15',
+        background: '#090a0f',
+        cardBg: '#14161f',
+        text: '#ffffff',
+        correct: '#22c55e',
+        wrong: '#ef4444',
+        border: '#d4af37'
+      }
+    },
+    template: {
+      id: 'tmpl-cinematic-dark-mystery',
+      name: 'Cinematic Dark Mystery',
+      layoutType: 'cinematic-mystery',
       illustrationLayout: 'single',
       answerLayout: 'vertical-list',
       countdownStyle: 'bar-horizontal',
@@ -1216,318 +715,137 @@ export const TEMPLATE_LIBRARY: LayoutTemplateItem[] = [
       components: {
         background: {
           x: 0, y: 0, width: 100, height: 100,
-          type: 'gradient',
-          backgroundColor: '#ffffff',
-          secondaryColor: '#f5f3ff',
-          gradientAngle: 180
+          type: 'solid',
+          backgroundColor: '#090a0f'
         },
         quizTitle: {
-          x: 6, y: 5, width: 88, height: 5,
+          x: 6, y: 4, width: 88, height: 5,
           enabled: true,
           fontFamily: 'Montserrat, sans-serif',
-          fontSize: 17,
-          fontWeight: '900',
-          color: '#312e81',
-          backgroundColor: '#e0e7ff',
-          borderRadius: 12,
-          borderWidth: 1.5,
-          borderColor: '#a5b4fc'
+          fontSize: 16,
+          fontWeight: '700',
+          color: '#d4af37',
+          backgroundColor: 'transparent',
+          borderWidth: 0
         },
-        illustration: {
-          x: 6, y: 12, width: 88, height: 28,
-          borderRadius: 20,
-          borderWidth: 2,
-          borderColor: '#a5b4fc',
-          objectFit: 'cover'
+        questionNumber: {
+          x: 6, y: 9, width: 88, height: 4,
+          format: 'câu-n',
+          fontFamily: 'Montserrat, sans-serif',
+          fontSize: 13,
+          fontWeight: '700',
+          color: '#e5c158'
         },
         questionBox: {
-          x: 6, y: 42, width: 88, height: 16,
+          x: 6, y: 13, width: 88, height: 16,
           shape: 'rounded',
-          borderRadius: 18,
-          borderWidth: 2,
-          borderColor: '#c7d2fe',
-          backgroundColor: '#f8fafc',
-          bgOpacity: 0.98,
-          color: '#1e1b4b',
-          textColor: '#1e1b4b',
+          borderRadius: 16,
+          borderWidth: 1.5,
+          borderColor: '#d4af37',
+          backgroundColor: 'rgba(20, 22, 31, 0.88)',
+          bgOpacity: 0.9,
+          color: '#ffffff',
+          textColor: '#ffffff',
           fontFamily: 'Be Vietnam Pro, sans-serif',
-          fontSize: 21,
+          fontSize: 22,
           fontWeight: '700',
-          boxShadow: '0 8px 22px rgba(79, 70, 229, 0.08)',
-          padding: 14,
-          animation: 'pop'
+          boxShadow: '0 8px 30px rgba(212, 175, 55, 0.12)',
+          padding: 16,
+          animation: 'fade'
+        },
+        countdown: {
+          x: 10, y: 31, width: 80, height: 3,
+          countdownStyle: 'bar-horizontal',
+          strokeWidth: 3,
+          color: '#d4af37',
+          warningColor: '#ef4444',
+          fontSize: 16,
+          fontWeight: '700'
+        },
+        illustration: {
+          x: 20, y: 36, width: 60, height: 30,
+          borderRadius: 999,
+          borderWidth: 3,
+          borderColor: '#d4af37',
+          objectFit: 'cover',
+          boxShadow: '0 0 35px rgba(212, 175, 55, 0.2)'
         },
         answerButtons: {
-          x: 6, y: 61, width: 88, height: 23,
+          x: 6, y: 68, width: 88, height: 21,
           shape: 'rounded',
           layoutComposition: 'stacked',
           optionBadgeShape: 'square',
           readTts: true,
-          gap: 10,
-          borderRadius: 16,
+          gap: 8,
+          borderRadius: 12,
           borderWidth: 1.5,
-          borderColor: '#c7d2fe',
-          backgroundColor: '#ffffff',
-          bgOpacity: 0.98,
-          color: '#1e1b4b',
-          textColor: '#1e1b4b',
+          borderColor: 'rgba(212, 175, 55, 0.5)',
+          backgroundColor: 'rgba(20, 22, 31, 0.92)',
+          bgOpacity: 0.92,
+          color: '#ffffff',
+          textColor: '#ffffff',
           fontFamily: 'Be Vietnam Pro, sans-serif',
-          fontSize: 17,
-          fontWeight: '600',
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
-          padding: 12,
-          animation: 'slide-up'
-        },
-        countdown: {
-          x: 6, y: 86, width: 88, height: 4,
-          countdownStyle: 'bar-horizontal',
-          strokeWidth: 4,
-          color: '#4f46e5',
-          warningColor: '#dc2626',
           fontSize: 18,
-          fontWeight: '800'
+          fontWeight: '700',
+          boxShadow: '0 4px 15px rgba(0, 0, 0, 0.4)',
+          padding: 10,
+          animation: 'slide-up'
         },
         explanation: {
           enabled: true,
           readTts: true,
           displayDurationSec: 3.0,
           showIcon: true,
-          x: 6, y: 85, width: 88, height: 11,
+          x: 6, y: 90, width: 88, height: 8,
           shape: 'rounded',
-          borderRadius: 16,
-          borderWidth: 1.5,
-          borderColor: '#86efac',
-          backgroundColor: '#ffffff',
-          color: '#14532d',
-          textColor: '#14532d',
+          borderRadius: 12,
+          borderWidth: 1,
+          borderColor: '#d4af37',
+          backgroundColor: '#14161f',
+          color: '#e5c158',
+          textColor: '#e5c158',
           fontFamily: 'Be Vietnam Pro, sans-serif',
           fontSize: 14,
           fontWeight: '500',
-          boxShadow: '0 8px 20px rgba(0, 0, 0, 0.08)',
-          padding: 12
+          padding: 10
         }
       }
     }
   },
 
   // ---------------------------------------------------------------------------
-  // TEMPLATE 10 — POP QUIZ (Yellow + Bold Blue / Neo-Brutalism)
+  // TEMPLATE 06 — ASYMMETRIC BENTO GRID (Gen-Z Brain Quiz / Bento UI)
   // ---------------------------------------------------------------------------
   {
-    id: 'tmpl-pop-quiz',
-    name: '10. Pop Quiz',
-    tag: 'Neo-Brutalism • Yellow + Blue',
-    badgeColor: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/40',
-    description: 'Chữ lớn nổi bật, viền đen dày 3.5px, đổ bóng Pop Shadow cứng cáp; Đáp án dạng sticker lệch tầng cá tính, reveal kiểu pop.',
-    icon: '💥',
-    previewGradient: 'linear-gradient(135deg, #fef08a 0%, #ffde59 50%, #60a5fa 100%)',
-    accentColors: ['#ffde59', '#2563eb', '#111827'],
+    id: 'tmpl-asymmetric-bento',
+    name: '06. Asymmetric Bento Grid',
+    tag: 'Gen-Z Brain Quiz • Bento UI',
+    badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
+    description: 'Bố cục Bento chia đôi ở giữa: bên trái ảnh minh họa vuông, bên phải đồng hồ tròn to bản; 3 thẻ đáp án capsule viền dạ quang.',
+    icon: '🍱',
+    previewGradient: 'linear-gradient(135deg, #090d16 0%, #0f172a 50%, #1e293b 100%)',
+    accentColors: ['#10b981', '#38bdf8', '#a3e635'],
     branding: {
       colors: {
-        primary: '#ffde59',
-        secondary: '#2563eb',
-        accent: '#ff007f',
-        background: '#fffbeb',
-        cardBg: '#ffffff',
-        text: '#111827',
-        correct: '#15803d',
-        wrong: '#dc2626',
-        border: '#111827'
+        primary: '#10b981',
+        secondary: '#38bdf8',
+        accent: '#a3e635',
+        background: '#090d16',
+        cardBg: '#0f172a',
+        text: '#ffffff',
+        correct: '#10b981',
+        wrong: '#ef4444',
+        border: '#10b981'
       }
     },
     template: {
-      id: 'tmpl-pop-quiz',
-      name: 'Pop Quiz',
-      layoutType: 'split-modern',
+      id: 'tmpl-asymmetric-bento',
+      name: 'Asymmetric Bento Grid',
+      layoutType: 'bento-grid',
       illustrationLayout: 'single',
       answerLayout: 'vertical-list',
-      countdownStyle: 'pill-timer',
-      transitionType: 'zoom',
-      timing: {
-        countdownSeconds: 5,
-        revealSeconds: 3,
-        transitionFrames: 15,
-        endBufferSeconds: 2.5,
-        explanationDisplayDuration: 3.0
-      },
-      components: {
-        background: {
-          x: 0, y: 0, width: 100, height: 100,
-          type: 'gradient',
-          backgroundColor: '#fffbeb',
-          secondaryColor: '#fef3c7',
-          gradientAngle: 135
-        },
-        quizTitle: {
-          x: 6, y: 5, width: 88, height: 6,
-          enabled: true,
-          fontFamily: 'Montserrat, sans-serif',
-          fontSize: 18,
-          fontWeight: '900',
-          color: '#111827',
-          backgroundColor: '#ffde59',
-          borderRadius: 14,
-          borderWidth: 3.5,
-          borderColor: '#111827',
-          popShadow: true,
-          popShadowOffset: 5,
-          popShadowColor: '#111827'
-        },
-        questionNumber: {
-          x: 6, y: 13, width: 88, height: 4,
-          format: 'q-n',
-          fontFamily: 'Montserrat, sans-serif',
-          fontSize: 14,
-          fontWeight: '900',
-          color: '#111827'
-        },
-        questionBox: {
-          x: 6, y: 18, width: 88, height: 23,
-          shape: 'color-block',
-          borderRadius: 20,
-          borderWidth: 3.5,
-          borderColor: '#111827',
-          backgroundColor: '#ffffff',
-          bgOpacity: 1,
-          color: '#111827',
-          textColor: '#111827',
-          fontFamily: 'Montserrat, sans-serif',
-          fontSize: 23,
-          fontWeight: '900',
-          popShadow: true,
-          popShadowOffset: 7,
-          popShadowColor: '#111827',
-          padding: 16,
-          animation: 'pop'
-        },
-        answerButtons: {
-          x: 6, y: 44, width: 88, height: 38,
-          layoutComposition: 'custom',
-          useIndividualStyles: true,
-          readTts: true,
-          options: {
-            A: {
-              x: 5, y: 45, width: 88, height: 10.5,
-              shape: 'pill',
-              borderWidth: 3,
-              borderColor: '#111827',
-              backgroundColor: '#ffde59',
-              textColor: '#111827',
-              fontSize: 18,
-              fontWeight: '900',
-              popShadow: true,
-              popShadowOffset: 5,
-              popShadowColor: '#111827',
-              rotation: -1.2,
-              labelShape: 'circle',
-              labelBgColor: '#111827',
-              labelColor: '#ffffff'
-            },
-            B: {
-              x: 8, y: 57, width: 84, height: 10.5,
-              shape: 'bubble',
-              borderWidth: 3,
-              borderColor: '#111827',
-              backgroundColor: '#38bdf8',
-              textColor: '#111827',
-              fontSize: 18,
-              fontWeight: '900',
-              popShadow: true,
-              popShadowOffset: 5,
-              popShadowColor: '#111827',
-              rotation: 1.5,
-              labelShape: 'square',
-              labelBgColor: '#111827',
-              labelColor: '#ffffff'
-            },
-            C: {
-              x: 4, y: 69, width: 90, height: 10.5,
-              shape: 'rounded',
-              borderRadius: 18,
-              borderWidth: 3,
-              borderColor: '#111827',
-              backgroundColor: '#f472b6',
-              textColor: '#111827',
-              fontSize: 18,
-              fontWeight: '900',
-              popShadow: true,
-              popShadowOffset: 5,
-              popShadowColor: '#111827',
-              rotation: -0.8,
-              labelShape: 'circle',
-              labelBgColor: '#111827',
-              labelColor: '#ffffff'
-            }
-          },
-          animation: 'pop'
-        },
-        countdown: {
-          x: 32, y: 8, width: 36, height: 5,
-          countdownStyle: 'pill-timer',
-          strokeWidth: 2,
-          color: '#111827',
-          warningColor: '#dc2626',
-          fontSize: 18,
-          fontWeight: '900'
-        },
-        explanation: {
-          enabled: true,
-          readTts: true,
-          displayDurationSec: 3.0,
-          showIcon: true,
-          x: 6, y: 83, width: 88, height: 11,
-          shape: 'color-block',
-          borderRadius: 16,
-          borderWidth: 3,
-          borderColor: '#111827',
-          backgroundColor: '#ffffff',
-          color: '#111827',
-          textColor: '#111827',
-          fontFamily: 'Montserrat, sans-serif',
-          fontSize: 14,
-          fontWeight: '700',
-          popShadow: true,
-          popShadowOffset: 5,
-          popShadowColor: '#111827',
-          padding: 12
-        }
-      }
-    }
-  },
-
-  // ---------------------------------------------------------------------------
-  // TEMPLATE 11 — MINIMAL EDITORIAL (Elegant White + Slate / Tạp Chí Tối Giản)
-  // ---------------------------------------------------------------------------
-  {
-    id: 'tmpl-minimal-editorial',
-    name: '11. Minimal Editorial',
-    tag: 'Tạp Chí Tối Giản • White + Slate',
-    badgeColor: 'bg-slate-500/20 text-slate-300 border-slate-500/40',
-    description: 'Không dùng card bao quanh, Typography tinh tế cao cấp, Đáp án dùng đường kẻ gạch chân thanh mảnh và số thứ tự trang nhã.',
-    icon: '🖋️',
-    previewGradient: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #f1f5f9 100%)',
-    accentColors: ['#0f172a', '#475569', '#94a3b8'],
-    branding: {
-      colors: {
-        primary: '#0f172a',
-        secondary: '#475569',
-        accent: '#94a3b8',
-        background: '#ffffff',
-        cardBg: '#ffffff',
-        text: '#0f172a',
-        correct: '#15803d',
-        wrong: '#b91c1c',
-        border: '#e2e8f0'
-      }
-    },
-    template: {
-      id: 'tmpl-minimal-editorial',
-      name: 'Minimal Editorial',
-      layoutType: 'split-modern',
-      illustrationLayout: 'single',
-      answerLayout: 'vertical-list',
-      countdownStyle: 'clean-text',
-      transitionType: 'fade',
+      countdownStyle: 'circle-radial',
+      transitionType: 'slide',
       timing: {
         countdownSeconds: 5,
         revealSeconds: 3,
@@ -1539,86 +857,96 @@ export const TEMPLATE_LIBRARY: LayoutTemplateItem[] = [
         background: {
           x: 0, y: 0, width: 100, height: 100,
           type: 'solid',
-          backgroundColor: '#ffffff'
+          backgroundColor: '#090d16'
         },
         quizTitle: {
-          x: 8, y: 6, width: 84, height: 5,
+          x: 6, y: 4, width: 88, height: 5,
           enabled: true,
           fontFamily: 'Montserrat, sans-serif',
           fontSize: 16,
           fontWeight: '800',
-          color: '#0f172a',
-          backgroundColor: 'transparent',
-          borderWidth: 0
-        },
-        countdown: {
-          x: 70, y: 6, width: 22, height: 5,
-          countdownStyle: 'clean-text',
-          strokeWidth: 2,
-          color: '#0f172a',
-          warningColor: '#dc2626',
-          fontSize: 22,
-          fontWeight: '900'
+          color: '#38bdf8',
+          backgroundColor: 'rgba(56, 189, 248, 0.12)',
+          borderRadius: 12,
+          borderWidth: 1,
+          borderColor: '#38bdf8'
         },
         questionNumber: {
-          x: 8, y: 13, width: 84, height: 4,
+          x: 6, y: 10, width: 88, height: 4,
           format: 'câu-n',
           fontFamily: 'Montserrat, sans-serif',
           fontSize: 13,
           fontWeight: '700',
-          color: '#64748b'
+          color: '#10b981'
         },
         questionBox: {
-          x: 8, y: 19, width: 84, height: 24,
-          shape: 'minimal',
-          borderRadius: 0,
-          borderWidth: 0,
-          backgroundColor: 'transparent',
-          bgOpacity: 0,
-          color: '#0f172a',
-          textColor: '#0f172a',
+          x: 6, y: 14, width: 88, height: 21,
+          shape: 'rounded',
+          borderRadius: 22,
+          borderWidth: 2,
+          borderColor: 'rgba(56, 189, 248, 0.35)',
+          backgroundColor: 'rgba(15, 23, 42, 0.92)',
+          bgOpacity: 0.92,
+          color: '#ffffff',
+          textColor: '#ffffff',
           fontFamily: 'Be Vietnam Pro, sans-serif',
-          fontSize: 24,
+          fontSize: 23,
           fontWeight: '800',
-          padding: 8,
-          animation: 'fade'
+          padding: 16,
+          animation: 'pop'
+        },
+        illustration: {
+          x: 6, y: 37, width: 44, height: 22,
+          borderRadius: 18,
+          borderWidth: 2,
+          borderColor: '#10b981',
+          objectFit: 'cover'
+        },
+        countdown: {
+          x: 54, y: 39, width: 40, height: 18,
+          countdownStyle: 'circle-radial',
+          strokeWidth: 5,
+          color: '#38bdf8',
+          warningColor: '#ef4444',
+          fontSize: 24,
+          fontWeight: '900'
         },
         answerButtons: {
-          x: 8, y: 47, width: 84, height: 32,
-          shape: 'minimal',
+          x: 6, y: 62, width: 88, height: 26,
+          shape: 'pill',
           layoutComposition: 'stacked',
-          optionBadgeShape: 'circle',
+          optionBadgeShape: 'pill',
           readTts: true,
-          gap: 16,
-          borderRadius: 0,
+          gap: 10,
+          borderRadius: 30,
           borderWidth: 1.5,
-          borderColor: '#e2e8f0',
-          backgroundColor: 'transparent',
-          bgOpacity: 0,
-          color: '#0f172a',
-          textColor: '#0f172a',
+          borderColor: '#10b981',
+          backgroundColor: 'rgba(15, 23, 42, 0.92)',
+          bgOpacity: 0.92,
+          color: '#ffffff',
+          textColor: '#ffffff',
           fontFamily: 'Be Vietnam Pro, sans-serif',
           fontSize: 18,
-          fontWeight: '600',
-          padding: 10,
-          animation: 'fade'
+          fontWeight: '700',
+          padding: 12,
+          animation: 'slide-up'
         },
         explanation: {
           enabled: true,
           readTts: true,
           displayDurationSec: 3.0,
           showIcon: true,
-          x: 8, y: 82, width: 84, height: 11,
-          shape: 'minimal',
-          borderRadius: 0,
-          borderWidth: 1.5,
-          borderColor: '#86efac',
-          backgroundColor: '#f0fdf4',
-          color: '#14532d',
-          textColor: '#14532d',
+          x: 6, y: 89, width: 88, height: 8,
+          shape: 'pill',
+          borderRadius: 20,
+          borderWidth: 1,
+          borderColor: '#10b981',
+          backgroundColor: '#0f172a',
+          color: '#10b981',
+          textColor: '#10b981',
           fontFamily: 'Be Vietnam Pro, sans-serif',
           fontSize: 14,
-          fontWeight: '500',
+          fontWeight: '600',
           padding: 10
         }
       }
@@ -1626,38 +954,38 @@ export const TEMPLATE_LIBRARY: LayoutTemplateItem[] = [
   },
 
   // ---------------------------------------------------------------------------
-  // TEMPLATE 12 — ASYMMETRIC (Pastel Gradient / Bố Cục Bất Đối Xứng)
+  // TEMPLATE 07 — RETRO SYNTHWAVE ARCADE (Nostalgia 80s / Arcade Marquee)
   // ---------------------------------------------------------------------------
   {
-    id: 'tmpl-asymmetric',
-    name: '12. Asymmetric',
-    tag: 'Bất Đối Xứng • Pastel Gradient',
-    badgeColor: 'bg-rose-400/20 text-rose-300 border-rose-400/40',
-    description: 'Câu hỏi lệch trái, Ảnh minh họa lệch phải, 3 đáp án A/B/C so le bất đối xứng tạo nên nhịp điệu thị giác ấn tượng.',
-    icon: '🎨',
-    previewGradient: 'linear-gradient(135deg, #fbcfe8 0%, #c4b5fd 50%, #93c5fd 100%)',
-    accentColors: ['#f472b6', '#a78bfa', '#60a5fa'],
+    id: 'tmpl-retro-synthwave-arcade',
+    name: '07. Retro Synthwave Arcade',
+    tag: 'Nostalgia 80s • Arcade Marquee',
+    badgeColor: 'bg-fuchsia-500/20 text-fuchsia-300 border-fuchsia-500/40',
+    description: 'Bảng hiệu Marquee rực rỡ; Khối hologram và đồng hồ LED điện tử màu hổ phách; 3 nút bấm máy game thẳng đứng.',
+    icon: '🕹️',
+    previewGradient: 'linear-gradient(135deg, #180026 0%, #2e0854 50%, #4a0e4e 100%)',
+    accentColors: ['#ec4899', '#06b6d4', '#f59e0b'],
     branding: {
       colors: {
-        primary: '#a855f7',
-        secondary: '#f472b6',
-        accent: '#60a5fa',
-        background: '#fdf4ff',
-        cardBg: '#ffffff',
-        text: '#1e1b4b',
-        correct: '#15803d',
-        wrong: '#dc2626',
-        border: '#f5d0fe'
+        primary: '#ec4899',
+        secondary: '#06b6d4',
+        accent: '#f59e0b',
+        background: '#180026',
+        cardBg: '#2e0854',
+        text: '#ffffff',
+        correct: '#06b6d4',
+        wrong: '#ef4444',
+        border: '#ec4899'
       }
     },
     template: {
-      id: 'tmpl-asymmetric',
-      name: 'Asymmetric',
-      layoutType: 'split-modern',
+      id: 'tmpl-retro-synthwave-arcade',
+      name: 'Retro Synthwave Arcade',
+      layoutType: 'retro-arcade',
       illustrationLayout: 'single',
       answerLayout: 'vertical-list',
       countdownStyle: 'pill-timer',
-      transitionType: 'zoom',
+      transitionType: 'pop',
       timing: {
         countdownSeconds: 5,
         revealSeconds: 3,
@@ -1668,81 +996,85 @@ export const TEMPLATE_LIBRARY: LayoutTemplateItem[] = [
       components: {
         background: {
           x: 0, y: 0, width: 100, height: 100,
-          type: 'gradient',
-          backgroundColor: '#fdf4ff',
-          secondaryColor: '#eff6ff',
-          gradientAngle: 120
+          type: 'neon',
+          neonPresetId: 'grid-wave',
+          neonSpeed: 1.2,
+          neonIntensity: 1.1,
+          neonColor1: '#ec4899',
+          neonColor2: '#06b6d4',
+          neonColor3: '#3b0764',
+          backgroundColor: '#180026'
         },
         quizTitle: {
-          x: 5, y: 5, width: 90, height: 5,
+          x: 6, y: 4, width: 88, height: 6,
           enabled: true,
           fontFamily: 'Montserrat, sans-serif',
           fontSize: 17,
           fontWeight: '900',
-          color: '#6b21a8',
-          backgroundColor: '#fae8ff',
-          borderRadius: 16,
-          borderWidth: 1.5,
-          borderColor: '#e879f9'
+          color: '#ec4899',
+          backgroundColor: 'rgba(236, 72, 153, 0.15)',
+          borderRadius: 12,
+          borderWidth: 2,
+          borderColor: '#ec4899'
         },
         questionNumber: {
-          x: 5, y: 11, width: 40, height: 4,
-          format: 'q-n',
+          x: 6, y: 11, width: 88, height: 4,
+          format: 'câu-n',
           fontFamily: 'Montserrat, sans-serif',
           fontSize: 13,
           fontWeight: '800',
-          color: '#a855f7'
-        },
-        countdown: {
-          x: 55, y: 11, width: 40, height: 5,
-          countdownStyle: 'pill-timer',
-          strokeWidth: 2,
-          color: '#a855f7',
-          warningColor: '#dc2626',
-          fontSize: 16,
-          fontWeight: '800'
+          color: '#06b6d4'
         },
         questionBox: {
-          x: 5, y: 17, width: 55, height: 24,
+          x: 6, y: 15, width: 88, height: 20,
           shape: 'rounded',
-          borderRadius: 24,
-          borderWidth: 2,
-          borderColor: '#e879f9',
-          backgroundColor: '#ffffff',
-          bgOpacity: 0.98,
-          color: '#1e1b4b',
-          textColor: '#1e1b4b',
+          borderRadius: 16,
+          borderWidth: 2.5,
+          borderColor: '#06b6d4',
+          backgroundColor: 'rgba(46, 8, 84, 0.92)',
+          bgOpacity: 0.92,
+          color: '#ffffff',
+          textColor: '#ffffff',
           fontFamily: 'Be Vietnam Pro, sans-serif',
-          fontSize: 21,
-          fontWeight: '700',
-          boxShadow: '0 10px 24px rgba(168, 85, 247, 0.12)',
+          fontSize: 23,
+          fontWeight: '800',
+          boxShadow: '0 0 20px rgba(6, 182, 212, 0.3)',
           padding: 16,
           animation: 'pop'
         },
         illustration: {
-          x: 63, y: 17, width: 32, height: 24,
-          borderRadius: 20,
+          x: 34, y: 37, width: 32, height: 15,
+          borderRadius: 12,
           borderWidth: 2,
-          borderColor: '#93c5fd',
+          borderColor: '#ec4899',
           objectFit: 'cover'
         },
+        countdown: {
+          x: 50, y: 54, width: 50, height: 8,
+          countdownStyle: 'pill-timer',
+          strokeWidth: 2,
+          color: '#f59e0b',
+          warningColor: '#ef4444',
+          fontSize: 22,
+          fontWeight: '900'
+        },
         answerButtons: {
-          x: 5, y: 44, width: 90, height: 38,
-          shape: 'pill',
-          layoutComposition: 'asymmetric',
-          optionBadgeShape: 'pill',
+          x: 6, y: 64, width: 88, height: 24,
+          shape: 'rounded',
+          layoutComposition: 'stacked',
+          optionBadgeShape: 'circle',
           readTts: true,
-          borderRadius: 9999,
-          borderWidth: 1.5,
-          borderColor: '#f5d0fe',
-          backgroundColor: '#ffffff',
-          bgOpacity: 0.98,
-          color: '#1e1b4b',
-          textColor: '#1e1b4b',
+          gap: 10,
+          borderRadius: 16,
+          borderWidth: 2,
+          borderColor: '#ec4899',
+          backgroundColor: 'rgba(46, 8, 84, 0.92)',
+          bgOpacity: 0.92,
+          color: '#ffffff',
+          textColor: '#ffffff',
           fontFamily: 'Be Vietnam Pro, sans-serif',
-          fontSize: 17,
+          fontSize: 18,
           fontWeight: '700',
-          boxShadow: '0 6px 18px rgba(168, 85, 247, 0.1)',
           padding: 12,
           animation: 'slide-up'
         },
@@ -1751,19 +1083,18 @@ export const TEMPLATE_LIBRARY: LayoutTemplateItem[] = [
           readTts: true,
           displayDurationSec: 3.0,
           showIcon: true,
-          x: 5, y: 84, width: 90, height: 11,
+          x: 6, y: 89, width: 88, height: 8,
           shape: 'rounded',
-          borderRadius: 18,
+          borderRadius: 12,
           borderWidth: 1.5,
-          borderColor: '#86efac',
-          backgroundColor: '#ffffff',
-          color: '#14532d',
-          textColor: '#14532d',
+          borderColor: '#06b6d4',
+          backgroundColor: '#180026',
+          color: '#06b6d4',
+          textColor: '#06b6d4',
           fontFamily: 'Be Vietnam Pro, sans-serif',
           fontSize: 14,
-          fontWeight: '500',
-          boxShadow: '0 8px 20px rgba(0, 0, 0, 0.08)',
-          padding: 12
+          fontWeight: '600',
+          padding: 10
         }
       }
     }
@@ -1771,7 +1102,8 @@ export const TEMPLATE_LIBRARY: LayoutTemplateItem[] = [
 ];
 
 export function validateAndSanitizeTemplate(template: VideoTemplate, fallback?: VideoTemplate): VideoTemplate {
-  const safeFallback = fallback || TEMPLATE_LIBRARY[0].template;
+  const defaultItem = TEMPLATE_LIBRARY.find(t => t.id === 'tmpl-gameshow-pop-sticker') || TEMPLATE_LIBRARY[0];
+  const safeFallback = fallback || defaultItem.template;
   if (!template || typeof template !== 'object') {
     return JSON.parse(JSON.stringify(safeFallback));
   }

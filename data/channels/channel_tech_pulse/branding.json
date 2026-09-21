@@ -8,14 +8,14 @@
     "avatarUrl": "/assets/default_avatar_cyber.svg"
   },
   "colors": {
-    "primary": "#ffde59",
-    "secondary": "#2563eb",
-    "accent": "#ff007f",
-    "background": "#fffbeb",
-    "cardBg": "#ffffff",
-    "text": "#111827",
-    "correct": "#15803d",
-    "wrong": "#dc2626",
+    "primary": "#facc15",
+    "secondary": "#f43f5e",
+    "accent": "#06b6d4",
+    "background": "#3b0764",
+    "cardBg": "#facc15",
+    "text": "#000000",
+    "correct": "#22c55e",
+    "wrong": "#ef4444",
     "textMuted": "#64748b"
   },
   "fonts": {

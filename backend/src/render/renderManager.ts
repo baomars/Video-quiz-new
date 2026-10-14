@@ -651,8 +651,9 @@ export class RenderManager {
 
   private async processRenderJob(jobId: string, params: RenderRequestParams): Promise<void> {
     const job = this.jobs.get(jobId)!;
-    const { channel, template, quiz, language } = params;
-    const langConfig = channel.languages[language] || channel.languages.vi;
+    const { channel, template, quiz } = params;
+    const language = params.language || quiz.language || 'vi';
+    const langConfig = channel.languages?.[language] || channel.languages?.vi || (channel.languages ? Object.values(channel.languages)[0] : undefined) || { voice: 'Hải Đăng' };
     const renderJobStartTime = Date.now();
 
     // =========================================================================
@@ -707,97 +708,106 @@ export class RenderManager {
     this.completeStage(job, 'stage_1_prepare', 'Tài nguyên hình ảnh đã sẵn sàng.');
 
     // =========================================================================
-    // STAGE 2: Tạo giọng đọc & Đồng bộ TTS (10% -> 25%)
+    // STAGE 2: Tạo giọng đọc & Đồng bộ TTS (10% -> 25%) - 100% Tự động & Tuần tự
     // =========================================================================
-    this.startStage(job, 'stage_2_tts', `Đang tạo giọng đọc VieNeu AI cho ${quiz.questions.length} câu hỏi (${langConfig.voice})...`);
+    this.startStage(job, 'stage_2_tts', `Đang tự động tạo giọng đọc VieNeu AI cho ${quiz.questions.length} câu hỏi (${langConfig.voice || 'Hải Đăng'})...`);
 
     const ttsMap: Record<string, QuestionTTSData> = {};
     let ttsCompletedCount = 0;
-
-    // Process questions in parallel chunks of 3 (Question TTS + Answer TTS + Explanation TTS concurrently)
-    const chunkSize = 3;
     const answerTtsEnabled = (template.components.answerButtons as any)?.readTts !== false &&
       (langConfig?.readAnswer !== false);
     const explanationTtsEnabled = template.components.explanation?.readTts !== false;
 
-    for (let chunkIdx = 0; chunkIdx < quiz.questions.length; chunkIdx += chunkSize) {
-      const chunk = quiz.questions.slice(chunkIdx, chunkIdx + chunkSize);
-      await Promise.all(
-        chunk.map(async (q, subIdx) => {
-          const i = chunkIdx + subIdx;
-          const qData: QuestionTTSData = {};
-          const revealPrefix = langConfig.revealScript || (language === 'vi' ? 'Đáp án chính xác là' : 'The correct answer is');
-          const answerOption = (q.options && q.options[q.correctAnswer])
-            ? `${q.correctAnswer}. ${q.options[q.correctAnswer]}`
-            : q.correctAnswer;
-          const answerText = `${revealPrefix} ${answerOption}`.trim();
-          const expText = (q.explanation || '').trim();
-
-          try {
-            // Concurrently generate Question, Answer, and Explanation TTS
-            const ttsPromises: [Promise<any>, Promise<any> | Promise<null>, Promise<any> | Promise<null>] = [
-              // 1. Question Voiceover
-              this.ttsProvider.generate({
-                text: q.question,
-                voice: langConfig.voice,
-                rate: langConfig.rate,
-                pitch: langConfig.pitch,
-                volume: langConfig.volume,
-                channelId: channel.id,
-                lang: language
-              }),
-              // 2. Answer TTS (đáp án đúng)
-              answerTtsEnabled
-                ? this.ttsProvider.generate({
-                    text: answerText,
-                    voice: langConfig.voice,
-                    rate: langConfig.rate,
-                    pitch: langConfig.pitch,
-                    volume: langConfig.volume,
-                    channelId: channel.id,
-                    lang: language
-                  })
-                : Promise.resolve(null),
-              // 3. Explanation TTS (đọc giải thích)
-              (explanationTtsEnabled && expText.length > 0)
-                ? this.ttsProvider.generate({
-                    text: expText,
-                    voice: langConfig.voice,
-                    rate: langConfig.rate,
-                    pitch: langConfig.pitch,
-                    volume: langConfig.volume,
-                    channelId: channel.id,
-                    lang: language
-                  })
-                : Promise.resolve(null)
-            ];
-
-            const [qRes, ansRes, expRes] = await Promise.all(ttsPromises);
-
-            if (!qRes || !qRes.url) {
-              throw new Error(`File TTS rỗng cho câu ${i + 1}`);
-            }
-
-            qData.questionUrl = qRes.url;
-            qData.questionDuration = qRes.durationSec;
-
-            if (answerTtsEnabled && ansRes && ansRes.url) {
-              qData.revealUrl = ansRes.url;
-              qData.revealDuration = ansRes.durationSec;
-            }
-
-            if (explanationTtsEnabled && expRes && expRes.url) {
-              qData.explanationUrl = expRes.url;
-              qData.explanationDuration = expRes.durationSec;
-            }
-
-            ttsMap[q.id] = qData;
-            ttsCompletedCount++;
-          } catch (ttsErr: any) {
-            throw new Error(`Không thể tạo giọng đọc TTS cho câu hỏi #${i + 1} ("${q.question}"): ${ttsErr.message}`);
+    // Helper tự động tạo TTS an toàn: có bộ đệm cache, tự động thử lại và fallback giọng mặc định
+    const generateSafeTTS = async (text: string, role: string, qIndex: number): Promise<any> => {
+      let attempts = 0;
+      let lastErr: any = null;
+      while (attempts < 2) {
+        attempts++;
+        try {
+          const res = await this.ttsProvider.generate({
+            text,
+            voice: langConfig.voice || 'Hải Đăng',
+            rate: langConfig.rate,
+            pitch: langConfig.pitch,
+            volume: langConfig.volume,
+            channelId: channel.id,
+            lang: language
+          });
+          if (res && res.url) {
+            return res;
           }
-        })
+        } catch (err: any) {
+          lastErr = err;
+          this.addLog(job, 'warn', 'stage_2_tts', `Lần thử ${attempts} tạo TTS (${role}) câu ${qIndex + 1}: ${err.message}`);
+          await new Promise(r => setTimeout(r, 500));
+        }
+      }
+
+      // Nếu giọng tùy biến / cloned voice gặp sự cố, tự động fallback về giọng chuẩn Hải Đăng
+      if (langConfig.voice && langConfig.voice !== 'Hải Đăng') {
+        try {
+          this.addLog(job, 'warn', 'stage_2_tts', `Fallback giọng chuẩn 'Hải Đăng' cho (${role}) câu ${qIndex + 1}...`);
+          const fbRes = await this.ttsProvider.generate({
+            text,
+            voice: 'Hải Đăng',
+            rate: langConfig.rate,
+            lang: language
+          });
+          if (fbRes && fbRes.url) {
+            return fbRes;
+          }
+        } catch (fbErr: any) {
+          lastErr = fbErr;
+        }
+      }
+
+      throw new Error(`Không thể tạo giọng đọc (${role}) câu #${qIndex + 1}: ${lastErr?.message || 'Lỗi không xác định'}`);
+    };
+
+    for (let i = 0; i < quiz.questions.length; i++) {
+      const q = quiz.questions[i];
+      const qData: QuestionTTSData = {};
+      const revealPrefix = langConfig.revealScript || (language === 'vi' ? 'Đáp án chính xác là' : 'The correct answer is');
+      const answerOption = (q.options && q.options[q.correctAnswer])
+        ? `${q.correctAnswer}. ${q.options[q.correctAnswer]}`
+        : q.correctAnswer;
+      const answerText = `${revealPrefix} ${answerOption}`.trim();
+      const expText = (q.explanation || '').trim();
+
+      const shortQ = q.question.length > 32 ? q.question.substring(0, 32) + '...' : q.question;
+      this.updateStageProgress(
+        job,
+        'stage_2_tts',
+        Math.round((i / quiz.questions.length) * 100),
+        `Đang tạo giọng đọc câu ${i + 1}/${quiz.questions.length}: "${shortQ}"`
       );
+
+      // 1. Question Voiceover
+      const qRes = await generateSafeTTS(q.question, 'Câu hỏi', i);
+      qData.questionUrl = qRes.url;
+      qData.questionDuration = qRes.durationSec;
+
+      // 2. Answer TTS (đáp án đúng)
+      if (answerTtsEnabled) {
+        const ansRes = await generateSafeTTS(answerText, 'Đáp án', i);
+        if (ansRes && ansRes.url) {
+          qData.revealUrl = ansRes.url;
+          qData.revealDuration = ansRes.durationSec;
+        }
+      }
+
+      // 3. Explanation TTS (đọc giải thích)
+      if (explanationTtsEnabled && expText.length > 0) {
+        const expRes = await generateSafeTTS(expText, 'Giải thích', i);
+        if (expRes && expRes.url) {
+          qData.explanationUrl = expRes.url;
+          qData.explanationDuration = expRes.durationSec;
+        }
+      }
+
+      ttsMap[q.id] = qData;
+      ttsCompletedCount++;
 
       this.updateStageProgress(
         job,

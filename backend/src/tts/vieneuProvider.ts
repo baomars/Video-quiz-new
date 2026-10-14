@@ -27,11 +27,18 @@ export class VieNeuProvider implements ITTSProvider {
   private pythonProcess: ChildProcess | null = null;
   private isReady: boolean = false;
   private isVieNeuNative: boolean = false;
-  private pendingRequests: Array<{
+  private commandQueue: Array<{
+    cmd: Record<string, any>;
+    timeoutMs: number;
+    resolve: (val: any) => void;
+    reject: (err: any) => void;
+  }> = [];
+  private activeCommand: {
     resolve: (val: any) => void;
     reject: (err: any) => void;
     cmd: string;
-  }> = [];
+    timer: NodeJS.Timeout;
+  } | null = null;
   private lineBuffer: string = '';
   private clonedVoices: Map<string, ClonedVoiceRecord> = new Map();
   private clonedVoicesPath: string;
@@ -106,11 +113,17 @@ export class VieNeuProvider implements ITTSProvider {
       console.warn(`[VieNeuProvider] Tiến trình Python bridge đã thoát (code: ${code}, signal: ${signal})`);
       this.isReady = false;
       this.pythonProcess = null;
-      // Reject any pending requests
-      while (this.pendingRequests.length > 0) {
-        const req = this.pendingRequests.shift();
-        req?.reject(new Error(`Python bridge process exited unexpectedly (code: ${code})`));
+
+      if (this.activeCommand) {
+        clearTimeout(this.activeCommand.timer);
+        this.activeCommand.reject(new Error(`Python bridge process exited unexpectedly (code: ${code})`));
+        this.activeCommand = null;
       }
+      while (this.commandQueue.length > 0) {
+        const item = this.commandQueue.shift();
+        item?.reject(new Error(`Python bridge process exited unexpectedly (code: ${code})`));
+      }
+
       // Auto-restart after 2 seconds
       setTimeout(() => {
         if (!this.pythonProcess) {
@@ -139,17 +152,24 @@ export class VieNeuProvider implements ITTSProvider {
           this.isReady = true;
           this.isVieNeuNative = !!msg.vieneu_ready;
           console.log(`[VieNeuProvider] Bridge đã sẵn sàng! Chế độ: ${this.isVieNeuNative ? 'VieNeu Native (Colab)' : 'Local Fallback'}`);
+          this.processNextCommand();
           continue;
         }
 
-        // Process response for next waiting request in FIFO
-        if (this.pendingRequests.length > 0) {
-          const req = this.pendingRequests.shift()!;
+        // Response belongs to currently active serialized command
+        if (this.activeCommand) {
+          const req = this.activeCommand;
+          clearTimeout(req.timer);
+          this.activeCommand = null;
+
           if (msg.success) {
             req.resolve(msg);
           } else {
             req.reject(new Error(msg.error || 'Python bridge returned error'));
           }
+
+          // Trigger next command in queue
+          this.processNextCommand();
         }
       } catch (err) {
         console.error('[VieNeuProvider] Không thể parse stdout JSON:', trimmed, err);
@@ -157,35 +177,50 @@ export class VieNeuProvider implements ITTSProvider {
     }
   }
 
-  private sendCommand(cmd: Record<string, any>, timeoutMs: number = 60000): Promise<any> {
+  private sendCommand(cmd: Record<string, any>, timeoutMs: number = 90000): Promise<any> {
     return new Promise((resolve, reject) => {
-      if (!this.pythonProcess || !this.pythonProcess.stdin?.writable) {
-        return reject(new Error('Python bridge process is not running or stdin not writable'));
-      }
-
-      const timer = setTimeout(() => {
-        const idx = this.pendingRequests.findIndex(r => r.resolve === resolve);
-        if (idx !== -1) {
-          this.pendingRequests.splice(idx, 1);
-          reject(new Error(`Timeout (${timeoutMs}ms) chờ phản hồi từ VieNeu Python bridge`));
-        }
-      }, timeoutMs);
-
-      this.pendingRequests.push({
-        resolve: (val) => {
-          clearTimeout(timer);
-          resolve(val);
-        },
-        reject: (err) => {
-          clearTimeout(timer);
-          reject(err);
-        },
-        cmd: cmd.cmd
-      });
-
-      const payload = JSON.stringify(cmd) + '\n';
-      this.pythonProcess.stdin.write(payload);
+      this.commandQueue.push({ cmd, timeoutMs, resolve, reject });
+      this.processNextCommand();
     });
+  }
+
+  private processNextCommand() {
+    if (this.activeCommand !== null) {
+      return; // Another command is currently executing in Python, wait for completion
+    }
+    if (this.commandQueue.length === 0) {
+      return; // Nothing pending
+    }
+    if (!this.pythonProcess || !this.pythonProcess.stdin?.writable) {
+      if (!this.isReady) {
+        // Bridge might still be initializing, retry in 300ms
+        setTimeout(() => this.processNextCommand(), 300);
+        return;
+      }
+      const item = this.commandQueue.shift();
+      item?.reject(new Error('Python bridge process is not running or stdin not writable'));
+      return;
+    }
+
+    const next = this.commandQueue.shift()!;
+    const timer = setTimeout(() => {
+      if (this.activeCommand) {
+        const timedOut = this.activeCommand;
+        this.activeCommand = null;
+        timedOut.reject(new Error(`Timeout (${next.timeoutMs}ms) chờ phản hồi từ VieNeu Python bridge [${next.cmd.cmd}]`));
+        this.processNextCommand();
+      }
+    }, next.timeoutMs);
+
+    this.activeCommand = {
+      resolve: next.resolve,
+      reject: next.reject,
+      cmd: next.cmd.cmd,
+      timer
+    };
+
+    const payload = JSON.stringify(next.cmd) + '\n';
+    this.pythonProcess.stdin.write(payload);
   }
 
   public computeHash(req: TTSRequest): string {

@@ -905,22 +905,25 @@ export const RenderTab: React.FC<RenderTabProps> = ({
         </div>
 
         {/* ----------------------------------------------------------------- */}
-        {/* NEW FEATURE: TTS PRE-GENERATION QUEUE WIDGET                     */}
+        {/* FEATURE: TTS PREVIEW & PRE-GENERATION (OPTIONAL)                  */}
         {/* ----------------------------------------------------------------- */}
-        <div className="bg-slate-950/80 border border-amber-500/30 rounded-xl p-4 space-y-3">
+        <div className="bg-slate-950/80 border border-slate-800/80 hover:border-amber-500/30 rounded-xl p-4 space-y-3 transition">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center font-bold">
+              <div className="w-8 h-8 rounded-lg bg-amber-500/15 text-amber-400 border border-amber-500/25 flex items-center justify-center font-bold">
                 <AudioWaveform size={18} />
               </div>
               <div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-black text-white uppercase tracking-wider">
-                    Hàng Đợi Tạo Giọng Đọc Trước (VieNeu TTS Queue)
+                    Giọng Đọc AI (VieNeu TTS v3 Turbo)
+                  </span>
+                  <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-sky-500/20 text-sky-400 border border-sky-500/30">
+                    TỰ ĐỘNG KHI RENDER
                   </span>
                   {pregenerateStatus?.status === 'ready' && (
                     <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                      SẴN SÀNG
+                      ĐÃ LƯU CACHE
                     </span>
                   )}
                   {isPregenerating && (
@@ -930,7 +933,7 @@ export const RenderTab: React.FC<RenderTabProps> = ({
                   )}
                 </div>
                 <p className="text-[11px] text-slate-400">
-                  Tiền tạo audio cho toàn bộ câu hỏi giúp tăng tốc độ xuất video và kiểm tra âm thanh trước khi render MP4.
+                  Toàn bộ giọng đọc sẽ được hệ thống <span className="text-amber-400 font-bold">tự động tạo tuần tự và đồng bộ</span> ngay khi bạn bấm nút Render bên dưới (không cần thao tác thủ công). Bạn chỉ bấm nút bên phải nếu muốn nghe thử âm thanh trước.
                 </p>
               </div>
             </div>
@@ -951,17 +954,17 @@ export const RenderTab: React.FC<RenderTabProps> = ({
                 type="button"
                 onClick={handleStartTTSPregenerate}
                 disabled={isPregenerating || isRendering || poolCount === 0}
-                className="px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-xs transition flex items-center gap-1.5 shadow-md shadow-amber-500/20 disabled:opacity-50"
+                className="px-3.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-amber-500/40 text-amber-300 font-bold text-xs transition flex items-center gap-1.5 shadow-sm disabled:opacity-50"
               >
                 {isPregenerating ? (
                   <>
-                    <Loader2 size={13} className="animate-spin text-slate-950" />
+                    <Loader2 size={13} className="animate-spin text-amber-400" />
                     <span>Đang tạo TTS ({pregenerateStatus?.percent || 0}%)...</span>
                   </>
                 ) : (
                   <>
-                    <AudioWaveform size={13} />
-                    <span>Tạo giọng đọc trước (Pre-generate)</span>
+                    <Headphones size={13} />
+                    <span>Nghe thử toàn bộ âm thanh (Tùy chọn)</span>
                   </>
                 )}
               </button>

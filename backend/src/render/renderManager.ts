@@ -6,7 +6,7 @@ import { NativeQuizRenderer } from './native/nativeQuizRenderer.js';
 import { NativeAudioMixer } from './native/audioMixer.js';
 import { Channel, VideoTemplate, Quiz, LanguageCode, VideoCompositionProps } from '../../../remotion/types/index.js';
 import { generateDefaultFileName, sanitizeCustomFileName } from '../../../remotion/utils/fileNameHelper.js';
-import { EdgeTTSProvider } from '../tts/ttsProvider.js';
+import { ITTSProvider } from '../tts/ttsProvider.js';
 import { ImageProcessor } from '../images/imageProcessor.js';
 import { TimelineEngine, QuestionTTSData } from '../timeline/timelineEngine.js';
 import { BatchConfig, generateBatchQuestionSets, allocateBatchBackgrounds } from '../quiz/quizBatchEngine.js';
@@ -170,7 +170,7 @@ export interface BatchRenderRequestParams {
 
 const PIPELINE_STAGES_CONFIG: Array<{ id: string; name: string; minProgress: number; maxProgress: number }> = [
   { id: 'stage_1_prepare', name: '1. Chuẩn bị tài nguyên & Kiểm tra', minProgress: 0, maxProgress: 10 },
-  { id: 'stage_2_tts', name: '2. Tạo giọng đọc TTS (Edge-TTS)', minProgress: 10, maxProgress: 25 },
+  { id: 'stage_2_tts', name: '2. Tạo giọng đọc TTS (VieNeu AI v3)', minProgress: 10, maxProgress: 25 },
   { id: 'stage_3_timeline', name: '3. Tính toán Timeline & Đóng gói', minProgress: 25, maxProgress: 35 },
   { id: 'stage_4_render_frames', name: '4. Render khung hình Video (Chromium)', minProgress: 35, maxProgress: 75 },
   { id: 'stage_5_process_audio', name: '5. Xử lý & Hòa âm Audio (TTS, SFX, BGM)', minProgress: 75, maxProgress: 88 },
@@ -182,7 +182,7 @@ export class RenderManager {
   private jobs: Map<string, RenderJob> = new Map();
   private batchJobs: Map<string, BatchRenderJob> = new Map();
   private rendersDir: string;
-  private ttsProvider: EdgeTTSProvider;
+  private ttsProvider: ITTSProvider;
   private imageProcessor: ImageProcessor;
   private timelineEngine: TimelineEngine;
   private cachedNvencSupport?: boolean;
@@ -191,7 +191,7 @@ export class RenderManager {
 
   constructor(
     rendersDir: string,
-    ttsProvider: EdgeTTSProvider,
+    ttsProvider: ITTSProvider,
     imageProcessor: ImageProcessor
   ) {
     this.rendersDir = rendersDir;
@@ -709,7 +709,7 @@ export class RenderManager {
     // =========================================================================
     // STAGE 2: Tạo giọng đọc & Đồng bộ TTS (10% -> 25%)
     // =========================================================================
-    this.startStage(job, 'stage_2_tts', `Đang tạo giọng đọc Edge-TTS cho ${quiz.questions.length} câu hỏi (${langConfig.voice})...`);
+    this.startStage(job, 'stage_2_tts', `Đang tạo giọng đọc VieNeu AI cho ${quiz.questions.length} câu hỏi (${langConfig.voice})...`);
 
     const ttsMap: Record<string, QuestionTTSData> = {};
     let ttsCompletedCount = 0;

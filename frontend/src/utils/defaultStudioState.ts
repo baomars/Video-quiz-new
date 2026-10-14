@@ -54,7 +54,7 @@ export const DEFAULT_FALLBACK_CHANNEL: Channel = {
   languages: {
     vi: {
       language: 'vi',
-      voice: 'vi-VN-HoaiMyNeural',
+      voice: 'Hải Đăng',
       rate: '+0%',
       pitch: '+0Hz',
       volume: '+0%',
@@ -65,7 +65,7 @@ export const DEFAULT_FALLBACK_CHANNEL: Channel = {
     },
     en: {
       language: 'en',
-      voice: 'en-US-JennyNeural',
+      voice: 'en-US-Jenny',
       rate: '+0%',
       pitch: '+0Hz',
       volume: '+0%',

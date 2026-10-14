@@ -5,7 +5,9 @@ import fs from 'fs';
 import multer from 'multer';
 import { ChannelManager } from './channels/channelManager.js';
 import { QuizManager } from './quiz/quizManager.js';
-import { EdgeTTSProvider } from './tts/ttsProvider.js';
+import { VieNeuProvider } from './tts/vieneuProvider.js';
+import { VoiceStudioService } from './tts/voiceStudio.js';
+import { TTSPregenerateQueue } from './tts/pregenerateQueue.js';
 import { ImageProcessor } from './images/imageProcessor.js';
 import { TimelineEngine } from './timeline/timelineEngine.js';
 import { RenderManager } from './render/renderManager.js';
@@ -23,6 +25,11 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 const rootDir = process.cwd();
 const dataDir = path.join(rootDir, 'data');
 const channelsDir = path.join(dataDir, 'channels');
+const voicesDir = path.join(dataDir, 'voices');
+const voicesSamplesDir = path.join(voicesDir, 'samples');
+if (!fs.existsSync(voicesSamplesDir)) {
+  fs.mkdirSync(voicesSamplesDir, { recursive: true });
+}
 const publicDir = path.join(rootDir, 'public');
 const cacheDir = path.join(publicDir, 'cache');
 const ttsCacheDir = path.join(cacheDir, 'tts');
@@ -42,7 +49,9 @@ const rendersDir = path.join(dataDir, 'renders');
 // Initialize Services
 const channelManager = new ChannelManager(channelsDir);
 const quizManager = new QuizManager(channelsDir);
-const ttsProvider = new EdgeTTSProvider(ttsCacheDir);
+const ttsProvider = new VieNeuProvider(ttsCacheDir, voicesDir);
+const voiceStudio = new VoiceStudioService(ttsProvider, voicesDir);
+const ttsQueue = new TTSPregenerateQueue(ttsProvider);
 const imageProcessor = new ImageProcessor(imageCacheDir, illustrationsUploadDir);
 const timelineEngine = new TimelineEngine(30);
 const renderManager = new RenderManager(rendersDir, ttsProvider, imageProcessor);
@@ -59,6 +68,7 @@ app.use('/assets', express.static(path.join(publicDir, 'assets')));
 app.use('/assets', express.static(path.join(rootDir, 'assets')));
 app.use('/cache', express.static(cacheDir));
 app.use('/uploads', express.static(uploadDir));
+app.use('/uploads/voices', express.static(voicesSamplesDir));
 app.use('/renders', express.static(rendersDir));
 
 // Health check routes
@@ -161,7 +171,7 @@ app.post('/api/quizzes', (req, res) => {
   }
 });
 
-// --- TTS Endpoints ---
+// --- VieNeu TTS & Voice Studio Endpoints ---
 app.get('/api/tts/voices', async (req, res) => {
   try {
     const lang = req.query.lang as string | undefined;
@@ -172,23 +182,109 @@ app.get('/api/tts/voices', async (req, res) => {
   }
 });
 
-app.post('/api/tts/preview', async (req, res) => {
+app.get('/api/voices', async (req, res) => {
   try {
-    const { text, voice, rate, pitch, volume } = req.body;
+    const lang = req.query.lang as string | undefined;
+    const voices = await ttsProvider.listVoices(lang);
+    const cloned = voiceStudio.listClonedVoices();
+    res.json({
+      success: true,
+      voices,
+      cloned,
+      vieneuReady: ttsProvider.isVieNeuModelLoaded()
+    });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.post('/api/voices/clone', upload.single('sample'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, error: 'Chưa chọn file âm thanh mẫu để nhân bản giọng.' });
+    }
+    const { name, gender, locale, description } = req.body;
+    if (!name || !name.trim()) {
+      return res.status(400).json({ success: false, error: 'Vui lòng nhập tên cho giọng đọc nhân bản.' });
+    }
+
+    const clonedRecord = await voiceStudio.cloneVoice({
+      name: name.trim(),
+      gender: gender || 'Male',
+      locale: locale || 'vi-VN',
+      description: description || 'Giọng nhân bản AI',
+      buffer: req.file.buffer,
+      originalFileName: req.file.originalname
+    });
+
+    res.json({ success: true, voice: clonedRecord });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.delete('/api/voices/clone/:id', (req, res) => {
+  try {
+    const ok = voiceStudio.deleteVoice(req.params.id);
+    if (!ok) {
+      return res.status(404).json({ success: false, error: 'Không tìm thấy giọng nhân bản để xóa.' });
+    }
+    res.json({ success: true, message: `Đã xóa giọng nhân bản ${req.params.id}` });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.post(['/api/tts/preview', '/api/voices/preview'], async (req, res) => {
+  try {
+    const { text, voice, rate, pitch, volume, speed } = req.body;
     if (!text) {
       return res.status(400).json({ success: false, error: 'Text required' });
     }
     const result = await ttsProvider.generate({
       text,
-      voice: voice || 'vi-VN-HoaiMyNeural',
+      voice: voice || 'Hải Đăng',
       rate: rate || '+0%',
       pitch: pitch || '+0Hz',
-      volume: volume || '+0%'
+      volume: volume || '+0%',
+      speed: typeof speed === 'number' ? speed : undefined
     });
     res.json({ success: true, result });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message });
   }
+});
+
+// --- TTS Pre-generation Queue Endpoints ---
+app.post('/api/tts/pregenerate', async (req, res) => {
+  try {
+    const { quiz, channel, template, language } = req.body;
+    if (!quiz || !quiz.questions || quiz.questions.length === 0) {
+      return res.status(400).json({ success: false, error: 'Danh sách câu hỏi trống, không thể tạo TTS trước.' });
+    }
+    if (!channel || !template) {
+      return res.status(400).json({ success: false, error: 'Thiếu thông tin channel hoặc template.' });
+    }
+
+    const pregenerateId = await ttsQueue.startPregeneration({
+      quiz,
+      channel,
+      template,
+      language: language || quiz.language || 'vi'
+    });
+
+    res.json({ success: true, pregenerateId });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.get('/api/tts/pregenerate/status/:jobId', (req, res) => {
+  const job = ttsQueue.getJob(req.params.jobId);
+  if (!job) {
+    return res.status(404).json({ success: false, error: 'Pregenerate TTS job not found' });
+  }
+  res.json({ success: true, job });
 });
 
 // --- Image & Upload Endpoints ---

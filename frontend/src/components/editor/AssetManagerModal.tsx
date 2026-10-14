@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Channel, VideoTemplate } from '../../../../remotion/types/index';
+import { Channel, VideoTemplate, LanguageCode } from '../../../../remotion/types/index';
 import {
   Dialog,
   DialogContent,
@@ -16,18 +16,23 @@ import {
   Play,
   Check,
   Sparkles,
-  Layers
+  Layers,
+  Mic
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { uploadAudio, uploadImage } from '../../services/api';
+import { LanguageTtsTab } from './LanguageTtsTab';
 
 interface AssetManagerModalProps {
   isOpen: boolean;
   onClose: () => void;
   channel: Channel;
   template: VideoTemplate;
+  language?: LanguageCode;
+  onLanguageChange?: (lang: LanguageCode) => void;
   onChannelChange: (updated: Channel) => void;
   onTemplateChange: (updated: VideoTemplate) => void;
+  initialTab?: 'voice_studio' | 'sfx' | 'backgrounds' | 'brand';
 }
 
 export const AssetManagerModal: React.FC<AssetManagerModalProps> = ({
@@ -35,10 +40,13 @@ export const AssetManagerModal: React.FC<AssetManagerModalProps> = ({
   onClose,
   channel,
   template,
+  language = 'vi',
+  onLanguageChange = () => {},
   onChannelChange,
-  onTemplateChange
+  onTemplateChange,
+  initialTab = 'voice_studio'
 }) => {
-  const [activeTab, setActiveTab] = useState<'sfx' | 'bgm' | 'backgrounds' | 'brand'>('sfx');
+  const [activeTab, setActiveTab] = useState<'voice_studio' | 'sfx' | 'backgrounds' | 'brand'>(initialTab);
   const bgFileInputRef = useRef<HTMLInputElement | null>(null);
   const logoFileInputRef = useRef<HTMLInputElement | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -134,8 +142,9 @@ export const AssetManagerModal: React.FC<AssetManagerModalProps> = ({
         </DialogHeader>
 
         {/* Tabs */}
-        <div className="flex items-center gap-2 border-b border-slate-800 pb-2">
+        <div className="flex items-center gap-2 border-b border-slate-800 pb-2 overflow-x-auto scrollbar-none">
           {[
+            { id: 'voice_studio', label: 'Phòng Thu Giọng VieNeu AI', icon: <Mic size={13} /> },
             { id: 'sfx', label: 'SFX Âm Thanh', icon: <Volume2 size={13} /> },
             { id: 'backgrounds', label: 'Ảnh Nền', icon: <ImageIcon size={13} /> },
             { id: 'brand', label: 'Logo & Nhận Diện', icon: <Sparkles size={13} /> }
@@ -143,7 +152,7 @@ export const AssetManagerModal: React.FC<AssetManagerModalProps> = ({
             <button
               key={t.id}
               onClick={() => setActiveTab(t.id as any)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap shrink-0 ${
                 activeTab === t.id
                   ? 'bg-amber-500 text-slate-950 shadow-xs'
                   : 'text-slate-400 hover:text-white bg-slate-900'
@@ -154,6 +163,18 @@ export const AssetManagerModal: React.FC<AssetManagerModalProps> = ({
             </button>
           ))}
         </div>
+
+        {/* Tab 0: Voice Studio */}
+        {activeTab === 'voice_studio' && (
+          <div className="py-2">
+            <LanguageTtsTab
+              channel={channel}
+              activeLanguage={language}
+              onLanguageChange={onLanguageChange}
+              onChannelChange={onChannelChange}
+            />
+          </div>
+        )}
 
         {/* Tab 1: SFX */}
         {activeTab === 'sfx' && (

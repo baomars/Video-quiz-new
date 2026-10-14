@@ -122,7 +122,32 @@ export async function saveQuiz(quiz: Quiz): Promise<Quiz> {
   return data.quiz;
 }
 
-export async function fetchVoices(lang?: string): Promise<any[]> {
+export interface VoiceInfo {
+  id: string;
+  name: string;
+  gender: 'Female' | 'Male';
+  locale: string;
+  region?: string;
+  style?: string;
+  suggestedRole?: string;
+  isCloned?: boolean;
+  sampleUrl?: string;
+}
+
+export interface ClonedVoice {
+  id: string;
+  name: string;
+  gender: 'Female' | 'Male';
+  locale: string;
+  region?: string;
+  style?: string;
+  suggestedRole?: string;
+  sampleUrl: string;
+  durationSec: number;
+  createdAt: string;
+}
+
+export async function fetchVoices(lang?: string): Promise<VoiceInfo[]> {
   try {
     const url = lang ? `${API_BASE}/tts/voices?lang=${lang}` : `${API_BASE}/tts/voices`;
     const res = await fetchWithTimeout(url, {}, 3000);
@@ -131,17 +156,62 @@ export async function fetchVoices(lang?: string): Promise<any[]> {
       return data.voices;
     }
   } catch (err) {
-    console.warn('[API] Failed to fetch voices, using default voice list:', err);
+    console.warn('[API] Failed to fetch voices, using default VieNeu voice list:', err);
   }
   return [
-    { ShortName: 'vi-VN-HoaiMyNeural', DisplayName: 'Hoài My (Nữ)', Locale: 'vi-VN' },
-    { ShortName: 'vi-VN-NamMinhNeural', DisplayName: 'Nam Minh (Nam)', Locale: 'vi-VN' },
-    { ShortName: 'en-US-JennyNeural', DisplayName: 'Jenny (US Female)', Locale: 'en-US' },
-    { ShortName: 'en-US-GuyNeural', DisplayName: 'Guy (US Male)', Locale: 'en-US' }
+    { id: 'Hải Đăng', name: 'Hải Đăng (Nam - Miền Bắc)', gender: 'Male', locale: 'vi-VN', region: 'Bắc', style: 'Chững chạc, truyền cảm', suggestedRole: 'Host đố vui kiến thức' },
+    { id: 'Xuân Vĩnh', name: 'Xuân Vĩnh (Nam - Miền Nam)', gender: 'Male', locale: 'vi-VN', region: 'Nam', style: 'Trầm ấm, gần gũi', suggestedRole: 'Game show, TikTok Shorts' },
+    { id: 'Mai Chi', name: 'Mai Chi (Nữ - Miền Bắc)', gender: 'Female', locale: 'vi-VN', region: 'Bắc', style: 'Dịu dàng, trong trẻo', suggestedRole: 'Kể chuyện, quiz tổng hợp' },
+    { id: 'Thảo Nhi', name: 'Thảo Nhi (Nữ - Miền Nam)', gender: 'Female', locale: 'vi-VN', region: 'Nam', style: 'Tươi vui, năng động', suggestedRole: 'Gen Z quiz, giải trí' },
+    { id: 'Bảo Ngọc', name: 'Bảo Ngọc (Nữ - Miền Trung)', gender: 'Female', locale: 'vi-VN', region: 'Trung', style: 'Mộc mạc, rõ ràng', suggestedRole: 'Văn hóa, lịch sử' },
+    { id: 'Minh Quân', name: 'Minh Quân (Nam - Miền Trung)', gender: 'Male', locale: 'vi-VN', region: 'Trung', style: 'Hào sảng, đĩnh đạc', suggestedRole: 'Phim tài liệu, khoa học' },
+    { id: 'en-US-Jenny', name: 'Jenny (Female - English)', gender: 'Female', locale: 'en-US', region: 'US', style: 'Clear, friendly', suggestedRole: 'English trivia host' },
+    { id: 'en-US-Guy', name: 'Guy (Male - English)', gender: 'Male', locale: 'en-US', region: 'US', style: 'Confident, engaging', suggestedRole: 'English game show host' }
   ];
 }
 
-export async function previewTTS(params: { text: string; voice: string; rate?: string; pitch?: string; volume?: string }) {
+export async function fetchVoiceStudioData(lang?: string): Promise<{
+  voices: VoiceInfo[];
+  cloned: ClonedVoice[];
+  vieneuReady: boolean;
+}> {
+  try {
+    const url = lang ? `${API_BASE}/voices?lang=${lang}` : `${API_BASE}/voices`;
+    const res = await fetchWithTimeout(url, {}, 3500);
+    const data = await res.json();
+    if (data.success) {
+      return {
+        voices: data.voices || [],
+        cloned: data.cloned || [],
+        vieneuReady: !!data.vieneuReady
+      };
+    }
+  } catch (err) {
+    console.warn('[API] Failed to fetch voice studio data:', err);
+  }
+  const fallbackVoices = await fetchVoices(lang);
+  return { voices: fallbackVoices, cloned: [], vieneuReady: false };
+}
+
+export async function cloneVoice(formData: FormData): Promise<ClonedVoice> {
+  const res = await fetch(`${API_BASE}/voices/clone`, {
+    method: 'POST',
+    body: formData
+  });
+  const data = await res.json();
+  if (!data.success) throw new Error(data.error || 'Failed to clone voice');
+  return data.voice;
+}
+
+export async function deleteClonedVoice(id: string): Promise<void> {
+  const res = await fetch(`${API_BASE}/voices/clone/${id}`, {
+    method: 'DELETE'
+  });
+  const data = await res.json();
+  if (!data.success) throw new Error(data.error || 'Failed to delete cloned voice');
+}
+
+export async function previewTTS(params: { text: string; voice: string; rate?: string; pitch?: string; volume?: string; speed?: number }) {
   const res = await fetch(`${API_BASE}/tts/preview`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -150,6 +220,51 @@ export async function previewTTS(params: { text: string; voice: string; rate?: s
   const data = await res.json();
   if (!data.success) throw new Error(data.error || 'Failed to preview TTS');
   return data.result;
+}
+
+export interface TTSPregenerateStatus {
+  jobId: string;
+  status: 'pending' | 'generating' | 'ready' | 'failed';
+  totalItems: number;
+  completedItems: number;
+  failedItems: number;
+  percent: number;
+  currentText?: string;
+  items?: Array<{
+    id: string;
+    type: 'question' | 'answer' | 'explanation';
+    text: string;
+    status: string;
+    url?: string;
+    durationSec?: number;
+    fromCache?: boolean;
+  }>;
+  error?: string;
+  createdAt: string;
+  completedAt?: string;
+}
+
+export async function startTTSPregenerate(params: {
+  quiz: Quiz;
+  channel: Channel;
+  template: VideoTemplate;
+  language?: LanguageCode;
+}): Promise<string> {
+  const res = await fetch(`${API_BASE}/tts/pregenerate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(params)
+  });
+  const data = await res.json();
+  if (!data.success) throw new Error(data.error || 'Failed to start TTS pre-generation');
+  return data.pregenerateId;
+}
+
+export async function getTTSPregenerateStatus(jobId: string): Promise<TTSPregenerateStatus> {
+  const res = await fetch(`${API_BASE}/tts/pregenerate/status/${jobId}`);
+  const data = await res.json();
+  if (!data.success) throw new Error(data.error || 'Failed to get TTS pre-generation status');
+  return data.job;
 }
 
 export async function uploadImage(file: File): Promise<{ originalUrl: string; optimizedUrl: string; width: number; height: number }> {

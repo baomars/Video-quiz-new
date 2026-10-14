@@ -10,7 +10,10 @@ import {
   listBatchRenderJobs,
   fetchBackgrounds,
   uploadBackgroundBatch,
-  uploadImage
+  uploadImage,
+  startTTSPregenerate,
+  getTTSPregenerateStatus,
+  TTSPregenerateStatus
 } from '../../services/api';
 import { NEON_PRESETS } from './InspectorPanel';
 import {
@@ -36,6 +39,7 @@ import {
   Layers,
   Sparkles,
   Play,
+  Pause,
   Shuffle,
   Boxes,
   Gauge,
@@ -49,7 +53,12 @@ import {
   Image as ImageIcon,
   FolderUp,
   Plus,
-  Trash2
+  Trash2,
+  ChevronDown,
+  ChevronUp,
+  AudioWaveform,
+  Headphones,
+  Sliders
 } from 'lucide-react';
 
 interface RenderTabProps {
@@ -151,9 +160,9 @@ interface BatchRenderJob {
 
 const DEFAULT_STAGES: Array<{ id: string; name: string }> = [
   { id: 'stage_1_prepare', name: '1. Chuẩn bị tài nguyên & Kiểm tra' },
-  { id: 'stage_2_tts', name: '2. Tạo giọng đọc TTS (Edge-TTS)' },
+  { id: 'stage_2_tts', name: '2. Tạo giọng đọc TTS (VieNeu AI v3)' },
   { id: 'stage_3_timeline', name: '3. Tính toán Timeline & Đóng gói' },
-  { id: 'stage_4_render_frames', name: '4. Render khung hình Video (Chromium)' },
+  { id: 'stage_4_render_frames', name: '4. Render khung hình Video (Native Skia)' },
   { id: 'stage_5_process_audio', name: '5. Xử lý & Hòa âm Audio (TTS, SFX, BGM)' },
   { id: 'stage_6_ffmpeg_mux', name: '6. Ghép Video & Audio (FFmpeg Muxing)' },
   { id: 'stage_7_export', name: '7. Xuất bản & Kiểm tra MP4' }
@@ -179,7 +188,7 @@ export const RenderTab: React.FC<RenderTabProps> = ({
 
   // Performance & Preset configuration
   const [renderPreset, setRenderPreset] = useState<'fast' | 'standard' | 'high_quality'>('standard');
-  const [customConcurrency, setCustomConcurrency] = useState<number>(0); // 0 = Auto
+  const [customConcurrency, setCustomConcurrency] = useState<number>(0);
 
   // Single mode config
   const [singleQuestionCount, setSingleQuestionCount] = useState<number>(quiz.questions?.length || 5);
@@ -194,10 +203,12 @@ export const RenderTab: React.FC<RenderTabProps> = ({
   const [batchShuffleAnswers, setBatchShuffleAnswers] = useState<boolean>(true);
 
   // Single file name state
-  const [singleFileName, setSingleFileName] = useState<string>(() => generateDefaultFileName(quiz?.title || 'Video_Quiz', 1));
+  const [singleFileName, setSingleFileName] = useState<string>(() =>
+    generateDefaultFileName(quiz?.title || 'Video_Quiz', 1)
+  );
   const [isCustomSingleFileName, setIsCustomSingleFileName] = useState<boolean>(false);
 
-  // Sync single file name when quiz.title changes (if user hasn't typed custom name)
+  // Sync single file name when quiz.title changes
   useEffect(() => {
     if (!isCustomSingleFileName) {
       setSingleFileName(generateDefaultFileName(quiz?.title || 'Video_Quiz', 1));
@@ -219,7 +230,6 @@ export const RenderTab: React.FC<RenderTabProps> = ({
   });
   const [isCustomBatchFileNames, setIsCustomBatchFileNames] = useState<boolean>(false);
 
-  // Sync batch file names when videoCount or quiz.title changes
   useEffect(() => {
     setBatchFileNames(prev => {
       const arr: string[] = [];
@@ -252,7 +262,7 @@ export const RenderTab: React.FC<RenderTabProps> = ({
     setBatchFileNames(arr);
   };
 
-  // Active rendering jobs (use props if passed from App, else local)
+  // Active rendering jobs
   const [localActiveJobId, setLocalActiveJobId] = useState<string | null>(null);
   const [localJobState, setLocalJobState] = useState<RenderJob | null>(null);
   const [localActiveBatchId, setLocalActiveBatchId] = useState<string | null>(null);
@@ -263,9 +273,7 @@ export const RenderTab: React.FC<RenderTabProps> = ({
   const [selectedBatchBackgrounds, setSelectedBatchBackgrounds] = useState<string[]>([]);
   const [isUploadingBgs, setIsUploadingBgs] = useState(false);
   const bgFilesInputRef = useRef<HTMLInputElement>(null);
-  const bgFolderInputRef = useRef<HTMLInputElement>(null);
 
-  // Load available backgrounds on mount
   useEffect(() => {
     fetchBackgrounds()
       .then(bgs => {
@@ -308,13 +316,12 @@ export const RenderTab: React.FC<RenderTabProps> = ({
     setSelectedBatchBackgrounds([]);
   };
 
-  // Pre-allocated background assignments for each video in the batch
   const allocatedBackgrounds = useMemo(() => {
     if (selectedBatchBackgrounds.length === 0) return [];
     return allocateBatchBackgrounds(selectedBatchBackgrounds, videoCount);
   }, [selectedBatchBackgrounds, videoCount]);
 
-  // Export Background Mode (Requirement 5: Động, Tĩnh, hoặc Upload)
+  // Export Background Mode
   const singleBgInputRef = useRef<HTMLInputElement>(null);
   const [exportBgMode, setExportBgMode] = useState<'animated' | 'static' | 'upload'>(() => {
     if (template.components.background?.type === 'solid' || template.components.background?.type === 'gradient') {
@@ -406,14 +413,14 @@ export const RenderTab: React.FC<RenderTabProps> = ({
   };
 
   const RENDER_QUICK_COLORS = [
-    '#ffffff', // Trắng sáng
-    '#f8fafc', // Trắng xám
-    '#fef3c7', // Vàng nhạt ấm
-    '#dcfce7', // Xanh lá pastel
-    '#e0f2fe', // Xanh dương pastel
-    '#0f172a', // Đen slate
-    '#1e1b4b', // Xanh đen indigo
-    '#312e81'  // Tím đậm
+    '#ffffff',
+    '#f8fafc',
+    '#fef3c7',
+    '#dcfce7',
+    '#e0f2fe',
+    '#0f172a',
+    '#1e1b4b',
+    '#312e81'
   ];
 
   const activeJobId = propsActiveJobId !== undefined ? propsActiveJobId : localActiveJobId;
@@ -428,8 +435,20 @@ export const RenderTab: React.FC<RenderTabProps> = ({
 
   const [isStarting, setIsStarting] = useState(false);
   const [jobsHistory, setJobsHistory] = useState<RenderJob[]>([]);
-  const [batchHistory, setBatchHistory] = useState<BatchRenderJob[]>([]);
   const consecutiveErrorsRef = useRef<number>(0);
+
+  // Accordion Section States
+  const [isBgSectionOpen, setIsBgSectionOpen] = useState(false);
+  const [isBatchNamesOpen, setIsBatchNamesOpen] = useState(false);
+  const [isStagesOpen, setIsStagesOpen] = useState(true);
+
+  // --- TTS PRE-GENERATION QUEUE STATE ---
+  const [pregenerateId, setPregenerateId] = useState<string | null>(null);
+  const [pregenerateStatus, setPregenerateStatus] = useState<TTSPregenerateStatus | null>(null);
+  const [isPregenerating, setIsPregenerating] = useState(false);
+  const [showPregeneratedList, setShowPregeneratedList] = useState(false);
+  const [playingPreviewUrl, setPlayingPreviewUrl] = useState<string | null>(null);
+  const previewAudioRef = useRef<HTMLAudioElement | null>(null);
 
   // Keep single question count in sync if quiz changes
   useEffect(() => {
@@ -450,59 +469,35 @@ export const RenderTab: React.FC<RenderTabProps> = ({
     loadJobs();
   }, []);
 
-  const loadJobs = () => {
-    listRenderJobs()
-      .then(setJobsHistory)
-      .catch((err) => console.error('Failed to load jobs:', err));
-    listBatchRenderJobs()
-      .then(setBatchHistory)
-      .catch((err) => console.error('Failed to load batch jobs:', err));
-  };
-
-  // Helper to format seconds to mm:ss
-  const formatTime = (seconds?: number) => {
-    if (seconds === undefined || seconds === null || isNaN(seconds)) return '--:--';
-    const s = Math.max(0, Math.round(seconds));
-    const mins = Math.floor(s / 60);
-    const secs = s % 60;
-    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-  };
-
-  // Helper to format file size
-  const formatBytes = (bytes?: number) => {
-    if (!bytes) return '';
-    return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+  const loadJobs = async () => {
+    try {
+      const list = await listRenderJobs();
+      if (Array.isArray(list)) {
+        setJobsHistory(list);
+      }
+    } catch (err) {
+      console.warn('Could not load render jobs:', err);
+    }
   };
 
   // Polling for Single Render Job
   useEffect(() => {
     if (!activeJobId) return;
 
-    consecutiveErrorsRef.current = 0;
     const interval = setInterval(async () => {
       try {
-        const status: RenderJob = await getRenderStatus(activeJobId);
+        const job = await getRenderStatus(activeJobId);
+        setJobState(job);
         consecutiveErrorsRef.current = 0;
-        setJobState(status);
 
-        if (status.status === 'completed' || status.status === 'failed') {
+        if (job.status === 'completed' || job.status === 'failed') {
           clearInterval(interval);
           loadJobs();
         }
       } catch (err) {
         consecutiveErrorsRef.current += 1;
-        if (consecutiveErrorsRef.current >= 10) {
+        if (consecutiveErrorsRef.current >= 6) {
           clearInterval(interval);
-          setJobState((prev) =>
-            prev
-              ? {
-                  ...prev,
-                  status: 'failed',
-                  error: 'Mất kết nối với máy chủ render sau 10 lần thử lại.',
-                  errorStage: 'Network Polling'
-                }
-              : null
-          );
         }
       }
     }, 700);
@@ -516,27 +511,82 @@ export const RenderTab: React.FC<RenderTabProps> = ({
 
     const interval = setInterval(async () => {
       try {
-        const batch: BatchRenderJob = await getBatchRenderStatus(activeBatchId);
+        const batch = await getBatchRenderStatus(activeBatchId);
         setBatchState(batch);
-
-        // Also fetch active sub-job state for detailed telemetry if present
-        if (batch.currentJobId) {
-          getRenderStatus(batch.currentJobId)
-            .then(setJobState)
-            .catch(() => {});
-        }
+        consecutiveErrorsRef.current = 0;
 
         if (batch.status === 'completed' || batch.status === 'failed') {
           clearInterval(interval);
           loadJobs();
         }
       } catch (err) {
-        console.warn('Batch polling error:', err);
+        consecutiveErrorsRef.current += 1;
+        if (consecutiveErrorsRef.current >= 6) {
+          clearInterval(interval);
+        }
       }
-    }, 700);
+    }, 1000);
 
     return () => clearInterval(interval);
   }, [activeBatchId]);
+
+  // Polling for TTS Pre-generation
+  useEffect(() => {
+    if (!pregenerateId) return;
+
+    const interval = setInterval(async () => {
+      try {
+        const status = await getTTSPregenerateStatus(pregenerateId);
+        setPregenerateStatus(status);
+        if (status.status === 'ready' || status.status === 'failed') {
+          setIsPregenerating(false);
+          clearInterval(interval);
+        }
+      } catch (err) {
+        console.warn('TTS pregenerate poll notice:', err);
+      }
+    }, 800);
+
+    return () => clearInterval(interval);
+  }, [pregenerateId]);
+
+  const handleStartTTSPregenerate = async () => {
+    try {
+      setIsPregenerating(true);
+      setShowPregeneratedList(true);
+      const pid = await startTTSPregenerate({
+        quiz,
+        channel,
+        template,
+        language
+      });
+      setPregenerateId(pid);
+    } catch (err: any) {
+      alert(`Lỗi tiền tạo giọng đọc TTS: ${err.message}`);
+      setIsPregenerating(false);
+    }
+  };
+
+  const handleTogglePlayAudio = (url?: string) => {
+    if (!url) return;
+    if (playingPreviewUrl === url) {
+      if (previewAudioRef.current) {
+        previewAudioRef.current.pause();
+        previewAudioRef.current = null;
+      }
+      setPlayingPreviewUrl(null);
+      return;
+    }
+    if (previewAudioRef.current) {
+      previewAudioRef.current.pause();
+    }
+    const audio = new Audio(url);
+    previewAudioRef.current = audio;
+    setPlayingPreviewUrl(url);
+    audio.play().catch(() => setPlayingPreviewUrl(null));
+    audio.onended = () => setPlayingPreviewUrl(null);
+    audio.onerror = () => setPlayingPreviewUrl(null);
+  };
 
   // 1. Trigger Single Video Render
   const handleStartSingleRender = async () => {
@@ -546,7 +596,6 @@ export const RenderTab: React.FC<RenderTabProps> = ({
     setActiveBatchId(null);
 
     try {
-      // Prepare question set for single video
       let questionsToRender: QuizQuestion[] = quiz.questions.slice(0, Math.min(singleQuestionCount, quiz.questions.length));
       if (singleShuffleAnswers) {
         questionsToRender = questionsToRender.map(q => shuffleQuestionAnswers(q));
@@ -684,34 +733,51 @@ export const RenderTab: React.FC<RenderTabProps> = ({
         progress: 0
       }));
 
+  const formatTime = (sec?: number) => {
+    if (!sec || isNaN(sec) || sec <= 0) return '00:00';
+    const m = Math.floor(sec / 60);
+    const s = Math.floor(sec % 60);
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
+
+  const formatBytes = (bytes?: number) => {
+    if (!bytes || bytes <= 0) return '-- MB';
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
   return (
-    <div className="space-y-6 pb-12 select-none">
-      {/* 1. Header & Mode Switcher */}
-      <section className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xs space-y-4">
+    <div className="space-y-5 pb-16 text-slate-100 select-none">
+      {/* 1. TOP HEADER & MODE SWITCHER */}
+      <section className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-lg backdrop-blur-md space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500 to-rose-500 text-white flex items-center justify-center font-bold shadow-xs">
-              <Film size={20} />
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-400 text-slate-950 flex items-center justify-center font-black shadow-md shadow-amber-500/20 shrink-0">
+              <Film size={20} className="text-slate-950" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
-                Trung Tâm Xuất Video Chuyên Nghiệp (High-Performance Studio)
-              </h3>
-              <p className="text-[11px] text-slate-500">
-                Độ phân giải 9:16 (720×1280) @ 30 FPS • H.264 High Profile • Hỗ trợ Render Đơn Lẻ & Hàng Loạt
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-extrabold text-white uppercase tracking-wider">
+                  Trung Tâm Xuất Video (Render Studio)
+                </h3>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                  GPU Accelerated
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 mt-0.5">
+                9:16 (720×1280 / 1080×1920) @ 30 FPS • H.264 • Tối ưu hóa render đơn lẻ & hàng loạt
               </p>
             </div>
           </div>
 
           {/* Mode Switcher Tabs */}
-          <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200 shrink-0 self-start sm:self-auto">
+          <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800 shrink-0 self-start sm:self-auto">
             <button
               onClick={() => setRenderMode('single')}
               disabled={isRendering}
               className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
                 renderMode === 'single'
-                  ? 'bg-white text-slate-900 shadow-xs'
-                  : 'text-slate-500 hover:text-slate-800'
+                  ? 'bg-amber-500 text-slate-950 font-black shadow-sm'
+                  : 'text-slate-400 hover:text-white'
               }`}
             >
               <Video size={14} />
@@ -722,24 +788,24 @@ export const RenderTab: React.FC<RenderTabProps> = ({
               disabled={isRendering}
               className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
                 renderMode === 'batch'
-                  ? 'bg-amber-600 text-white shadow-xs'
-                  : 'text-slate-500 hover:text-slate-800'
+                  ? 'bg-amber-500 text-slate-950 font-black shadow-sm'
+                  : 'text-slate-400 hover:text-white'
               }`}
             >
               <Boxes size={14} />
-              <span>Render Nhiều Video (Batch)</span>
+              <span>Render Hàng Loạt (Batch)</span>
             </button>
           </div>
         </div>
 
         {/* Render Preset & Performance Settings */}
-        <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
+        <div className="bg-slate-950/80 border border-slate-800/80 rounded-xl p-4 space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-              <Zap size={14} className="text-amber-600" />
-              <span>Cấu Hình Tốc Độ & Chất Lượng Render (Presets)</span>
+            <span className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+              <Zap size={14} className="text-amber-400" />
+              <span>Chất Lượng & Tốc Độ Render (Presets)</span>
             </span>
-            <span className="text-[11px] text-slate-500 font-medium">Tự động tối ưu phần cứng CPU/GPU</span>
+            <span className="text-[11px] text-slate-400 font-medium">Tự động tối ưu GPU/CPU</span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
@@ -748,20 +814,22 @@ export const RenderTab: React.FC<RenderTabProps> = ({
               type="button"
               disabled={isRendering}
               onClick={() => setRenderPreset('fast')}
-              className={`p-3 rounded-xl border text-left transition cursor-pointer ${
+              className={`p-3 rounded-xl border text-left transition cursor-pointer flex flex-col justify-between gap-2 ${
                 renderPreset === 'fast'
-                  ? 'bg-amber-50/80 border-amber-400 ring-2 ring-amber-400/50 shadow-xs'
-                  : 'bg-white border-slate-200 hover:border-slate-300'
+                  ? 'bg-amber-500/15 border-amber-500/60 ring-1 ring-amber-500/40 shadow-sm'
+                  : 'bg-slate-900 border-slate-800 hover:border-slate-700'
               }`}
             >
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-black text-slate-900 flex items-center gap-1">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-extrabold text-white flex items-center gap-1">
                   <span>⚡ Nháp nhanh</span>
                 </span>
-                <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-800">720p • Q62</span>
+                <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300">
+                  720p • Q62
+                </span>
               </div>
-              <p className="text-[11px] text-slate-500 leading-snug">
-                720×1280 • JPEG Q62 • CRF 30 • x264 ultrafast. Tốc độ cao nhất, kiểm tra nhanh nội dung.
+              <p className="text-[11px] text-slate-400 leading-snug">
+                CRF 30 • x264 ultrafast. Tốc độ cao nhất để kiểm tra bố cục nhanh.
               </p>
             </button>
 
@@ -770,20 +838,22 @@ export const RenderTab: React.FC<RenderTabProps> = ({
               type="button"
               disabled={isRendering}
               onClick={() => setRenderPreset('standard')}
-              className={`p-3 rounded-xl border text-left transition cursor-pointer ${
+              className={`p-3 rounded-xl border text-left transition cursor-pointer flex flex-col justify-between gap-2 ${
                 renderPreset === 'standard'
-                  ? 'bg-amber-50/80 border-amber-400 ring-2 ring-amber-400/50 shadow-xs'
-                  : 'bg-white border-slate-200 hover:border-slate-300'
+                  ? 'bg-amber-500/15 border-amber-500/60 ring-1 ring-amber-500/40 shadow-sm'
+                  : 'bg-slate-900 border-slate-800 hover:border-slate-700'
               }`}
             >
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-black text-slate-900 flex items-center gap-1">
-                  <span>🎯 Cân bằng (Mặc định)</span>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-extrabold text-white flex items-center gap-1">
+                  <span>🎯 Chuẩn (Mặc định)</span>
                 </span>
-                <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">720p • Q80</span>
+                <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300">
+                  720p • Q80
+                </span>
               </div>
-              <p className="text-[11px] text-slate-500 leading-snug">
-                720×1280 • JPEG Q80 • CRF 23 • x264 veryfast. Cân bằng tối ưu giữa độ nét & tốc độ.
+              <p className="text-[11px] text-slate-400 leading-snug">
+                CRF 22 • x264 veryfast. Cân bằng tối ưu giữa độ sắc nét và tốc độ xuất.
               </p>
             </button>
 
@@ -792,313 +862,434 @@ export const RenderTab: React.FC<RenderTabProps> = ({
               type="button"
               disabled={isRendering}
               onClick={() => setRenderPreset('high_quality')}
-              className={`p-3 rounded-xl border text-left transition cursor-pointer ${
+              className={`p-3 rounded-xl border text-left transition cursor-pointer flex flex-col justify-between gap-2 ${
                 renderPreset === 'high_quality'
-                  ? 'bg-amber-50/80 border-amber-400 ring-2 ring-amber-400/50 shadow-xs'
-                  : 'bg-white border-slate-200 hover:border-slate-300'
+                  ? 'bg-amber-500/15 border-amber-500/60 ring-1 ring-amber-500/40 shadow-sm'
+                  : 'bg-slate-900 border-slate-800 hover:border-slate-700'
               }`}
             >
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-black text-slate-900 flex items-center gap-1">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-extrabold text-white flex items-center gap-1">
                   <span>✨ Chất lượng cao</span>
                 </span>
-                <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-purple-100 text-purple-800">1080p • Q92</span>
+                <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300">
+                  1080p • Q92
+                </span>
               </div>
-              <p className="text-[11px] text-slate-500 leading-snug">
-                1080×1920 • JPEG Q92 • CRF 18 • x264 fast. Độ nét cao nhất, phù hợp đăng tải chính thức.
+              <p className="text-[11px] text-slate-400 leading-snug">
+                1080×1920 • CRF 18 • x264 fast. Độ phân giải Full HD đăng tải chính thức.
               </p>
             </button>
           </div>
 
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 border-t border-slate-200 text-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 border-t border-slate-800/80 text-xs">
             <div className="flex items-center gap-2">
-              <label className="text-[11px] font-bold text-slate-700">Luồng render (Concurrency):</label>
+              <label className="text-[11px] font-bold text-slate-300">Luồng render (Concurrency):</label>
               <select
                 value={customConcurrency}
                 onChange={(e) => setCustomConcurrency(Number(e.target.value))}
                 disabled={isRendering}
-                className="px-2.5 py-1 bg-white border border-slate-300 rounded-lg text-xs font-bold text-slate-800"
+                className="px-2.5 py-1 bg-slate-900 border border-slate-800 rounded-lg text-xs font-bold text-slate-200 focus:outline-none focus:border-amber-500"
               >
-                <option value={0}>Tự động (Auto detect phần cứng)</option>
+                <option value={0}>Tự động (Khuyên dùng)</option>
                 <option value={1}>1 Worker (Tiết kiệm CPU/RAM nhất)</option>
-                <option value={2}>2 Workers (Chuẩn Colab T4 / 2 vCPUs)</option>
+                <option value={2}>2 Workers (Chuẩn Colab T4)</option>
                 <option value={3}>3 Workers (Máy 4-6 cores)</option>
-                <option value={4}>4 Workers (Máy 8+ cores & GPU mạnh)</option>
+                <option value={4}>4 Workers (GPU mạnh)</option>
               </select>
             </div>
-            <span className="text-[10px] text-slate-500">
-              * Hàng đợi FIFO: tự động xếp hàng và xử lý từng video lần lượt tránh treo máy
+            <span className="text-[10px] text-slate-400">
+              * Hàng đợi FIFO: tự động xếp hàng và xử lý lần lượt tránh nghẽn bộ nhớ
             </span>
           </div>
         </div>
 
-        {/* EXPORT BACKGROUND SELECTOR (Requirement 5: Chọn nền động, tĩnh, hoặc upload khi xuất video) */}
-        <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 pb-2.5">
-            <div>
-              <span className="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-                <ImageIcon size={14} className="text-amber-600" />
-                <span>Lựa Chọn Nền Video Trước Khi Xuất (Background Mode)</span>
-              </span>
-              <p className="text-[11px] text-slate-500 mt-0.5">
-                Chọn kiểu nền áp dụng cho video khi xuất: Nền Động (18 preset), Nền Tĩnh (Màu/Gradient) hoặc Tải Lên Nền
-              </p>
+        {/* ----------------------------------------------------------------- */}
+        {/* NEW FEATURE: TTS PRE-GENERATION QUEUE WIDGET                     */}
+        {/* ----------------------------------------------------------------- */}
+        <div className="bg-slate-950/80 border border-amber-500/30 rounded-xl p-4 space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center font-bold">
+                <AudioWaveform size={18} />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-black text-white uppercase tracking-wider">
+                    Hàng Đợi Tạo Giọng Đọc Trước (VieNeu TTS Queue)
+                  </span>
+                  {pregenerateStatus?.status === 'ready' && (
+                    <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                      SẴN SÀNG
+                    </span>
+                  )}
+                  {isPregenerating && (
+                    <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 animate-pulse">
+                      ĐANG TẠO...
+                    </span>
+                  )}
+                </div>
+                <p className="text-[11px] text-slate-400">
+                  Tiền tạo audio cho toàn bộ câu hỏi giúp tăng tốc độ xuất video và kiểm tra âm thanh trước khi render MP4.
+                </p>
+              </div>
             </div>
 
-            {/* 3 Mode Switcher Tabs */}
-            <div className="flex bg-white p-1 rounded-xl border border-slate-200 shrink-0">
+            <div className="flex items-center gap-2">
+              {pregenerateStatus?.items && pregenerateStatus.items.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setShowPregeneratedList(!showPregeneratedList)}
+                  className="px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 text-xs font-bold transition flex items-center gap-1"
+                >
+                  <Headphones size={13} />
+                  <span>{showPregeneratedList ? 'Thu gọn audio' : `Nghe thử (${pregenerateStatus.items.length})`}</span>
+                </button>
+              )}
+
               <button
                 type="button"
-                disabled={isRendering}
-                onClick={() => setExportBgMode('animated')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
-                  exportBgMode === 'animated'
-                    ? 'bg-amber-500 text-white shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
+                onClick={handleStartTTSPregenerate}
+                disabled={isPregenerating || isRendering || poolCount === 0}
+                className="px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-xs transition flex items-center gap-1.5 shadow-md shadow-amber-500/20 disabled:opacity-50"
               >
-                <Sparkles size={13} />
-                <span>Nền Động</span>
-              </button>
-              <button
-                type="button"
-                disabled={isRendering}
-                onClick={() => setExportBgMode('static')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
-                  exportBgMode === 'static'
-                    ? 'bg-amber-500 text-white shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                <Layers size={13} />
-                <span>Nền Tĩnh</span>
-              </button>
-              <button
-                type="button"
-                disabled={isRendering}
-                onClick={() => setExportBgMode('upload')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
-                  exportBgMode === 'upload'
-                    ? 'bg-amber-500 text-white shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900'
-                }`}
-              >
-                <FolderUp size={13} />
-                <span>Tải Lên Nền</span>
+                {isPregenerating ? (
+                  <>
+                    <Loader2 size={13} className="animate-spin text-slate-950" />
+                    <span>Đang tạo TTS ({pregenerateStatus?.percent || 0}%)...</span>
+                  </>
+                ) : (
+                  <>
+                    <AudioWaveform size={13} />
+                    <span>Tạo giọng đọc trước (Pre-generate)</span>
+                  </>
+                )}
               </button>
             </div>
           </div>
 
-          {/* 1. NỀN ĐỘNG */}
-          {exportBgMode === 'animated' && (
-            <div className="space-y-3 pt-1">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold text-slate-700">
-                  Chọn Preset Nền Động (Đang chọn: <span className="text-amber-700 font-extrabold">{NEON_PRESETS.find(p => p.id === exportNeonPreset)?.name || exportNeonPreset}</span>):
+          {/* Progress Bar when pre-generating */}
+          {pregenerateStatus && (
+            <div className="space-y-1.5 pt-1">
+              <div className="flex justify-between text-[11px]">
+                <span className="text-slate-400 font-medium">
+                  {pregenerateStatus.status === 'ready'
+                    ? `Hoàn tất! Đã lưu trữ ${pregenerateStatus.completedItems}/${pregenerateStatus.totalItems} audio vào cache.`
+                    : isPregenerating
+                    ? `Đang tạo: ${pregenerateStatus.completedItems}/${pregenerateStatus.totalItems} audio (${pregenerateStatus.currentText || ''})`
+                    : `Trạng thái: ${pregenerateStatus.status}`}
                 </span>
-                <span className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                  🌿 10 Preset Nền Sáng Tự Nhiên & 8 Preset Neon
+                <span className="text-amber-400 font-mono font-bold">
+                  {pregenerateStatus.percent}%
                 </span>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 max-h-56 overflow-y-auto p-1 scrollbar-thin">
-                {NEON_PRESETS.map((p) => {
-                  const isCur = exportNeonPreset === p.id;
-                  return (
-                    <button
-                      key={p.id}
-                      type="button"
-                      disabled={isRendering}
-                      onClick={() => setExportNeonPreset(p.id)}
-                      className={`p-2 rounded-xl border text-left transition flex flex-col gap-1 cursor-pointer ${
-                        isCur
-                          ? 'border-amber-500 bg-amber-50/80 ring-2 ring-amber-400/50 shadow-xs'
-                          : 'border-slate-200 bg-white hover:border-slate-300'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm">{p.icon}</span>
-                        <span className="text-[9px] text-amber-700 font-bold truncate max-w-[80px]">{p.tag}</span>
-                      </div>
-                      <div className="font-bold text-slate-900 text-[11px] truncate" title={p.name}>
-                        {p.name}
-                      </div>
+              <div className="w-full h-2 bg-slate-900 rounded-full overflow-hidden border border-slate-800">
+                <div
+                  className="h-full bg-gradient-to-r from-amber-500 to-emerald-400 transition-all duration-300"
+                  style={{ width: `${pregenerateStatus.percent}%` }}
+                />
+              </div>
+
+              {/* Expandable audio clips list */}
+              {showPregeneratedList && pregenerateStatus.items && (
+                <div className="max-h-48 overflow-y-auto p-2 bg-slate-900/90 rounded-xl border border-slate-800/80 space-y-1.5 scrollbar-thin mt-2">
+                  {pregenerateStatus.items.map((item) => {
+                    const isPlaying = playingPreviewUrl === item.url;
+                    return (
                       <div
-                        className="h-2 rounded-full w-full mt-0.5 border border-slate-200/50"
-                        style={{ background: p.gradientPreview }}
-                      />
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+                        key={item.id}
+                        className="p-2 rounded-lg bg-slate-950/60 border border-slate-800 flex items-center justify-between text-xs gap-2"
+                      >
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-1.5">
+                            <span className={`px-1.5 py-0.2 rounded text-[9px] font-bold uppercase ${
+                              item.type === 'question' ? 'bg-sky-500/20 text-sky-300' :
+                              item.type === 'answer' ? 'bg-emerald-500/20 text-emerald-300' :
+                              'bg-purple-500/20 text-purple-300'
+                            }`}>
+                              {item.type}
+                            </span>
+                            <span className="font-medium text-slate-300 truncate text-[11px]">
+                              {item.text}
+                            </span>
+                          </div>
+                          {item.durationSec && (
+                            <span className="text-[10px] text-slate-500 font-mono block">
+                              {item.durationSec.toFixed(1)}s {item.fromCache ? '• từ cache' : ''}
+                            </span>
+                          )}
+                        </div>
 
-          {/* 2. NỀN TĨNH */}
-          {exportBgMode === 'static' && (
-            <div className="space-y-3 pt-1">
-              <div className="flex items-center gap-3">
-                <span className="text-[11px] font-bold text-slate-700">Dạng nền tĩnh:</span>
-                <div className="flex items-center gap-2">
-                  <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="exportStaticType"
-                      checked={exportStaticType === 'solid'}
-                      onChange={() => setExportStaticType('solid')}
-                      className="text-amber-600 focus:ring-amber-500"
-                    />
-                    <span>Màu Đơn (Solid Color)</span>
-                  </label>
-                  <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="exportStaticType"
-                      checked={exportStaticType === 'gradient'}
-                      onChange={() => setExportStaticType('gradient')}
-                      className="text-amber-600 focus:ring-amber-500"
-                    />
-                    <span>Chuyển Sắc (Gradient)</span>
-                  </label>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="text-[10px] text-slate-500 font-bold block mb-1">
-                    {exportStaticType === 'solid' ? 'Màu nền' : 'Màu chính'}
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="color"
-                      value={exportStaticColor}
-                      onChange={(e) => setExportStaticColor(e.target.value)}
-                      className="w-8 h-8 rounded-lg border border-slate-300 bg-transparent cursor-pointer shrink-0"
-                    />
-                    <div className="flex items-center gap-1 flex-1 overflow-x-auto py-0.5">
-                      {RENDER_QUICK_COLORS.map((c) => (
-                        <button
-                          key={c}
-                          type="button"
-                          onClick={() => setExportStaticColor(c)}
-                          style={{ backgroundColor: c }}
-                          className={`w-5 h-5 rounded-md border shrink-0 transition ${
-                            exportStaticColor.toLowerCase() === c.toLowerCase()
-                              ? 'border-amber-500 ring-2 ring-amber-400'
-                              : 'border-slate-300 hover:scale-105'
-                          }`}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                {exportStaticType === 'gradient' && (
-                  <div>
-                    <label className="text-[10px] text-slate-500 font-bold block mb-1">Màu phụ</label>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="color"
-                        value={exportSecondaryColor}
-                        onChange={(e) => setExportSecondaryColor(e.target.value)}
-                        className="w-8 h-8 rounded-lg border border-slate-300 bg-transparent cursor-pointer shrink-0"
-                      />
-                      <div className="flex items-center gap-1 flex-1 overflow-x-auto py-0.5">
-                        {RENDER_QUICK_COLORS.map((c) => (
+                        {item.url && (
                           <button
-                            key={c}
                             type="button"
-                            onClick={() => setExportSecondaryColor(c)}
-                            style={{ backgroundColor: c }}
-                            className={`w-5 h-5 rounded-md border shrink-0 transition ${
-                              exportSecondaryColor.toLowerCase() === c.toLowerCase()
-                                ? 'border-amber-500 ring-2 ring-amber-400'
-                                : 'border-slate-300 hover:scale-105'
-                            }`}
-                          />
-                        ))}
+                            onClick={() => handleTogglePlayAudio(item.url)}
+                            className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition shrink-0"
+                          >
+                            {isPlaying ? <Pause size={12} /> : <Play size={12} />}
+                          </button>
+                        )}
                       </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* 3. TẢI LÊN NỀN */}
-          {exportBgMode === 'upload' && (
-            <div className="space-y-3 pt-1">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <span className="text-[11px] font-bold text-slate-700">
-                  Tải Lên Ảnh Nền Mới Hoặc Chọn Từ Thư Viện:
-                </span>
-                <div>
-                  <input
-                    type="file"
-                    accept="image/png,image/jpeg,image/jpg,image/webp,image/svg+xml"
-                    ref={singleBgInputRef}
-                    onChange={handleSingleBgUpload}
-                    className="hidden"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => singleBgInputRef.current?.click()}
-                    disabled={isUploadingBgs || isRendering}
-                    className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition cursor-pointer disabled:opacity-50"
-                  >
-                    {isUploadingBgs ? <Loader2 size={13} className="animate-spin" /> : <FolderUp size={13} />}
-                    <span>{isUploadingBgs ? 'Đang tải lên...' : 'Tải ảnh nền mới'}</span>
-                  </button>
-                </div>
-              </div>
-
-              {exportUploadedBgUrl && (
-                <div className="flex items-center gap-3 p-2 bg-white rounded-xl border border-slate-200">
-                  <img
-                    src={exportUploadedBgUrl}
-                    alt="Current Background"
-                    className="w-14 h-14 rounded-lg object-cover border border-slate-200"
-                  />
-                  <div className="min-w-0 flex-1">
-                    <span className="text-xs font-bold text-slate-900 block">Nền đang chọn</span>
-                    <span className="text-[10px] text-slate-500 block truncate">{exportUploadedBgUrl}</span>
-                  </div>
+                    );
+                  })}
                 </div>
               )}
+            </div>
+          )}
+        </div>
 
-              {availableBackgrounds.length > 0 && (
-                <div className="space-y-1">
-                  <span className="text-[10px] text-slate-500 font-bold block">Thư viện ảnh nền đã tải lên:</span>
-                  <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-thin">
-                    {availableBackgrounds.map((bg) => {
-                      const isSel = exportUploadedBgUrl === bg.url;
+        {/* ----------------------------------------------------------------- */}
+        {/* COLLAPSIBLE ACCORDION: BACKGROUND SETTINGS                       */}
+        {/* ----------------------------------------------------------------- */}
+        <div className="border border-slate-800 rounded-xl overflow-hidden bg-slate-950/60">
+          <button
+            type="button"
+            onClick={() => setIsBgSectionOpen(!isBgSectionOpen)}
+            className="w-full p-3.5 flex items-center justify-between text-slate-300 hover:text-white font-bold text-xs transition bg-slate-900/50"
+          >
+            <div className="flex items-center gap-2">
+              <ImageIcon size={14} className="text-amber-400" />
+              <span>Cấu hình Background khi xuất Video ({exportBgMode === 'animated' ? 'Nền động' : exportBgMode === 'static' ? 'Nền tĩnh' : 'Upload ảnh'})</span>
+            </div>
+            {isBgSectionOpen ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
+          </button>
+
+          {isBgSectionOpen && (
+            <div className="p-4 space-y-3.5 border-t border-slate-800 bg-slate-950/80">
+              <div className="flex bg-slate-900 p-1 rounded-xl border border-slate-800 shrink-0 w-fit">
+                <button
+                  type="button"
+                  disabled={isRendering}
+                  onClick={() => setExportBgMode('animated')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                    exportBgMode === 'animated' ? 'bg-amber-500 text-slate-950 shadow-sm' : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  <Sparkles size={13} />
+                  <span>Nền Động</span>
+                </button>
+                <button
+                  type="button"
+                  disabled={isRendering}
+                  onClick={() => setExportBgMode('static')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                    exportBgMode === 'static' ? 'bg-amber-500 text-slate-950 shadow-sm' : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  <Layers size={13} />
+                  <span>Nền Tĩnh</span>
+                </button>
+                <button
+                  type="button"
+                  disabled={isRendering}
+                  onClick={() => setExportBgMode('upload')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
+                    exportBgMode === 'upload' ? 'bg-amber-500 text-slate-950 shadow-sm' : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  <FolderUp size={13} />
+                  <span>Tải Lên Nền</span>
+                </button>
+              </div>
+
+              {/* NỀN ĐỘNG */}
+              {exportBgMode === 'animated' && (
+                <div className="space-y-2.5">
+                  <span className="text-xs font-bold text-slate-300 block">
+                    Chọn Preset Nền Động (Đang chọn: <strong className="text-amber-400">{NEON_PRESETS.find(p => p.id === exportNeonPreset)?.name || exportNeonPreset}</strong>)
+                  </span>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 max-h-56 overflow-y-auto p-1 scrollbar-thin">
+                    {NEON_PRESETS.map((p) => {
+                      const isCur = exportNeonPreset === p.id;
                       return (
-                        <div
-                          key={bg.url}
-                          onClick={() => setExportUploadedBgUrl(bg.url)}
-                          className={`relative w-14 h-14 rounded-lg overflow-hidden border-2 shrink-0 cursor-pointer transition ${
-                            isSel
-                              ? 'border-amber-500 ring-2 ring-amber-400 shadow-xs'
-                              : 'border-slate-200 opacity-60 hover:opacity-100'
+                        <button
+                          key={p.id}
+                          type="button"
+                          disabled={isRendering}
+                          onClick={() => setExportNeonPreset(p.id)}
+                          className={`p-2 rounded-xl border text-left transition flex flex-col gap-1 cursor-pointer ${
+                            isCur
+                              ? 'border-amber-500 bg-amber-500/15 ring-1 ring-amber-500/40 shadow-sm'
+                              : 'border-slate-800 bg-slate-900/80 hover:border-slate-700'
                           }`}
                         >
-                          <img src={bg.url} alt={bg.name} className="w-full h-full object-cover" />
-                        </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm">{p.icon}</span>
+                            <span className="text-[9px] text-amber-400 font-bold truncate max-w-[80px]">{p.tag}</span>
+                          </div>
+                          <div className="font-bold text-white text-[11px] truncate" title={p.name}>
+                            {p.name}
+                          </div>
+                          <div
+                            className="h-2 rounded-full w-full mt-0.5 border border-slate-700/50"
+                            style={{ background: p.gradientPreview }}
+                          />
+                        </button>
                       );
                     })}
                   </div>
                 </div>
               )}
+
+              {/* NỀN TĨNH */}
+              {exportBgMode === 'static' && (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-300 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="exportStaticType"
+                        checked={exportStaticType === 'solid'}
+                        onChange={() => setExportStaticType('solid')}
+                        className="accent-amber-500"
+                      />
+                      <span>Màu Đơn (Solid Color)</span>
+                    </label>
+                    <label className="flex items-center gap-1.5 text-xs font-semibold text-slate-300 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="exportStaticType"
+                        checked={exportStaticType === 'gradient'}
+                        onChange={() => setExportStaticType('gradient')}
+                        className="accent-amber-500"
+                      />
+                      <span>Chuyển Sắc (Gradient)</span>
+                    </label>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-[10px] text-slate-400 font-bold block mb-1">
+                        {exportStaticType === 'solid' ? 'Màu nền' : 'Màu chính'}
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="color"
+                          value={exportStaticColor}
+                          onChange={(e) => setExportStaticColor(e.target.value)}
+                          className="w-8 h-8 rounded-lg border border-slate-700 bg-transparent cursor-pointer shrink-0"
+                        />
+                        <div className="flex items-center gap-1 flex-1 overflow-x-auto py-0.5">
+                          {RENDER_QUICK_COLORS.map((c) => (
+                            <button
+                              key={c}
+                              type="button"
+                              onClick={() => setExportStaticColor(c)}
+                              style={{ backgroundColor: c }}
+                              className={`w-5 h-5 rounded-md border shrink-0 transition ${
+                                exportStaticColor.toLowerCase() === c.toLowerCase()
+                                  ? 'border-amber-500 ring-2 ring-amber-400'
+                                  : 'border-slate-700 hover:scale-105'
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {exportStaticType === 'gradient' && (
+                      <div>
+                        <label className="text-[10px] text-slate-400 font-bold block mb-1">Màu phụ</label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="color"
+                            value={exportSecondaryColor}
+                            onChange={(e) => setExportSecondaryColor(e.target.value)}
+                            className="w-8 h-8 rounded-lg border border-slate-700 bg-transparent cursor-pointer shrink-0"
+                          />
+                          <div className="flex items-center gap-1 flex-1 overflow-x-auto py-0.5">
+                            {RENDER_QUICK_COLORS.map((c) => (
+                              <button
+                                key={c}
+                                type="button"
+                                onClick={() => setExportSecondaryColor(c)}
+                                style={{ backgroundColor: c }}
+                                className={`w-5 h-5 rounded-md border shrink-0 transition ${
+                                  exportSecondaryColor.toLowerCase() === c.toLowerCase()
+                                    ? 'border-amber-500 ring-2 ring-amber-400'
+                                    : 'border-slate-700 hover:scale-105'
+                                }`}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* TẢI LÊN NỀN */}
+              {exportBgMode === 'upload' && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-300">Tải ảnh nền mới hoặc chọn từ kho:</span>
+                    <div>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        ref={singleBgInputRef}
+                        onChange={handleSingleBgUpload}
+                        className="hidden"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => singleBgInputRef.current?.click()}
+                        disabled={isUploadingBgs || isRendering}
+                        className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition disabled:opacity-50"
+                      >
+                        {isUploadingBgs ? <Loader2 size={13} className="animate-spin" /> : <FolderUp size={13} />}
+                        <span>Tải ảnh nền mới</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {exportUploadedBgUrl && (
+                    <div className="flex items-center gap-3 p-2 bg-slate-900 rounded-xl border border-slate-800">
+                      <img
+                        src={exportUploadedBgUrl}
+                        alt="Current Background"
+                        className="w-12 h-12 rounded-lg object-cover border border-slate-700"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <span className="text-xs font-bold text-white block">Nền đang chọn</span>
+                        <span className="text-[10px] text-slate-400 block truncate">{exportUploadedBgUrl}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {availableBackgrounds.length > 0 && (
+                    <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-thin">
+                      {availableBackgrounds.map((bg) => (
+                        <div
+                          key={bg.url}
+                          onClick={() => setExportUploadedBgUrl(bg.url)}
+                          className={`relative w-14 h-14 rounded-lg overflow-hidden border-2 shrink-0 cursor-pointer transition ${
+                            exportUploadedBgUrl === bg.url
+                              ? 'border-amber-500 ring-2 ring-amber-400'
+                              : 'border-slate-800 opacity-60 hover:opacity-100'
+                          }`}
+                        >
+                          <img src={bg.url} alt={bg.name} className="w-full h-full object-cover" />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>
 
-        {/* MODE A: Single Video Configuration */}
+        {/* ----------------------------------------------------------------- */}
+        {/* MODE A: SINGLE VIDEO CONFIGURATION                                */}
+        {/* ----------------------------------------------------------------- */}
         {renderMode === 'single' && (
-          <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-4">
+          <div className="bg-slate-950/80 border border-slate-800/80 rounded-xl p-4 space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
               <div>
-                <label className="text-[11px] font-bold text-slate-700 block mb-1">
+                <label className="text-[11px] font-bold text-slate-300 block mb-1">
                   Số câu hỏi cho video này:
                 </label>
                 <div className="flex items-center gap-2">
@@ -1109,15 +1300,15 @@ export const RenderTab: React.FC<RenderTabProps> = ({
                     value={singleQuestionCount}
                     onChange={(e) => setSingleQuestionCount(Math.max(1, Math.min(poolCount, Number(e.target.value) || 1)))}
                     disabled={isRendering}
-                    className="w-24 px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-bold text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-amber-500"
+                    className="w-20 px-3 py-1.5 bg-slate-900 border border-slate-800 rounded-lg text-xs font-bold text-white focus:outline-none focus:border-amber-500"
                   />
-                  <span className="text-[11px] text-slate-500">/ {poolCount} câu trong ngân hàng</span>
+                  <span className="text-[11px] text-slate-400">/ {poolCount} câu có sẵn</span>
                 </div>
               </div>
 
               <div>
-                <label className="text-[11px] font-bold text-slate-700 block mb-1">
-                  Đảo vị trí đáp án (Shuffle Answers):
+                <label className="text-[11px] font-bold text-slate-300 block mb-1">
+                  Đảo vị trí đáp án (Shuffle):
                 </label>
                 <button
                   type="button"
@@ -1125,8 +1316,8 @@ export const RenderTab: React.FC<RenderTabProps> = ({
                   disabled={isRendering}
                   className={`px-3 py-1.5 rounded-lg border text-xs font-bold flex items-center gap-2 transition cursor-pointer ${
                     singleShuffleAnswers
-                      ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
-                      : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'
+                      ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
+                      : 'bg-slate-900 text-slate-400 border-slate-800 hover:bg-slate-800'
                   }`}
                 >
                   <Shuffle size={14} />
@@ -1135,27 +1326,27 @@ export const RenderTab: React.FC<RenderTabProps> = ({
               </div>
 
               <div>
-                <label className="text-[11px] font-bold text-slate-700 block mb-1">
-                  Bố cục & Kênh xuất bản:
+                <label className="text-[11px] font-bold text-slate-300 block mb-1">
+                  Bố cục & Kênh:
                 </label>
-                <span className="font-semibold text-slate-800 block truncate">
+                <span className="font-semibold text-white block truncate">
                   {channel.name} • {template.name}
                 </span>
               </div>
             </div>
 
             {/* File Name Configuration */}
-            <div className="space-y-1.5 pt-3 border-t border-slate-200">
+            <div className="space-y-1.5 pt-3 border-t border-slate-800/80">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-                  <FileText size={14} className="text-amber-600" />
+                <label className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                  <FileText size={14} className="text-amber-400" />
                   <span>Tên File Video (File Name)</span>
                 </label>
                 {isCustomSingleFileName && (
                   <button
                     type="button"
                     onClick={handleResetSingleFileName}
-                    className="text-[11px] text-amber-700 hover:text-amber-800 font-bold flex items-center gap-1 cursor-pointer"
+                    className="text-[11px] text-amber-400 hover:text-amber-300 font-bold flex items-center gap-1 cursor-pointer"
                   >
                     <RefreshCw size={11} />
                     <span>Khôi phục tên mặc định</span>
@@ -1170,22 +1361,19 @@ export const RenderTab: React.FC<RenderTabProps> = ({
                   setIsCustomSingleFileName(true);
                 }}
                 disabled={isRendering}
-                placeholder="Kien_thuc_tong_hop_vui_2026-09-12_01.mp4"
-                className="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-xs font-mono font-bold text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-amber-500 shadow-2xs"
+                placeholder="Video_Quiz_01.mp4"
+                className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-xs font-mono font-bold text-white focus:outline-none focus:border-amber-500"
               />
-              <p className="text-[11px] text-slate-500">
-                Quy tắc mặc định: <code className="font-mono text-amber-700 bg-amber-50 px-1 py-0.5 rounded">[Video Title]_[YYYY-MM-DD]_01.mp4</code>. Bạn có thể sửa trực tiếp tên file theo ý muốn.
-              </p>
             </div>
 
             <button
               onClick={handleStartSingleRender}
               disabled={isRendering || poolCount === 0}
-              className="w-full py-3.5 bg-gradient-to-r from-amber-500 via-rose-500 to-amber-500 hover:opacity-95 text-white font-black text-sm rounded-xl shadow-md transition flex items-center justify-center gap-2 disabled:opacity-50 active:scale-[0.99] cursor-pointer"
+              className="w-full py-3.5 bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:opacity-95 text-slate-950 font-black text-sm rounded-xl shadow-lg shadow-amber-500/20 transition flex items-center justify-center gap-2 disabled:opacity-50 active:scale-[0.99] cursor-pointer"
             >
               {isRendering ? (
                 <>
-                  <Loader2 size={18} className="animate-spin text-white" />
+                  <Loader2 size={18} className="animate-spin text-slate-950" />
                   <span>ĐANG XỬ LÝ RENDER ({jobState?.progress ?? 0}%)...</span>
                 </>
               ) : (
@@ -1198,13 +1386,14 @@ export const RenderTab: React.FC<RenderTabProps> = ({
           </div>
         )}
 
-        {/* MODE B: Batch Multiple Videos Configuration */}
+        {/* ----------------------------------------------------------------- */}
+        {/* MODE B: BATCH MULTIPLE VIDEOS CONFIGURATION                       */}
+        {/* ----------------------------------------------------------------- */}
         {renderMode === 'batch' && (
-          <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-4">
-            {/* Input Controls */}
+          <div className="bg-slate-950/80 border border-slate-800/80 rounded-xl p-4 space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
               <div>
-                <label className="text-[11px] font-bold text-slate-700 block mb-1">
+                <label className="text-[11px] font-bold text-slate-300 block mb-1">
                   Số lượng video cần tạo:
                 </label>
                 <input
@@ -1214,12 +1403,12 @@ export const RenderTab: React.FC<RenderTabProps> = ({
                   value={videoCount}
                   onChange={(e) => setVideoCount(Math.max(1, Number(e.target.value) || 1))}
                   disabled={isRendering}
-                  className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-bold text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-amber-500"
+                  className="w-full px-3 py-1.5 bg-slate-900 border border-slate-800 rounded-lg text-xs font-bold text-white focus:outline-none focus:border-amber-500"
                 />
               </div>
 
               <div>
-                <label className="text-[11px] font-bold text-slate-700 block mb-1">
+                <label className="text-[11px] font-bold text-slate-300 block mb-1">
                   Số câu hỏi mỗi video:
                 </label>
                 <input
@@ -1229,19 +1418,19 @@ export const RenderTab: React.FC<RenderTabProps> = ({
                   value={questionsPerVideo}
                   onChange={(e) => setQuestionsPerVideo(Math.max(1, Number(e.target.value) || 1))}
                   disabled={isRendering}
-                  className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-bold text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-amber-500"
+                  className="w-full px-3 py-1.5 bg-slate-900 border border-slate-800 rounded-lg text-xs font-bold text-white focus:outline-none focus:border-amber-500"
                 />
               </div>
 
               <div>
-                <label className="text-[11px] font-bold text-slate-700 block mb-1">
+                <label className="text-[11px] font-bold text-slate-300 block mb-1">
                   Thuật toán chọn câu hỏi:
                 </label>
                 <select
                   value={selectionMode}
                   onChange={(e) => setSelectionMode(e.target.value as SelectionMode)}
                   disabled={isRendering}
-                  className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-bold text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-amber-500"
+                  className="w-full px-3 py-1.5 bg-slate-900 border border-slate-800 rounded-lg text-xs font-bold text-white focus:outline-none focus:border-amber-500"
                 >
                   <option value="balanced_random">Hạn chế trùng câu (Balanced Random)</option>
                   <option value="sequential">Tuần tự theo danh sách (Sequential)</option>
@@ -1250,7 +1439,7 @@ export const RenderTab: React.FC<RenderTabProps> = ({
               </div>
 
               <div>
-                <label className="text-[11px] font-bold text-slate-700 block mb-1">
+                <label className="text-[11px] font-bold text-slate-300 block mb-1">
                   Shuffle vị trí đáp án (A/B/C):
                 </label>
                 <button
@@ -1259,8 +1448,8 @@ export const RenderTab: React.FC<RenderTabProps> = ({
                   disabled={isRendering}
                   className={`w-full px-3 py-1.5 rounded-lg border text-xs font-bold flex items-center justify-center gap-1.5 transition cursor-pointer ${
                     batchShuffleAnswers
-                      ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
-                      : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'
+                      ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
+                      : 'bg-slate-900 text-slate-400 border-slate-800 hover:bg-slate-800'
                   }`}
                 >
                   <Shuffle size={14} />
@@ -1269,84 +1458,79 @@ export const RenderTab: React.FC<RenderTabProps> = ({
               </div>
             </div>
 
-            {/* PRE-RENDER ESTIMATION BOX (Requirement 1 & 2) */}
-            <div className="bg-white border border-slate-200 rounded-xl p-3.5 space-y-2">
+            {/* PRE-RENDER ESTIMATION BOX */}
+            <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-3.5 space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-extrabold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-                  <Split size={14} className="text-amber-600" />
+                <span className="text-xs font-extrabold text-white uppercase tracking-wider flex items-center gap-1.5">
+                  <Split size={14} className="text-amber-400" />
                   <span>Ước Lượng & Phân Bổ Câu Hỏi Trước Khi Render</span>
                 </span>
 
                 {estimation.hasDeficit ? (
-                  <span className="px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-300 rounded text-[10px] font-bold">
-                    Tự động tái sử dụng Pool (Auto Reuse ON)
+                  <span className="px-2 py-0.5 bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded text-[10px] font-bold">
+                    Tự động xoay vòng Pool
                   </span>
                 ) : (
-                  <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-300 rounded text-[10px] font-bold">
+                  <span className="px-2 py-0.5 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded text-[10px] font-bold">
                     Đủ 100% câu hỏi không trùng
                   </span>
                 )}
               </div>
 
-              {/* Exact Metrics Grid as required */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono">
-                <div className="p-2.5 bg-slate-50 rounded-lg border border-slate-200">
-                  <span className="text-[10px] text-slate-500 uppercase block font-sans font-semibold">Question Pool:</span>
-                  <span className="text-sm font-black text-slate-900">{estimation.totalQuestions} câu</span>
+                <div className="p-2.5 bg-slate-950/80 rounded-lg border border-slate-800">
+                  <span className="text-[10px] text-slate-400 uppercase block font-sans font-semibold">Question Pool:</span>
+                  <span className="text-sm font-black text-white">{estimation.totalQuestions} câu</span>
                 </div>
-                <div className="p-2.5 bg-slate-50 rounded-lg border border-slate-200">
-                  <span className="text-[10px] text-slate-500 uppercase block font-sans font-semibold">Questions / Video:</span>
-                  <span className="text-sm font-black text-slate-900">{estimation.questionsPerVideo} câu</span>
+                <div className="p-2.5 bg-slate-950/80 rounded-lg border border-slate-800">
+                  <span className="text-[10px] text-slate-400 uppercase block font-sans font-semibold">Questions / Video:</span>
+                  <span className="text-sm font-black text-white">{estimation.questionsPerVideo} câu</span>
                 </div>
-                <div className="p-2.5 bg-slate-50 rounded-lg border border-slate-200">
-                  <span className="text-[10px] text-slate-500 uppercase block font-sans font-semibold">Videos Yêu Cầu:</span>
-                  <span className="text-sm font-black text-amber-700">{estimation.requestedVideos} video</span>
+                <div className="p-2.5 bg-slate-950/80 rounded-lg border border-slate-800">
+                  <span className="text-[10px] text-slate-400 uppercase block font-sans font-semibold">Videos Yêu Cầu:</span>
+                  <span className="text-sm font-black text-amber-400">{estimation.requestedVideos} video</span>
                 </div>
-                <div className="p-2.5 bg-slate-50 rounded-lg border border-slate-200">
-                  <span className="text-[10px] text-slate-500 uppercase block font-sans font-semibold">Required Questions:</span>
-                  <span className="text-sm font-black text-rose-700">{estimation.requiredQuestions} câu</span>
+                <div className="p-2.5 bg-slate-950/80 rounded-lg border border-slate-800">
+                  <span className="text-[10px] text-slate-400 uppercase block font-sans font-semibold">Required Questions:</span>
+                  <span className="text-sm font-black text-rose-400">{estimation.requiredQuestions} câu</span>
                 </div>
               </div>
 
-              <div className="text-[11px] text-slate-600 flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-slate-100">
+              <div className="text-[11px] text-slate-400 flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-slate-800/80">
                 <div>
                   <span>Có thể tạo tối đa </span>
-                  <span className="font-bold text-slate-900 font-mono">{estimation.fullVideosPossible}</span>
+                  <strong className="text-white font-mono">{estimation.fullVideosPossible}</strong>
                   <span> video đầy đủ không trùng câu. </span>
-                  {estimation.hasDeficit ? (
-                    <span className="text-amber-700 font-bold">
-                      (Thiếu {estimation.deficitCount} câu — Hệ thống sẽ tự động random và xoay vòng Question Pool để tất cả video luôn đủ {estimation.questionsPerVideo} câu).
-                    </span>
-                  ) : (
-                    <span className="text-emerald-700 font-bold">
-                      (Thừa {estimation.surplusCount} câu trong Pool).
+                  {estimation.hasDeficit && (
+                    <span className="text-amber-300">
+                      (Thiếu {estimation.deficitCount} câu — Hệ thống tự động random xoay vòng để đủ {estimation.questionsPerVideo} câu/video).
                     </span>
                   )}
                 </div>
 
-                <label className="flex items-center gap-1.5 cursor-pointer font-bold text-slate-700">
+                <label className="flex items-center gap-1.5 cursor-pointer font-bold text-slate-300">
                   <input
                     type="checkbox"
                     checked={autoReusePool}
                     onChange={(e) => setAutoReusePool(e.target.checked)}
                     disabled={isRendering}
-                    className="rounded text-amber-600 focus:ring-amber-500"
+                    className="accent-amber-500 rounded"
                   />
                   <span>Auto Random & Reuse Pool</span>
                 </label>
               </div>
             </div>
 
-            {/* BACKGROUND CHO BATCH RENDER (Requirement 3) */}
-            <div className="bg-white border border-slate-200 rounded-xl p-3.5 space-y-3">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
+            {/* Batch Backgrounds Selector */}
+            <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-3.5 space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-2.5">
                 <div>
-                  <span className="text-xs font-extrabold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-                    <ImageIcon size={14} className="text-amber-600" />
-                    <span>Bộ Sưu Tập Background Cho Batch Render</span>
+                  <span className="text-xs font-extrabold text-white uppercase tracking-wider flex items-center gap-1.5">
+                    <ImageIcon size={14} className="text-amber-400" />
+                    <span>Bộ Sưu Tập Background Cho Batch ({selectedBatchBackgrounds.length} ảnh đã chọn)</span>
                   </span>
-                  <span className="text-[11px] text-slate-500 block mt-0.5">
-                    Mỗi video sẽ nhận 1 background riêng biệt. Nếu ít hơn số video, hệ thống tự động xoay vòng ưu tiên không trùng liên tiếp.
+                  <span className="text-[11px] text-slate-400 block mt-0.5">
+                    Mỗi video sẽ nhận 1 background riêng biệt, tự động xoay vòng ưu tiên không trùng liên tiếp.
                   </span>
                 </div>
 
@@ -1354,7 +1538,7 @@ export const RenderTab: React.FC<RenderTabProps> = ({
                   <input
                     type="file"
                     multiple
-                    accept="image/png,image/jpeg,image/jpg,image/webp,image/svg+xml"
+                    accept="image/*"
                     ref={bgFilesInputRef}
                     onChange={handleUploadBatchFiles}
                     className="hidden"
@@ -1363,10 +1547,10 @@ export const RenderTab: React.FC<RenderTabProps> = ({
                     type="button"
                     onClick={() => bgFilesInputRef.current?.click()}
                     disabled={isUploadingBgs || isRendering}
-                    className="px-2.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition cursor-pointer disabled:opacity-50"
+                    className="px-2.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition disabled:opacity-50"
                   >
                     {isUploadingBgs ? <Loader2 size={13} className="animate-spin" /> : <FolderUp size={13} />}
-                    <span>{isUploadingBgs ? 'Đang tải ảnh...' : 'Upload Folder / Nhiều Ảnh Nền'}</span>
+                    <span>Upload Thêm Ảnh Nền</span>
                   </button>
 
                   {availableBackgrounds.length > 0 && (
@@ -1374,7 +1558,7 @@ export const RenderTab: React.FC<RenderTabProps> = ({
                       type="button"
                       onClick={selectedBatchBackgrounds.length === availableBackgrounds.length ? clearAllBackgrounds : selectAllBackgrounds}
                       disabled={isRendering}
-                      className="px-2 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 text-[11px] font-semibold transition cursor-pointer"
+                      className="px-2 py-1.5 rounded-lg border border-slate-700 text-slate-300 hover:bg-slate-800 text-[11px] font-semibold transition"
                     >
                       {selectedBatchBackgrounds.length === availableBackgrounds.length ? 'Bỏ chọn hết' : 'Chọn tất cả'}
                     </button>
@@ -1382,47 +1566,18 @@ export const RenderTab: React.FC<RenderTabProps> = ({
                 </div>
               </div>
 
-              {/* Status Badge & Summary */}
-              <div className="flex items-center justify-between flex-wrap gap-2 text-xs">
-                <div className="flex items-center gap-2">
-                  <span className="text-slate-600 font-semibold">Kho ảnh đã chọn:</span>
-                  <span className="font-mono font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded">
-                    {selectedBatchBackgrounds.length} ảnh
-                  </span>
-                  <span className="text-slate-400">cho</span>
-                  <span className="font-mono font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded">
-                    {videoCount} video
-                  </span>
-                </div>
-
-                {selectedBatchBackgrounds.length >= videoCount ? (
-                  <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-300 rounded text-[10px] font-bold">
-                    ✓ Đủ 100% mỗi video 1 ảnh riêng biệt
-                  </span>
-                ) : selectedBatchBackgrounds.length > 0 ? (
-                  <span className="px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-300 rounded text-[10px] font-bold">
-                    ⚡ Tự động xoay vòng ảnh (Không trùng liên tiếp)
-                  </span>
-                ) : (
-                  <span className="px-2 py-0.5 bg-slate-100 text-slate-500 rounded text-[10px]">
-                    Sử dụng ảnh nền mặc định của template
-                  </span>
-                )}
-              </div>
-
-              {/* Selected Backgrounds Thumbnail Grid */}
               {availableBackgrounds.length > 0 && (
-                <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-0.5 scrollbar-thin">
+                <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-thin">
                   {availableBackgrounds.map((bg) => {
                     const isSelected = selectedBatchBackgrounds.includes(bg.url);
                     return (
                       <div
                         key={bg.url}
                         onClick={() => !isRendering && toggleSelectBackground(bg.url)}
-                        className={`relative w-16 h-16 rounded-lg overflow-hidden border-2 shrink-0 cursor-pointer transition group ${
+                        className={`relative w-14 h-14 rounded-lg overflow-hidden border-2 shrink-0 cursor-pointer transition ${
                           isSelected
-                            ? 'border-amber-500 shadow-xs ring-1 ring-amber-400'
-                            : 'border-slate-200 opacity-50 hover:opacity-80'
+                            ? 'border-amber-500 ring-1 ring-amber-400'
+                            : 'border-slate-800 opacity-50 hover:opacity-80'
                         }`}
                       >
                         <img src={bg.url} alt={bg.name} className="w-full h-full object-cover" />
@@ -1431,88 +1586,58 @@ export const RenderTab: React.FC<RenderTabProps> = ({
                             ✓
                           </div>
                         )}
-                        <div className="absolute inset-x-0 bottom-0 bg-black/60 text-[9px] text-white truncate px-1 py-0.5 text-center">
-                          {bg.name}
-                        </div>
                       </div>
                     );
                   })}
                 </div>
               )}
+            </div>
 
-              {/* Pre-Render Allocation Preview Table */}
-              {allocatedBackgrounds.length > 0 && (
-                <div className="space-y-1.5 pt-1 border-t border-slate-100">
-                  <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block">
-                    Bảng Phân Bổ Background Đã Xác Định Trước:
-                  </span>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 max-h-36 overflow-y-auto p-1 bg-slate-50 rounded-lg border border-slate-200 text-[11px]">
-                    {allocatedBackgrounds.map((bgUrl, vIdx) => {
-                      const bgObj = availableBackgrounds.find(b => b.url === bgUrl);
-                      const bgName = bgObj ? bgObj.name : bgUrl.split('/').pop();
-                      return (
-                        <div key={vIdx} className="flex items-center gap-2 bg-white p-1.5 rounded border border-slate-200">
-                          <img src={bgUrl} alt={bgName} className="w-7 h-7 rounded object-cover shrink-0 border border-slate-200" />
-                          <div className="min-w-0 flex-1">
-                            <span className="font-bold text-amber-700 block">Video #{vIdx + 1}</span>
-                            <span className="text-[10px] text-slate-600 block truncate" title={bgName}>{bgName}</span>
-                          </div>
-                        </div>
-                      );
-                    })}
+            {/* Batch File Names Accordion */}
+            <div className="border border-slate-800 rounded-xl overflow-hidden bg-slate-900/60">
+              <button
+                type="button"
+                onClick={() => setIsBatchNamesOpen(!isBatchNamesOpen)}
+                className="w-full p-3 flex items-center justify-between text-slate-300 hover:text-white font-bold text-xs transition"
+              >
+                <div className="flex items-center gap-2">
+                  <FileText size={14} className="text-amber-400" />
+                  <span>Danh sách tên file cho {batchFileNames.length} video trong batch</span>
+                </div>
+                {isBatchNamesOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+              </button>
+
+              {isBatchNamesOpen && (
+                <div className="p-3 border-t border-slate-800 space-y-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto p-1 scrollbar-thin text-xs">
+                    {batchFileNames.map((name, idx) => (
+                      <div key={idx} className="flex items-center gap-2 bg-slate-950 p-2 rounded-lg border border-slate-800">
+                        <span className="w-16 shrink-0 font-bold text-amber-400 font-mono text-[11px]">
+                          #{String(idx + 1).padStart(2, '0')}:
+                        </span>
+                        <input
+                          type="text"
+                          value={name}
+                          onChange={(e) => handleBatchFileNameChange(idx, e.target.value)}
+                          disabled={isRendering}
+                          className="flex-1 px-2.5 py-1 bg-slate-900 border border-slate-800 rounded text-xs font-mono font-medium text-white focus:outline-none focus:border-amber-500"
+                        />
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
-            </div>
-
-            {/* Batch File Names Configuration (Requirement 3) */}
-            <div className="space-y-2 pt-2 border-t border-slate-200">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-                  <FileText size={14} className="text-amber-600" />
-                  <span>Danh Sách Tên File Render (File Names) ({batchFileNames.length} video)</span>
-                </label>
-                {isCustomBatchFileNames && (
-                  <button
-                    type="button"
-                    onClick={handleResetBatchFileNames}
-                    className="text-[11px] text-amber-700 hover:text-amber-800 font-bold flex items-center gap-1 cursor-pointer"
-                  >
-                    <RefreshCw size={11} />
-                    <span>Khôi phục tên mặc định</span>
-                  </button>
-                )}
-              </div>
-              <p className="text-[11px] text-slate-500">
-                Mỗi video trong batch sẽ lưu với tên file tương ứng theo quy tắc <code className="font-mono text-amber-700 bg-amber-50 px-1 py-0.5 rounded">[Video Title]_[YYYY-MM-DD]_[01, 02...].mp4</code>. Bạn có thể sửa tên từng file:
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto p-2 bg-white rounded-xl border border-slate-200 text-xs">
-                {batchFileNames.map((name, idx) => (
-                  <div key={idx} className="flex items-center gap-2 bg-slate-50 p-2 rounded-lg border border-slate-200">
-                    <span className="w-16 shrink-0 font-bold text-amber-800 font-mono text-[11px]">
-                      Video {String(idx + 1).padStart(2, '0')}:
-                    </span>
-                    <input
-                      type="text"
-                      value={name}
-                      onChange={(e) => handleBatchFileNameChange(idx, e.target.value)}
-                      disabled={isRendering}
-                      className="flex-1 px-2.5 py-1 bg-white border border-slate-300 rounded text-xs font-mono font-medium text-slate-900 focus:outline-hidden focus:ring-1 focus:ring-amber-500"
-                    />
-                  </div>
-                ))}
-              </div>
             </div>
 
             {/* Batch Start Button */}
             <button
               onClick={handleStartBatchRender}
               disabled={isRendering || poolCount === 0}
-              className="w-full py-3.5 bg-gradient-to-r from-amber-600 via-rose-600 to-amber-600 hover:opacity-95 text-white font-black text-sm rounded-xl shadow-md transition flex items-center justify-center gap-2 disabled:opacity-50 active:scale-[0.99] cursor-pointer"
+              className="w-full py-3.5 bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:opacity-95 text-slate-950 font-black text-sm rounded-xl shadow-lg shadow-amber-500/20 transition flex items-center justify-center gap-2 disabled:opacity-50 active:scale-[0.99] cursor-pointer"
             >
               {isRendering ? (
                 <>
-                  <Loader2 size={18} className="animate-spin text-white" />
+                  <Loader2 size={18} className="animate-spin text-slate-950" />
                   <span>ĐANG XỬ LÝ BATCH {batchState ? `VIDEO ${batchState.currentVideoIndex}/${batchState.totalVideos}` : ''} ({batchState?.progress ?? 0}%)...</span>
                 </>
               ) : (
@@ -1526,57 +1651,52 @@ export const RenderTab: React.FC<RenderTabProps> = ({
         )}
       </section>
 
-      {/* 2. REALTIME TELEMETRY & ETA DASHBOARD (Requirement 5) */}
+      {/* 2. REALTIME TELEMETRY & ETA DASHBOARD */}
       {(jobState || batchState) && (
-        <section className="bg-white border-2 border-amber-400/80 rounded-2xl p-4 sm:p-5 space-y-4 shadow-sm">
+        <section className="bg-slate-900/90 border border-amber-500/40 rounded-2xl p-4 sm:p-5 space-y-4 shadow-xl backdrop-blur-md">
           {/* Queue Status Alert Banner */}
           {jobState?.status === 'queued' && (
-            <div className="bg-amber-50 border-2 border-amber-400 rounded-xl p-4 flex items-center gap-3 animate-pulse">
-              <div className="w-10 h-10 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center font-black text-sm shrink-0 shadow-xs">
+            <div className="bg-amber-500/15 border border-amber-500/40 rounded-xl p-4 flex items-center gap-3 animate-pulse">
+              <div className="w-10 h-10 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center font-black text-sm shrink-0 shadow-md">
                 #{jobState.queuePosition || 1}
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-black text-amber-900 uppercase">Hàng Đợi Render (Queue FIFO)</span>
-                  <span className="px-2 py-0.5 rounded-full bg-amber-200 text-amber-900 text-[10px] font-bold">
+                  <span className="text-xs font-extrabold text-amber-300 uppercase">Hàng Đợi Render (FIFO Queue)</span>
+                  <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-bold border border-amber-500/30">
                     Vị trí #{jobState.queuePosition || 1}
                   </span>
                 </div>
-                <p className="text-xs text-amber-800 mt-0.5">
-                  Máy chủ đang bận xử lý tác vụ trước để chống nghẽn CPU/RAM. Tác vụ của bạn sẽ tự động được render ngay khi đến lượt!
+                <p className="text-xs text-slate-300 mt-0.5">
+                  Máy chủ đang xử lý tác vụ trước để đảm bảo bộ nhớ. Tác vụ của bạn sẽ tự động chạy ngay khi đến lượt!
                 </p>
               </div>
             </div>
           )}
 
           {/* Top Status Bar */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
             <div className="flex items-center gap-2.5">
-              {isRendering && <Loader2 size={20} className="animate-spin text-amber-600" />}
+              {isRendering && <Loader2 size={20} className="animate-spin text-amber-400" />}
               {((batchState && batchState.status === 'completed') || (!batchState && jobState?.status === 'completed')) && (
-                <CheckCircle2 size={20} className="text-emerald-600" />
+                <CheckCircle2 size={20} className="text-emerald-400" />
               )}
               {((batchState && batchState.status === 'failed') || (!batchState && jobState?.status === 'failed')) && (
-                <AlertCircle size={20} className="text-rose-600" />
+                <AlertCircle size={20} className="text-rose-400" />
               )}
 
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-black text-slate-900 uppercase">
+                  <span className="text-xs font-extrabold text-white uppercase">
                     {batchState
                       ? `Rendering Video ${batchState.currentVideoIndex} / ${batchState.totalVideos}`
-                      : `Rendering Video: ${jobState?.jobId}`}
+                      : `Tác vụ: ${jobState?.jobId}`}
                   </span>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 text-slate-600 font-bold">
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-bold border border-slate-700">
                     {batchState ? batchState.batchId : jobState?.jobId}
                   </span>
-                  {jobState?.renderPreset && (
-                    <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-300">
-                      {jobState.renderPreset}
-                    </span>
-                  )}
                 </div>
-                <span className="text-xs text-slate-600 block mt-0.5">
+                <span className="text-xs text-slate-400 block mt-0.5">
                   {batchState ? batchState.stage : jobState?.stage}
                 </span>
               </div>
@@ -1585,8 +1705,8 @@ export const RenderTab: React.FC<RenderTabProps> = ({
             <div className="flex items-center gap-2 self-end sm:self-auto">
               <span className={`text-base font-mono font-black px-3.5 py-1 rounded-xl border ${
                 (batchState?.status === 'completed' || (!batchState && jobState?.status === 'completed'))
-                  ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
-                  : 'bg-amber-50 text-amber-700 border-amber-300'
+                  ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40'
+                  : 'bg-amber-500/15 text-amber-300 border-amber-500/40'
               }`}>
                 {batchState ? batchState.progress : jobState?.progress}%
               </span>
@@ -1608,83 +1728,83 @@ export const RenderTab: React.FC<RenderTabProps> = ({
             renderPreset={jobState?.renderPreset || renderPreset}
           />
 
-          {/* REALTIME METRICS GRID (Exact format as required in prompt) */}
+          {/* REALTIME METRICS GRID */}
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2.5 font-mono text-xs">
             {/* 1. Progress */}
-            <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
-              <span className="text-[10px] text-slate-500 uppercase block font-sans font-bold flex items-center gap-1">
-                <Activity size={12} className="text-amber-600" />
+            <div className="p-3 bg-slate-950/80 rounded-xl border border-slate-800">
+              <span className="text-[10px] text-slate-400 uppercase block font-sans font-bold flex items-center gap-1">
+                <Activity size={12} className="text-amber-400" />
                 <span>Tiến Độ</span>
               </span>
-              <span className="text-sm font-black text-slate-900 mt-1 block">
+              <span className="text-sm font-black text-white mt-1 block">
                 {batchState ? batchState.progress : jobState?.progress}%
               </span>
             </div>
 
             {/* 2. Elapsed Time */}
-            <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
-              <span className="text-[10px] text-slate-500 uppercase block font-sans font-bold flex items-center gap-1">
-                <Clock size={12} className="text-sky-600" />
-                <span>Elapsed</span>
+            <div className="p-3 bg-slate-950/80 rounded-xl border border-slate-800">
+              <span className="text-[10px] text-slate-400 uppercase block font-sans font-bold flex items-center gap-1">
+                <Clock size={12} className="text-sky-400" />
+                <span>Thời gian chạy</span>
               </span>
-              <span className="text-sm font-black text-slate-900 mt-1 block">
+              <span className="text-sm font-black text-white mt-1 block">
                 {formatTime(currentDisplayElapsed)}
               </span>
             </div>
 
             {/* 3. Real ETA */}
-            <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
-              <span className="text-[10px] text-slate-500 uppercase block font-sans font-bold flex items-center gap-1">
-                <Timer size={12} className="text-rose-600" />
-                <span>Remaining (ETA)</span>
+            <div className="p-3 bg-slate-950/80 rounded-xl border border-slate-800">
+              <span className="text-[10px] text-slate-400 uppercase block font-sans font-bold flex items-center gap-1">
+                <Timer size={12} className="text-rose-400" />
+                <span>Còn lại (ETA)</span>
               </span>
-              <span className="text-sm font-black text-rose-700 mt-1 block">
+              <span className="text-sm font-black text-rose-400 mt-1 block">
                 {formatTime(currentDisplayEta)}
               </span>
             </div>
 
             {/* 4. Current FPS */}
-            <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
-              <span className="text-[10px] text-slate-500 uppercase block font-sans font-bold flex items-center gap-1">
-                <Gauge size={12} className="text-emerald-600" />
+            <div className="p-3 bg-slate-950/80 rounded-xl border border-slate-800">
+              <span className="text-[10px] text-slate-400 uppercase block font-sans font-bold flex items-center gap-1">
+                <Gauge size={12} className="text-emerald-400" />
                 <span>Current FPS</span>
               </span>
-              <span className="text-sm font-black text-emerald-700 mt-1 block">
+              <span className="text-sm font-black text-emerald-400 mt-1 block">
                 {currentDisplayFps > 0 ? `${currentDisplayFps} FPS` : '-- FPS'}
               </span>
             </div>
 
             {/* 5. Render Speed */}
-            <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
-              <span className="text-[10px] text-slate-500 uppercase block font-sans font-bold flex items-center gap-1">
-                <Zap size={12} className="text-purple-600" />
+            <div className="p-3 bg-slate-950/80 rounded-xl border border-slate-800">
+              <span className="text-[10px] text-slate-400 uppercase block font-sans font-bold flex items-center gap-1">
+                <Zap size={12} className="text-purple-400" />
                 <span>Render Speed</span>
               </span>
-              <span className="text-sm font-black text-purple-700 mt-1 block">
+              <span className="text-sm font-black text-purple-400 mt-1 block">
                 {currentDisplaySpeed > 0 ? `${currentDisplaySpeed}x` : '--x'}
               </span>
             </div>
 
             {/* 6. Current Frames */}
-            <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
-              <span className="text-[10px] text-slate-500 uppercase block font-sans font-bold flex items-center gap-1">
-                <Layers size={12} className="text-amber-600" />
+            <div className="p-3 bg-slate-950/80 rounded-xl border border-slate-800">
+              <span className="text-[10px] text-slate-400 uppercase block font-sans font-bold flex items-center gap-1">
+                <Layers size={12} className="text-amber-400" />
                 <span>Khung Hình</span>
               </span>
-              <span className="text-sm font-black text-slate-900 mt-1 block truncate">
+              <span className="text-sm font-black text-white mt-1 block truncate">
                 {currentDisplayFrame} / {currentDisplayTotalFrames || '--'}
               </span>
             </div>
           </div>
 
-          {/* Detailed 7-Stage Stepper View for current active video */}
+          {/* Detailed 7-Stage Stepper View */}
           <div className="pt-2">
-            <h4 className="text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-              <Layers size={13} className="text-amber-600" />
-              <span>Các Giai Đoạn Đang Xử Lý (7 Stages Pipeline)</span>
+            <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+              <Layers size={13} className="text-amber-400" />
+              <span>Tiến trình 7 Giai Đoạn (Pipeline Stages)</span>
             </h4>
 
-            <div className="space-y-1.5 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+            <div className="space-y-1.5 bg-slate-950/80 p-2.5 rounded-xl border border-slate-800">
               {stagesList.map((stg) => {
                 const isCompleted = stg.status === 'completed';
                 const isRunning = stg.status === 'running';
@@ -1696,26 +1816,26 @@ export const RenderTab: React.FC<RenderTabProps> = ({
                     key={stg.id}
                     className={`px-3 py-2 rounded-lg border flex items-center justify-between text-xs transition-all ${
                       isRunning
-                        ? 'bg-amber-50/80 border-amber-300 shadow-2xs'
+                        ? 'bg-amber-500/15 border-amber-500/50 shadow-sm'
                         : isCompleted
-                        ? 'bg-white border-slate-200 text-slate-800'
+                        ? 'bg-slate-900 border-slate-800/80 text-slate-200'
                         : isFailed
-                        ? 'bg-rose-50 border-rose-300 text-rose-800'
-                        : 'bg-transparent border-transparent text-slate-400'
+                        ? 'bg-rose-500/20 border-rose-500/50 text-rose-300'
+                        : 'bg-transparent border-transparent text-slate-500'
                     }`}
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
-                      {isCompleted && <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />}
-                      {isRunning && <Loader2 size={16} className="animate-spin text-amber-600 shrink-0" />}
-                      {isFailed && <AlertCircle size={16} className="text-rose-600 shrink-0" />}
-                      {isPending && <div className="w-4 h-4 rounded-full border border-slate-300 flex items-center justify-center text-[9px] font-bold text-slate-400 shrink-0">{stg.order}</div>}
+                      {isCompleted && <CheckCircle2 size={15} className="text-emerald-400 shrink-0" />}
+                      {isRunning && <Loader2 size={15} className="animate-spin text-amber-400 shrink-0" />}
+                      {isFailed && <AlertCircle size={15} className="text-rose-400 shrink-0" />}
+                      {isPending && <div className="w-4 h-4 rounded-full border border-slate-700 flex items-center justify-center text-[9px] font-bold text-slate-500 shrink-0">{stg.order}</div>}
 
                       <div className="min-w-0">
-                        <span className={`font-bold block truncate ${isRunning ? 'text-amber-900' : isCompleted ? 'text-slate-800' : isFailed ? 'text-rose-800' : 'text-slate-500'}`}>
+                        <span className={`font-bold block truncate ${isRunning ? 'text-amber-300' : isCompleted ? 'text-white' : isFailed ? 'text-rose-300' : 'text-slate-400'}`}>
                           {stg.name}
                         </span>
                         {stg.message && (
-                          <span className="text-[10px] text-slate-500 block truncate font-normal">
+                          <span className="text-[10px] text-slate-400 block truncate font-normal">
                             {stg.message}
                           </span>
                         )}
@@ -1724,17 +1844,17 @@ export const RenderTab: React.FC<RenderTabProps> = ({
 
                     <div className="flex items-center gap-2 shrink-0 ml-2">
                       {stg.durationMs && (
-                        <span className="text-[10px] font-mono text-slate-400">
+                        <span className="text-[10px] font-mono text-slate-500">
                           {(stg.durationMs / 1000).toFixed(1)}s
                         </span>
                       )}
                       {isRunning && (
-                        <span className="text-[10px] font-mono font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded">
+                        <span className="text-[10px] font-mono font-bold text-amber-300 bg-amber-500/20 px-1.5 py-0.5 rounded border border-amber-500/30">
                           {stg.progress}%
                         </span>
                       )}
                       {isCompleted && (
-                        <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                        <span className="text-[10px] font-bold text-emerald-300 bg-emerald-500/20 px-1.5 py-0.5 rounded border border-emerald-500/30">
                           Xong
                         </span>
                       )}
@@ -1745,25 +1865,25 @@ export const RenderTab: React.FC<RenderTabProps> = ({
             </div>
           </div>
 
-          {/* Batch Completed Videos List (if batch mode) */}
+          {/* Batch Completed Videos List */}
           {batchState && batchState.completedVideos && batchState.completedVideos.length > 0 && (
-            <div className="pt-2 border-t border-slate-100 space-y-2">
-              <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-                <CheckCircle2 size={14} className="text-emerald-600" />
-                <span>Các Video Đã Render Xong Trong Batch ({batchState.completedVideosCount}/{batchState.totalVideos})</span>
+            <div className="pt-2 border-t border-slate-800 space-y-2">
+              <h4 className="text-xs font-black text-white uppercase tracking-wider flex items-center gap-1.5">
+                <CheckCircle2 size={14} className="text-emerald-400" />
+                <span>Video Đã Render Xong Trong Batch ({batchState.completedVideosCount}/{batchState.totalVideos})</span>
               </h4>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {batchState.completedVideos.map((v) => (
                   <div
                     key={v.jobId}
-                    className="p-3 bg-emerald-50/50 border border-emerald-200 rounded-xl flex items-center justify-between text-xs"
+                    className="p-3 bg-slate-950/80 border border-slate-800 rounded-xl flex items-center justify-between text-xs"
                   >
                     <div className="min-w-0 flex-1 mr-2">
-                      <span className="font-bold text-slate-800 block truncate" title={v.fileName || `Video ${v.index}`}>
-                        Video {v.index}: {v.fileName || `${v.jobId}.mp4`}
+                      <span className="font-bold text-white block truncate" title={v.fileName || `Video ${v.index}`}>
+                        #{v.index}: {v.fileName || `${v.jobId}.mp4`}
                       </span>
-                      <span className="text-[10px] text-slate-500 font-mono block">
+                      <span className="text-[10px] text-slate-400 font-mono block">
                         {v.questionCount} câu • {v.durationSec ? `${v.durationSec}s` : ''} — {formatBytes(v.fileSizeBytes)}
                       </span>
                     </div>
@@ -1772,7 +1892,7 @@ export const RenderTab: React.FC<RenderTabProps> = ({
                       <a
                         href={`/api/render/download/${v.jobId}`}
                         download={v.fileName || `${v.jobId}.mp4`}
-                        className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold text-xs flex items-center gap-1 transition shadow-2xs shrink-0"
+                        className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold text-xs flex items-center gap-1 transition shadow-sm shrink-0"
                       >
                         <Download size={12} />
                         <span>Tải MP4</span>
@@ -1786,23 +1906,23 @@ export const RenderTab: React.FC<RenderTabProps> = ({
 
           {/* Single Completed Video Preview & Download */}
           {!batchState && jobState?.status === 'completed' && jobState.outputUrl && (
-            <div className="pt-3 border-t border-slate-100 space-y-3">
-              <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex items-center justify-between text-xs">
-                <div className="flex items-center gap-2 text-emerald-800 font-bold">
+            <div className="pt-3 border-t border-slate-800 space-y-3">
+              <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-3 flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2 text-emerald-300 font-bold">
                   <CheckCircle size={16} />
-                  <span>Video đã sẵn sàng! Dung lượng: {formatBytes(jobState.fileSizeBytes)} (~{jobState.durationSec || 0}s)</span>
+                  <span>Video đã hoàn tất! Dung lượng: {formatBytes(jobState.fileSizeBytes)} (~{jobState.durationSec || 0}s)</span>
                 </div>
                 <a
                   href={`/api/render/download/${jobState.jobId}`}
                   download={jobState.fileName || `${jobState.jobId}.mp4`}
-                  className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg shadow-xs transition flex items-center gap-1.5 text-xs cursor-pointer"
+                  className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-lg shadow-sm transition flex items-center gap-1.5 text-xs cursor-pointer"
                 >
                   <Download size={14} />
                   <span>Tải MP4 ({jobState.fileName || `${jobState.jobId}.mp4`})</span>
                 </a>
               </div>
 
-              <div className="aspect-[9/16] max-w-xs mx-auto rounded-2xl overflow-hidden border-4 border-emerald-500 shadow-2xl bg-black">
+              <div className="aspect-[9/16] max-w-xs mx-auto rounded-2xl overflow-hidden border-2 border-emerald-500 shadow-2xl bg-black">
                 <video
                   src={jobState.outputUrl}
                   controls
@@ -1815,15 +1935,15 @@ export const RenderTab: React.FC<RenderTabProps> = ({
         </section>
       )}
 
-      {/* 3. Render Jobs History */}
-      <section className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-xs space-y-4">
+      {/* 3. RENDER JOBS HISTORY */}
+      <section className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-lg space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+          <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
             <span>Lịch Sử Render Gần Đây</span>
           </h3>
           <button
             onClick={loadJobs}
-            className="p-1.5 hover:bg-slate-100 text-slate-500 hover:text-slate-800 rounded-lg transition cursor-pointer"
+            className="p-1.5 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg transition cursor-pointer"
             title="Làm mới lịch sử"
           >
             <RefreshCw size={14} />
@@ -1831,21 +1951,21 @@ export const RenderTab: React.FC<RenderTabProps> = ({
         </div>
 
         {jobsHistory.length === 0 ? (
-          <div className="text-center py-6 text-slate-400 text-xs">
-            Chưa có video nào được render. Hãy chọn số câu hỏi và nhấn nút Render ở trên để bắt đầu!
+          <div className="text-center py-6 text-slate-500 text-xs">
+            Chưa có video nào được render. Hãy chọn số câu hỏi và nhấn nút Bắt đầu Render ở trên!
           </div>
         ) : (
           <div className="space-y-2">
             {jobsHistory.slice(0, 10).map((j) => (
               <div
                 key={j.jobId}
-                className="bg-slate-50 p-3 rounded-xl border border-slate-200 flex items-center justify-between text-xs"
+                className="bg-slate-950/80 p-3 rounded-xl border border-slate-800 flex items-center justify-between text-xs"
               >
                 <div>
-                  <span className="font-bold text-slate-800 block font-mono">
+                  <span className="font-bold text-white block font-mono">
                     {j.fileName || j.jobId}
                   </span>
-                  <span className="text-[11px] text-slate-500">
+                  <span className="text-[11px] text-slate-400">
                     {new Date(j.createdAt).toLocaleTimeString()} — {j.stage}
                   </span>
                 </div>
@@ -1855,19 +1975,19 @@ export const RenderTab: React.FC<RenderTabProps> = ({
                     <a
                       href={`/api/render/download/${j.jobId}`}
                       download={j.fileName || `${j.jobId}.mp4`}
-                      className="px-3 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-300 rounded-lg font-bold transition flex items-center gap-1 shadow-xs cursor-pointer"
+                      className="px-3 py-1 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 rounded-lg font-bold transition flex items-center gap-1 shadow-xs cursor-pointer"
                     >
                       <Download size={12} />
                       <span>Tải MP4</span>
                     </a>
                   )}
                   {j.status === 'processing' && (
-                    <span className="text-amber-600 flex items-center gap-1 font-semibold">
+                    <span className="text-amber-400 flex items-center gap-1 font-semibold">
                       <Loader2 size={12} className="animate-spin" />
                       <span>{j.progress}%</span>
                     </span>
                   )}
-                  {j.status === 'failed' && <span className="text-rose-600 font-semibold">Thất bại</span>}
+                  {j.status === 'failed' && <span className="text-rose-400 font-semibold">Thất bại</span>}
                 </div>
               </div>
             ))}

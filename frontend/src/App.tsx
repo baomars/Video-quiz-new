@@ -618,6 +618,8 @@ export const App: React.FC = () => {
           onClose={() => setIsAssetsModalOpen(false)}
           channel={currentChannel}
           template={currentTemplate}
+          language={currentLanguage}
+          onLanguageChange={handleSelectLanguage}
           onChannelChange={handleChannelChange}
           onTemplateChange={handleTemplateChange}
         />

@@ -13,6 +13,10 @@ export interface TTSVoice {
   gender: 'Female' | 'Male';
   locale: string;
   suggestedRole?: string;
+  region?: string;
+  style?: string;
+  isCloned?: boolean;
+  sampleUrl?: string;
 }
 
 export interface TTSRequest {
@@ -21,6 +25,8 @@ export interface TTSRequest {
   rate?: string;
   pitch?: string;
   volume?: string;
+  speed?: number;
+  ref_audio?: string;
   channelId?: string;
   lang?: string;
 }
@@ -31,6 +37,7 @@ export interface TTSResult {
   url: string;
   durationSec: number;
   fromCache: boolean;
+  engine?: string;
 }
 
 export interface ITTSProvider {

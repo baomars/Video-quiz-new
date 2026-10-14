@@ -13,7 +13,8 @@ import {
   Globe,
   Sliders,
   AlertTriangle,
-  MonitorPlay
+  MonitorPlay,
+  Mic
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
@@ -173,9 +174,9 @@ export const TopBar: React.FC<TopBarProps> = ({
             FFmpeg 7.1
           </span>
           <span className="text-slate-600">|</span>
-          <span className="flex items-center gap-1 text-sky-400">
-            <span className="w-2 h-2 rounded-full bg-sky-400 animate-pulse" />
-            Edge-TTS
+          <span className="flex items-center gap-1 text-amber-400 font-bold">
+            <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+            VieNeu TTS v3
           </span>
           <span className="text-slate-600">|</span>
           <span className="text-green-400 font-medium">Native Skia Engine</span>
@@ -199,15 +200,15 @@ export const TopBar: React.FC<TopBarProps> = ({
           )}
         </div>
 
-        {/* Asset Manager Button */}
+        {/* Voice Studio & Assets Manager Button */}
         <Button
           size="sm"
           variant="outline"
           onClick={onOpenAssetsModal}
-          className="hidden sm:inline-flex bg-slate-800 hover:bg-slate-700 border-slate-700 text-slate-200 hover:text-white text-xs font-bold gap-1.5 h-8 px-3 rounded-xl transition"
+          className="hidden sm:inline-flex bg-slate-800 hover:bg-slate-700 border-slate-700 text-slate-200 hover:text-white text-xs font-bold gap-1.5 h-8 px-3 rounded-xl transition cursor-pointer"
         >
-          <FolderOpen size={14} className="text-amber-400" />
-          <span>Tài nguyên</span>
+          <Mic size={14} className="text-amber-400" />
+          <span>Phòng thu & Tài nguyên</span>
         </Button>
 
         {/* Primary Export Button */}

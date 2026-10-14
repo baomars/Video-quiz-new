@@ -1,8 +1,12 @@
 import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import { spawn, ChildProcess } from 'child_process';
 import { ITTSProvider, TTSRequest, TTSResult, TTSVoice } from './ttsProvider.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export interface ClonedVoiceRecord {
   id: string;
@@ -72,7 +76,13 @@ export class VieNeuProvider implements ITTSProvider {
   }
 
   private startPythonService() {
-    const serviceScript = path.resolve(__dirname, 'vieneu_service.py');
+    let serviceScript = path.resolve(__dirname, 'vieneu_service.py');
+    if (!fs.existsSync(serviceScript)) {
+      const fallbackScript = path.resolve(process.cwd(), 'backend', 'src', 'tts', 'vieneu_service.py');
+      if (fs.existsSync(fallbackScript)) {
+        serviceScript = fallbackScript;
+      }
+    }
     console.log(`[VieNeuProvider] Khởi chạy tiến trình Python bridge: ${serviceScript}`);
 
     // Try python or python3

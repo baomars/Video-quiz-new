@@ -59,8 +59,37 @@ export class VieNeuProvider implements ITTSProvider {
     this.startPythonService();
   }
 
+  private getDriveVoicesDir(): string | null {
+    const driveDir = process.env.DRIVE_VOICES_DIR || '/content/drive/MyDrive/VideoQuiz_Data/voices';
+    if (fs.existsSync(driveDir)) {
+      return driveDir;
+    }
+    return null;
+  }
+
   private loadClonedVoices() {
     try {
+      const driveDir = this.getDriveVoicesDir();
+      // If local cloned_voices.json doesn't exist but Drive has it, sync from Drive
+      if (driveDir && fs.existsSync(path.join(driveDir, 'cloned_voices.json'))) {
+        if (!fs.existsSync(this.clonedVoicesPath) || fs.statSync(this.clonedVoicesPath).size < 10) {
+          fs.copyFileSync(path.join(driveDir, 'cloned_voices.json'), this.clonedVoicesPath);
+          const driveSamples = path.join(driveDir, 'samples');
+          const localSamples = path.join(path.dirname(this.clonedVoicesPath), 'samples');
+          if (fs.existsSync(driveSamples)) {
+            fs.mkdirSync(localSamples, { recursive: true });
+            for (const f of fs.readdirSync(driveSamples)) {
+              const src = path.join(driveSamples, f);
+              const dst = path.join(localSamples, f);
+              if (!fs.existsSync(dst)) {
+                fs.copyFileSync(src, dst);
+              }
+            }
+          }
+          console.log('[VieNeuProvider] Đã tự động phục hồi toàn bộ giọng clone từ Google Drive!');
+        }
+      }
+
       if (fs.existsSync(this.clonedVoicesPath)) {
         const raw = fs.readFileSync(this.clonedVoicesPath, 'utf-8');
         const list: ClonedVoiceRecord[] = JSON.parse(raw);
@@ -76,10 +105,24 @@ export class VieNeuProvider implements ITTSProvider {
   private saveClonedVoices() {
     try {
       const list = Array.from(this.clonedVoices.values());
-      fs.writeFileSync(this.clonedVoicesPath, JSON.stringify(list, null, 2), 'utf-8');
+      const content = JSON.stringify(list, null, 2);
+      fs.writeFileSync(this.clonedVoicesPath, content, 'utf-8');
+
+      // Auto-persist to Google Drive if connected
+      const driveDir = this.getDriveVoicesDir();
+      if (driveDir) {
+        fs.writeFileSync(path.join(driveDir, 'cloned_voices.json'), content, 'utf-8');
+        console.log('[VieNeuProvider] Đã tự động lưu danh sách giọng clone lên Google Drive!');
+      }
     } catch (err) {
       console.error('[VieNeuProvider] Không thể lưu danh sách cloned voices:', err);
     }
+  }
+
+  public reloadClonedVoices() {
+    this.clonedVoices.clear();
+    this.loadClonedVoices();
+    console.log(`[VieNeuProvider] Đã nạp lại ${this.clonedVoices.size} giọng clone từ đĩa.`);
   }
 
   private startPythonService() {

@@ -98,16 +98,45 @@ export class VoiceStudioService {
       createdAt: new Date().toISOString()
     };
 
+    // Auto-persist sample to Google Drive if connected
+    const driveDir = process.env.DRIVE_VOICES_DIR || '/content/drive/MyDrive/VideoQuiz_Data/voices';
+    if (fs.existsSync(driveDir)) {
+      try {
+        const driveSamples = path.join(driveDir, 'samples');
+        fs.mkdirSync(driveSamples, { recursive: true });
+        fs.copyFileSync(targetWavPath, path.join(driveSamples, `${voiceId}.wav`));
+        console.log(`[VoiceStudio] Đã sao lưu mẫu âm thanh giọng "${rawName}" lên Google Drive!`);
+      } catch (e) {
+        console.warn('[VoiceStudio] Không thể sao lưu file mẫu lên Google Drive:', e);
+      }
+    }
+
     this.provider.registerClonedVoice(record);
     console.log(`[VoiceStudio] Đã đăng ký nhân bản giọng thành công: ${record.name} (${record.id})`);
     return record;
   }
 
   public deleteVoice(id: string): boolean {
-    return this.provider.deleteClonedVoice(id);
+    const ok = this.provider.deleteClonedVoice(id);
+    if (ok) {
+      const samplePath = path.join(this.samplesDir, `${id}.wav`);
+      if (fs.existsSync(samplePath)) {
+        try { fs.unlinkSync(samplePath); } catch {}
+      }
+      const driveDir = process.env.DRIVE_VOICES_DIR || '/content/drive/MyDrive/VideoQuiz_Data/voices';
+      const driveSample = path.join(driveDir, 'samples', `${id}.wav`);
+      if (fs.existsSync(driveSample)) {
+        try { fs.unlinkSync(driveSample); } catch {}
+      }
+    }
+    return ok;
   }
 
   public listClonedVoices(): ClonedVoiceRecord[] {
     return this.provider.getClonedVoices();
+  }
+
+  public reload(): void {
+    this.provider.reloadClonedVoices();
   }
 }

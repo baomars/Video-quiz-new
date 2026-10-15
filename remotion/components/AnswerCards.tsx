@@ -81,7 +81,7 @@ export const AnswerCards: React.FC<AnswerCardsProps> = React.memo(({
   });
 
   const normalizedCorrect = (correctAnswer || 'A').toString().trim().toUpperCase().slice(0, 1) as OptionKey;
-  const blurPx = style.backdropBlur !== undefined ? style.backdropBlur : (style.glassmorphism ? 12 : 0);
+  const blurPx = style.backdropBlur !== undefined ? style.backdropBlur : ((style as any).glassmorphism ? 12 : 0);
   const strokeWidth = style.textStrokeWidth ?? 0;
   const strokeColor = style.textStrokeColor || 'rgba(0,0,0,0.85)';
 
@@ -306,17 +306,22 @@ export const AnswerCards: React.FC<AnswerCardsProps> = React.memo(({
             {/* Option Text */}
             <div
               style={{
-                fontFamily: layout.fontFamily,
+                fontFamily: layout.fontFamily || 'Montserrat, sans-serif',
                 fontSize: `${layout.fontSize}px`,
                 fontWeight: layout.fontWeight,
                 color: textColor,
-                WebkitTextStroke: strokeWidth > 0 ? `${strokeWidth}px ${strokeColor}` : undefined,
-                textShadow: (layout.textShadow && layout.textShadow !== 'none') ? layout.textShadow : undefined,
+                WebkitTextStroke: layout.textStrokeEnabled
+                  ? `${layout.textStrokeWidth || 2}px ${layout.textStrokeColor || '#000000'}`
+                  : strokeWidth > 0 ? `${strokeWidth}px ${strokeColor}` : undefined,
+                textShadow: layout.textShadowEnabled
+                  ? `${layout.textShadowOffsetX || 0}px ${layout.textShadowOffsetY || 2}px ${layout.textShadowBlur || 6}px ${layout.textShadowColor || 'rgba(0,0,0,0.4)'}`
+                  : (layout.textShadow && layout.textShadow !== 'none') ? layout.textShadow : undefined,
                 textAlign: style.textAlign || 'left',
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
-                lineHeight: 1.3,
+                lineHeight: style.lineHeight || 1.3,
+                letterSpacing: `${style.letterSpacing || 0}px`,
                 width: '100%',
                 opacity: contentOpacity
               }}

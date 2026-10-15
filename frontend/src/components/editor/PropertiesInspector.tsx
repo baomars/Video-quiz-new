@@ -70,7 +70,7 @@ export const PropertiesInspector: React.FC<PropertiesInspectorProps> = ({
     background: 'Nền Video'
   };
 
-  const activeComp = template.components[selectedKey] || {};
+  const activeComp: any = (template.components as any)[selectedKey] || {};
 
   const handleUploadBgImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

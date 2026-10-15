@@ -281,7 +281,7 @@ export const VideoCanvas: React.FC<VideoCanvasProps> = ({
           <CanvasErrorBoundary resetKey={compositionProps.template?.id || 'default'}>
             <Player
               ref={playerRef}
-              component={QuizVideoComposition}
+              component={QuizVideoComposition as any}
               inputProps={compositionProps}
               durationInFrames={totalFrames || 600}
               compositionWidth={720}

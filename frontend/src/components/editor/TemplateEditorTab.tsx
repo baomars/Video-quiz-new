@@ -642,7 +642,7 @@ export const TemplateEditorTab: React.FC<TemplateEditorTabProps> = ({ template, 
     background: 'Nền video (Background)'
   };
 
-  const activeComp = template.components[selectedCompKey] || {};
+  const activeComp: any = (template.components as any)[selectedCompKey] || {};
   const bgFileInputRef = useRef<HTMLInputElement | null>(null);
   const [isUploadingBg, setIsUploadingBg] = useState(false);
 
@@ -705,7 +705,7 @@ export const TemplateEditorTab: React.FC<TemplateEditorTabProps> = ({ template, 
 
   // Center-preserving width update: shrinks/expands equally from both sides when horizontalAlign is center
   const updateWidth = (key: ComponentKey, newWidth: number) => {
-    const compData = template.components[key] || {};
+    const compData: any = (template.components as any)[key] || {};
     const oldWidth = compData.width ?? (key === 'answerButtons' ? 88 : 80);
     const oldX = compData.x ?? ((100 - oldWidth) / 2);
     const hAlign = compData.horizontalAlign ?? (key === 'answerButtons' ? 'center' : 'center');
@@ -735,7 +735,7 @@ export const TemplateEditorTab: React.FC<TemplateEditorTabProps> = ({ template, 
 
   // Center-preserving height update: shrinks/expands equally from top & bottom when verticalAlign is center
   const updateHeight = (key: ComponentKey, newHeight: number) => {
-    const compData = template.components[key] || {};
+    const compData: any = (template.components as any)[key] || {};
     const oldHeight = compData.height ?? 20;
     const oldY = compData.y ?? ((100 - oldHeight) / 2);
     const vAlign = compData.verticalAlign ?? 'center';
@@ -765,7 +765,7 @@ export const TemplateEditorTab: React.FC<TemplateEditorTabProps> = ({ template, 
 
   // Reset Horizontal Alignment & re-center
   const setHorizontalAlign = (key: ComponentKey, align: HorizontalAlign) => {
-    const compData = template.components[key] || {};
+    const compData: any = (template.components as any)[key] || {};
     const width = compData.width ?? (key === 'answerButtons' ? 88 : 80);
     let newX = compData.x ?? 6;
 
@@ -792,7 +792,7 @@ export const TemplateEditorTab: React.FC<TemplateEditorTabProps> = ({ template, 
 
   // Reset Vertical Alignment & re-center
   const setVerticalAlign = (key: ComponentKey, align: VerticalAlign) => {
-    const compData = template.components[key] || {};
+    const compData: any = (template.components as any)[key] || {};
     const height = compData.height ?? 20;
     let newY = compData.y ?? 20;
 
@@ -832,7 +832,7 @@ export const TemplateEditorTab: React.FC<TemplateEditorTabProps> = ({ template, 
     const mergedComponents: Record<string, any> = { ...template.components };
     Object.keys(preset.components).forEach((k) => {
       mergedComponents[k] = {
-        ...(template.components[k] || {}),
+        ...((template.components as any)[k] || {}),
         ...preset.components[k]
       };
     });
@@ -843,7 +843,7 @@ export const TemplateEditorTab: React.FC<TemplateEditorTabProps> = ({ template, 
       illustrationLayout: preset.illustrationLayout,
       answerLayout: preset.answerLayout,
       countdownStyle: preset.countdownStyle,
-      components: mergedComponents
+      components: mergedComponents as any
     });
   };
 

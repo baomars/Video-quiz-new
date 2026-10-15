@@ -323,6 +323,536 @@ const ColorControl: React.FC<ColorControlProps> = ({ label, value, onChange }) =
   );
 };
 
+export const FONT_FAMILIES = [
+  { id: 'Montserrat', name: 'Montserrat (Mặc định)', sample: 'Aa Bb Cc' },
+  { id: 'Be Vietnam Pro', name: 'Be Vietnam Pro', sample: 'Aa Bb Cc' },
+  { id: 'Noto Sans', name: 'Noto Sans', sample: 'Aa Bb Cc' },
+  { id: 'Roboto', name: 'Roboto', sample: 'Aa Bb Cc' },
+  { id: 'Inter', name: 'Inter', sample: 'Aa Bb Cc' },
+  { id: 'Outfit', name: 'Outfit', sample: 'Aa Bb Cc' },
+  { id: 'Oswald', name: 'Oswald', sample: 'Aa Bb Cc' },
+  { id: 'Lilita One', name: 'Lilita One', sample: 'Aa Bb Cc' },
+  { id: 'Titan One', name: 'Titan One', sample: 'Aa Bb Cc' },
+  { id: 'Fredoka', name: 'Fredoka', sample: 'Aa Bb Cc' }
+];
+
+export interface CountdownStyleItem {
+  id: any;
+  name: string;
+  tag: string;
+  desc: string;
+  icon: string;
+}
+
+export const COUNTDOWN_STYLES: CountdownStyleItem[] = [
+  {
+    id: 'circular-progress',
+    name: 'Circular Progress',
+    tag: 'Vòng tròn',
+    desc: 'Vòng tròn tiến trình SVG bao quanh số đếm giây mượt mà',
+    icon: '⭕'
+  },
+  {
+    id: 'radial-ring',
+    name: 'Radial Ring',
+    tag: 'Cung quét',
+    desc: 'Cung tròn quét góc giảm dần kèm nhãn giây SEC',
+    icon: '⏱️'
+  },
+  {
+    id: 'horizontal-progress',
+    name: 'Horizontal Progress',
+    tag: 'Thanh ngang',
+    desc: 'Thanh ngang thanh lịch chạy từ đầy về 0% mượt mà',
+    icon: '➖'
+  },
+  {
+    id: 'vertical-progress',
+    name: 'Vertical Progress',
+    tag: 'Cột dọc',
+    desc: 'Cột năng lượng dọc rút cạn năng lượng theo thời gian',
+    icon: '🔋'
+  },
+  {
+    id: 'segmented-bar',
+    name: 'Segmented Bar',
+    tag: 'Vạch LED',
+    desc: '5 khối vạch LED riêng biệt tắt dần theo từng giây',
+    icon: '📶'
+  },
+  {
+    id: 'neon-countdown',
+    name: 'Neon Countdown',
+    tag: 'Aura Neon',
+    desc: 'Quầng sáng Neon phát quang đa lớp rực rỡ và đập nhịp',
+    icon: '💫'
+  },
+  {
+    id: 'digital-countdown',
+    name: 'Digital Countdown',
+    tag: 'Đồng hồ điện tử',
+    desc: 'Màn hình LCD / Bezel số điện tử cổ điển 00:05',
+    icon: '📟'
+  },
+  {
+    id: 'flip-timer',
+    name: 'Flip Timer',
+    tag: 'Thẻ lật',
+    desc: 'Thẻ Split-Flap lật số cổ điển có nếp gấp giữa',
+    icon: '🎴'
+  },
+  {
+    id: 'minimal-number',
+    name: 'Minimal Number',
+    tag: 'Chữ số lớn',
+    desc: 'Chữ số khổng lồ phóng to tối giản ấn tượng',
+    icon: '⚡'
+  },
+  {
+    id: 'pill-timer',
+    name: 'Pill Timer',
+    tag: 'Capsule',
+    desc: 'Viên thuốc capsule thanh lịch + thanh nước chạy',
+    icon: '💊'
+  },
+  {
+    id: 'dot-countdown',
+    name: 'Dot Countdown',
+    tag: 'Chấm bi',
+    desc: 'Dãy chấm tròn phát quang biến mất dần theo thời gian',
+    icon: '🟣'
+  },
+  {
+    id: 'corner-hud',
+    name: 'Corner HUD',
+    tag: 'Sci-Fi HUD',
+    desc: 'Khung góc vát Sci-Fi / Game show công nghệ góc cạnh',
+    icon: '🎯'
+  }
+];
+
+export interface TypographyControlSectionProps {
+  title?: string;
+  style: any;
+  onChange: (patch: any) => void;
+  defaultFontSize?: number;
+  allowShadowDefaultOff?: boolean;
+  showDimensions?: boolean;
+  showAlignment?: boolean;
+  showColors?: boolean;
+  xPresets?: Array<{ label: string; value: number }>;
+  yPresets?: Array<{ label: string; value: number }>;
+  widthPresets?: Array<{ label: string; value: number }>;
+  heightPresets?: Array<{ label: string; value: number }>;
+}
+
+export const TypographyControlSection: React.FC<TypographyControlSectionProps> = ({
+  title = 'Typography & Chữ',
+  style = {},
+  onChange,
+  defaultFontSize = 50,
+  allowShadowDefaultOff = false,
+  showDimensions = true,
+  showAlignment = true,
+  showColors = true,
+  xPresets,
+  yPresets,
+  widthPresets,
+  heightPresets
+}) => {
+  const [isOpen, setIsOpen] = useState<boolean>(true);
+
+  const curFontFamily = style?.fontFamily || 'Montserrat';
+  const curFontSize = style?.fontSize ?? defaultFontSize;
+  const curFontWeight = String(style?.fontWeight || '700');
+  const curTextColor = style?.textColor || style?.color || '#0f172a';
+  const curTextAlign = style?.textAlign || 'center';
+  const curLineHeight = typeof style?.lineHeight === 'number' ? style.lineHeight : 1.35;
+  const curLetterSpacing = style?.letterSpacing ?? 0;
+  const curOpacity = style?.opacity !== undefined ? Math.round(style.opacity * 100) : 100;
+
+  // Stroke
+  const strokeEnabled = Boolean(style?.textStrokeEnabled);
+  const strokeWidth = style?.textStrokeWidth ?? 2;
+  const strokeColor = style?.textStrokeColor || '#000000';
+
+  // Shadow (Default OFF if allowShadowDefaultOff is true)
+  const shadowEnabled = allowShadowDefaultOff
+    ? Boolean(style?.textShadowEnabled)
+    : (style?.textShadowEnabled !== false && style?.textShadowEnabled !== undefined);
+  const shadowBlur = style?.textShadowBlur ?? 8;
+  const shadowX = style?.textShadowOffsetX ?? 0;
+  const shadowY = style?.textShadowOffsetY ?? 3;
+  const shadowColor = style?.textShadowColor || 'rgba(0, 0, 0, 0.4)';
+
+  return (
+    <div className="border border-slate-800 rounded-xl overflow-hidden bg-slate-950/50 space-y-0">
+      {/* Header bar */}
+      <div
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full px-3 py-2.5 flex items-center justify-between text-slate-200 hover:text-white cursor-pointer bg-slate-800/40 transition select-none"
+      >
+        <div className="flex items-center gap-2">
+          <Type size={14} className="text-sky-400" />
+          <span className="font-bold text-xs">{title}</span>
+          <span className="text-[10px] text-sky-400 font-mono bg-sky-950/60 px-1.5 py-0.5 rounded border border-sky-800/50">
+            {curFontFamily} • {curFontSize}px
+          </span>
+        </div>
+        {isOpen ? <ChevronUp size={14} className="text-slate-400" /> : <ChevronDown size={14} className="text-slate-400" />}
+      </div>
+
+      {isOpen && (
+        <div className="p-3 space-y-3.5 border-t border-slate-800/80 bg-slate-900/40">
+          {/* 1. Font Family Dropdown */}
+          <div className="space-y-1">
+            <div className="flex justify-between items-center text-[10px] text-slate-400">
+              <span className="font-semibold uppercase tracking-wider">Font Chữ (Font Family)</span>
+              <span className="text-sky-400 font-medium">{curFontFamily}</span>
+            </div>
+            <select
+              value={curFontFamily}
+              onChange={(e) => onChange({ fontFamily: e.target.value })}
+              className="w-full bg-slate-950 border border-slate-700/80 rounded-lg px-2.5 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-sky-500 font-medium"
+            >
+              {FONT_FAMILIES.map((f) => (
+                <option key={f.id} value={f.id} className="bg-slate-900 text-slate-100">
+                  {f.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* 2. Font Size */}
+          <div className="space-y-1">
+            <div className="flex justify-between items-center text-[11px] text-slate-300">
+              <span className="font-medium">Cỡ chữ (Font Size)</span>
+              <div className="flex items-center gap-1">
+                <input
+                  type="number"
+                  min={14}
+                  max={100}
+                  value={curFontSize}
+                  onChange={(e) => onChange({ fontSize: Math.max(14, Math.min(100, Number(e.target.value) || 14)) })}
+                  className="w-12 h-5 bg-slate-950 border border-slate-700 rounded text-center text-[11px] text-sky-400 font-mono font-bold focus:outline-none focus:border-sky-500"
+                />
+                <span className="text-[11px] text-slate-400">px</span>
+              </div>
+            </div>
+            <Slider
+              min={14}
+              max={100}
+              step={1}
+              value={[curFontSize]}
+              onValueChange={([v]) => onChange({ fontSize: v })}
+            />
+            <div className="flex items-center gap-1 pt-0.5 flex-wrap">
+              {[
+                { label: '20px', value: 20 },
+                { label: '28px', value: 28 },
+                { label: '36px', value: 36 },
+                { label: '50px (Chuẩn)', value: 50 },
+                { label: '64px', value: 64 },
+                { label: '80px', value: 80 }
+              ].map((p) => (
+                <button
+                  key={p.label}
+                  type="button"
+                  onClick={() => onChange({ fontSize: p.value })}
+                  className={`px-1.5 py-0.5 rounded text-[10px] font-semibold border transition ${
+                    curFontSize === p.value
+                      ? 'border-sky-500 bg-sky-950/50 text-sky-300 ring-1 ring-sky-500'
+                      : 'border-slate-800 text-slate-400 hover:text-slate-200 bg-slate-900/50'
+                  }`}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 3. Font Weight */}
+          <div>
+            <label className="text-[10px] text-slate-400 uppercase font-bold block mb-1">Độ đậm chữ (Weight)</label>
+            <div className="grid grid-cols-6 gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800 text-[10px]">
+              {[
+                { id: '400', label: '400' },
+                { id: '500', label: '500' },
+                { id: '600', label: '600' },
+                { id: '700', label: '700' },
+                { id: '800', label: '800' },
+                { id: '900', label: '900' }
+              ].map((w) => (
+                <button
+                  key={w.id}
+                  type="button"
+                  onClick={() => onChange({ fontWeight: w.id })}
+                  className={`py-1 rounded text-center font-semibold transition ${
+                    curFontWeight === w.id
+                      ? 'bg-sky-600 text-white font-bold'
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  {w.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 4. Text Alignment */}
+          {showAlignment && (
+            <div>
+              <label className="text-[10px] text-slate-400 uppercase font-bold block mb-1">Căn dòng chữ</label>
+              <div className="grid grid-cols-3 gap-1">
+                {[
+                  { id: 'left', label: 'Trái', icon: AlignLeft },
+                  { id: 'center', label: 'Giữa', icon: AlignCenter },
+                  { id: 'right', label: 'Phải', icon: AlignRight }
+                ].map((a) => {
+                  const Icon = a.icon;
+                  const isCur = curTextAlign === a.id;
+                  return (
+                    <button
+                      key={a.id}
+                      type="button"
+                      onClick={() => onChange({ textAlign: a.id })}
+                      className={`py-1.5 px-2 rounded-lg border font-semibold text-[11px] flex items-center justify-center gap-1 transition ${
+                        isCur
+                          ? 'border-sky-500 bg-sky-950/40 text-sky-300'
+                          : 'border-slate-800 text-slate-400 hover:text-slate-200'
+                      }`}
+                    >
+                      <Icon size={12} />
+                      {a.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* 5. Text Color */}
+          {showColors && (
+            <ColorControl
+              label="Màu chữ (Text Color)"
+              value={curTextColor}
+              onChange={(val) => onChange({ textColor: val, color: val })}
+            />
+          )}
+
+          {/* 6. Line Height & Letter Spacing */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+            <SliderControl
+              label="Giãn dòng (Line Height)"
+              value={curLineHeight}
+              min={1.0}
+              max={2.5}
+              step={0.05}
+              unit="x"
+              onChange={(v) => onChange({ lineHeight: v })}
+              presets={[
+                { label: 'Gọn 1.1x', value: 1.1 },
+                { label: 'Chuẩn 1.35x', value: 1.35 },
+                { label: 'Thoáng 1.6x', value: 1.6 }
+              ]}
+            />
+            <SliderControl
+              label="Giãn chữ (Letter Spacing)"
+              value={curLetterSpacing}
+              min={-2}
+              max={10}
+              step={0.5}
+              unit="px"
+              onChange={(v) => onChange({ letterSpacing: v })}
+              presets={[
+                { label: 'Khít 0px', value: 0 },
+                { label: 'Vừa 1px', value: 1 },
+                { label: 'Rộng 3px', value: 3 }
+              ]}
+            />
+          </div>
+
+          {/* 7. Text Stroke (Outline) */}
+          <div className="p-2.5 rounded-lg bg-slate-950/80 border border-slate-800/80 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="font-bold text-[11px] text-slate-200 block">Viền chữ (Text Stroke / Outline)</span>
+                <span className="text-[10px] text-slate-400">Tạo viền nổi bật chữ trên nền video</span>
+              </div>
+              <Switch
+                checked={strokeEnabled}
+                onCheckedChange={(val) => onChange({ textStrokeEnabled: val, textStrokeWidth: style?.textStrokeWidth || 2 })}
+              />
+            </div>
+            {strokeEnabled && (
+              <div className="space-y-2.5 pt-1 border-t border-slate-800/80">
+                <SliderControl
+                  label="Độ dày viền chữ (px)"
+                  value={strokeWidth}
+                  min={0.5}
+                  max={10}
+                  step={0.5}
+                  unit="px"
+                  onChange={(v) => onChange({ textStrokeWidth: v })}
+                  presets={[
+                    { label: 'Mảnh 1px', value: 1 },
+                    { label: 'Chuẩn 2px', value: 2 },
+                    { label: 'Đậm 4px', value: 4 }
+                  ]}
+                />
+                <ColorControl
+                  label="Màu viền chữ"
+                  value={strokeColor}
+                  onChange={(val) => onChange({ textStrokeColor: val })}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* 8. Text Shadow */}
+          <div className="p-2.5 rounded-lg bg-slate-950/80 border border-slate-800/80 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="font-bold text-[11px] text-slate-200 block">Đổ bóng chữ (Text Shadow)</span>
+                <span className="text-[10px] text-slate-400">Tạo chiều sâu và tách lớp cho văn bản</span>
+              </div>
+              <Switch
+                checked={shadowEnabled}
+                onCheckedChange={(val) => onChange({ textShadowEnabled: val, textShadowBlur: style?.textShadowBlur || 8, textShadowOffsetY: style?.textShadowOffsetY || 3 })}
+              />
+            </div>
+            {shadowEnabled && (
+              <div className="space-y-2.5 pt-1 border-t border-slate-800/80">
+                <SliderControl
+                  label="Độ mờ bóng (Blur)"
+                  value={shadowBlur}
+                  min={0}
+                  max={30}
+                  step={1}
+                  unit="px"
+                  onChange={(v) => onChange({ textShadowBlur: v })}
+                />
+                <div className="grid grid-cols-2 gap-2">
+                  <SliderControl
+                    label="Độ lệch X"
+                    value={shadowX}
+                    min={-15}
+                    max={15}
+                    step={1}
+                    unit="px"
+                    onChange={(v) => onChange({ textShadowOffsetX: v })}
+                  />
+                  <SliderControl
+                    label="Độ lệch Y"
+                    value={shadowY}
+                    min={-15}
+                    max={15}
+                    step={1}
+                    unit="px"
+                    onChange={(v) => onChange({ textShadowOffsetY: v })}
+                  />
+                </div>
+                <ColorControl
+                  label="Màu bóng chữ"
+                  value={shadowColor}
+                  onChange={(val) => onChange({ textShadowColor: val })}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* 9. Opacity */}
+          <SliderControl
+            label="Độ trong suốt thành phần (Opacity)"
+            value={curOpacity}
+            min={10}
+            max={100}
+            step={5}
+            unit="%"
+            onChange={(v) => onChange({ opacity: v / 100 })}
+            presets={[
+              { label: 'Mờ 50%', value: 50 },
+              { label: 'Rõ 85%', value: 85 },
+              { label: 'Tối đa 100%', value: 100 }
+            ]}
+          />
+
+          {/* 10. Position & Dimensions */}
+          {showDimensions && (
+            <div className="space-y-3 pt-2 border-t border-slate-800/80">
+              <label className="text-[10px] text-slate-400 uppercase font-bold block">
+                Vị trí & Kích thước (Tọa độ 9:16)
+              </label>
+
+              <SliderControl
+                label="Vị trí X (%)"
+                value={style?.x ?? 6}
+                min={0}
+                max={100}
+                step={1}
+                unit="%"
+                onChange={(v) => onChange({ x: v })}
+                presets={xPresets || [
+                  { label: 'Trái (6%)', value: 6 },
+                  { label: 'Giữa (50%)', value: 50 },
+                  { label: 'Phải (85%)', value: 85 }
+                ]}
+              />
+
+              <SliderControl
+                label="Vị trí Y (%)"
+                value={style?.y ?? 16}
+                min={0}
+                max={100}
+                step={1}
+                unit="%"
+                onChange={(v) => onChange({ y: v })}
+                presets={yPresets || [
+                  { label: 'Đỉnh (12%)', value: 12 },
+                  { label: 'Chuẩn (16%)', value: 16 },
+                  { label: 'Giữa (50%)', value: 50 },
+                  { label: 'Dưới (84%)', value: 84 }
+                ]}
+              />
+
+              <SliderControl
+                label="Chiều rộng (%)"
+                value={style?.width ?? 88}
+                min={10}
+                max={100}
+                step={1}
+                unit="%"
+                onChange={(v) => onChange({ width: v })}
+                presets={widthPresets || [
+                  { label: 'Nhỏ (50%)', value: 50 },
+                  { label: 'Vừa (75%)', value: 75 },
+                  { label: 'Chuẩn (88%)', value: 88 },
+                  { label: 'Rộng (94%)', value: 94 }
+                ]}
+              />
+
+              <SliderControl
+                label="Chiều cao (%)"
+                value={style?.height ?? 22}
+                min={4}
+                max={80}
+                step={1}
+                unit="%"
+                onChange={(v) => onChange({ height: v })}
+                presets={heightPresets || [
+                  { label: 'Gọn (12%)', value: 12 },
+                  { label: 'Chuẩn (22%)', value: 22 },
+                  { label: 'Cao (36%)', value: 36 }
+                ]}
+              />
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
 export interface InspectorPanelProps {
   template: VideoTemplate;
   channel: Channel;
@@ -904,43 +1434,68 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
             )}
 
             {/* ------------------------------------------------------------- */}
-            {/* 2. COMPONENT: COUNTDOWN (ĐỒNG HỒ ĐẾM NGƯỢC)                  */}
+            {/* 2. COMPONENT: COUNTDOWN (ĐỒNG HỒ ĐẾM NGƯỢC - 12 STYLES)      */}
             {/* ------------------------------------------------------------- */}
             {activeComp === 'countdown' && (
               <div className="space-y-4">
                 <div className="bg-slate-800/40 p-3 rounded-xl border border-slate-800 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-slate-100 text-xs">Hiển thị Countdown</span>
+                  {/* Toggle show/hide */}
+                  <div className="flex items-center justify-between pb-1 border-b border-slate-700/60">
+                    <div>
+                      <span className="font-bold text-slate-100 text-xs block">Hiển thị Countdown Timer</span>
+                      <span className="text-[10px] text-slate-400">Đồng hồ đếm ngược kịch tính cho câu hỏi</span>
+                    </div>
                     <Switch
-                      checked={comps.countdown?.show !== false && comps.countdown?.enabled !== false}
+                      checked={(comps.countdown as any)?.show !== false && comps.countdown?.enabled !== false}
                       onCheckedChange={(val) => updateComponent('countdown', { show: val, enabled: val })}
                     />
                   </div>
 
-                  {/* Style */}
+                  {/* 12 COUNTDOWN STYLES GALLERY */}
                   <div>
-                    <label className="text-[10px] text-slate-400 uppercase font-bold block mb-1">Kiểu dáng</label>
-                    <div className="grid grid-cols-3 gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800 text-[10px]">
-                      {[
-                        { id: 'circle-radial', label: 'Vòng tròn' },
-                        { id: 'pill-timer', label: 'Capsule' },
-                        { id: 'clean-text', label: 'Chữ số' }
-                      ].map((s) => (
-                        <button
-                          key={s.id}
-                          onClick={() => {
-                            updateComponent('countdown', { countdownStyle: s.id });
-                            onTemplateChange({ ...template, countdownStyle: s.id as any });
-                          }}
-                          className={`py-1 rounded text-center font-semibold transition ${
-                            (comps.countdown?.countdownStyle || template.countdownStyle) === s.id
-                              ? 'bg-sky-600 text-white'
-                              : 'text-slate-400 hover:text-slate-200'
-                          }`}
-                        >
-                          {s.label}
-                        </button>
-                      ))}
+                    <div className="flex justify-between items-center mb-1.5">
+                      <label className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">
+                        Thư viện 12 Kiểu Đếm Ngược (Styles)
+                      </label>
+                      <span className="text-[10px] text-sky-400 font-bold">
+                        {COUNTDOWN_STYLES.find(s => s.id === (comps.countdown?.countdownStyle || template.countdownStyle))?.name || 'Circular Progress'}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-1.5 max-h-72 overflow-y-auto pr-1 custom-scrollbar">
+                      {COUNTDOWN_STYLES.map((s) => {
+                        const isCur = (comps.countdown?.countdownStyle || template.countdownStyle) === s.id;
+                        return (
+                          <button
+                            key={s.id}
+                            type="button"
+                            onClick={() => {
+                              updateComponent('countdown', { countdownStyle: s.id });
+                              onTemplateChange({ ...template, countdownStyle: s.id as any });
+                            }}
+                            className={`p-2 rounded-lg border text-left transition flex flex-col gap-1 ${
+                              isCur
+                                ? 'border-sky-500 bg-sky-950/40 ring-1 ring-sky-500'
+                                : 'border-slate-800 bg-slate-900/60 hover:border-slate-700 hover:bg-slate-900'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="text-base">{s.icon}</span>
+                              <span className={`text-[9px] px-1.5 py-0.2 rounded font-bold ${
+                                isCur ? 'bg-sky-500/20 text-sky-300' : 'bg-slate-800 text-slate-400'
+                              }`}>
+                                {s.tag}
+                              </span>
+                            </div>
+                            <div className="font-bold text-slate-200 text-[11px] truncate">
+                              {s.name}
+                            </div>
+                            <div className="text-[9px] text-slate-400 line-clamp-1 leading-tight">
+                              {s.desc}
+                            </div>
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
 
@@ -958,6 +1513,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                         return (
                           <button
                             key={al.id}
+                            type="button"
                             onClick={() => updateComponent('countdown', { horizontalAlign: al.id })}
                             className={`py-1.5 px-2 rounded-lg border font-semibold text-[11px] flex items-center justify-center gap-1 transition ${
                               isCur
@@ -979,7 +1535,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                     <div className="grid grid-cols-3 gap-1">
                       {[
                         { id: 'top', label: 'Trên', icon: AlignVerticalJustifyStart },
-                        { id: 'center', label: 'Giữa', icon: AlignVerticalJustifyCenter },
+                        { id: 'center', label: 'Giữa (Center)', icon: AlignVerticalJustifyCenter },
                         { id: 'bottom', label: 'Đáy', icon: AlignVerticalJustifyEnd }
                       ].map((al) => {
                         const Icon = al.icon;
@@ -987,6 +1543,7 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                         return (
                           <button
                             key={al.id}
+                            type="button"
                             onClick={() => updateComponent('countdown', { verticalAlign: al.id })}
                             className={`py-1.5 px-2 rounded-lg border font-semibold text-[11px] flex items-center justify-center gap-1 transition ${
                               isCur
@@ -1002,10 +1559,85 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                     </div>
                   </div>
 
-                  {/* Position X / Y Sliders */}
+                  {/* Toggles: showSeconds, showProgressBar, showBackground, showBorder */}
+                  <div className="pt-2 border-t border-slate-700/60 space-y-2">
+                    <label className="text-[10px] text-slate-400 uppercase font-bold block">
+                      Tùy chọn hiển thị chi tiết
+                    </label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="flex items-center justify-between p-2 rounded-lg bg-slate-950/60 border border-slate-800/80">
+                        <span className="text-[10px] text-slate-300 font-medium">Hiện số giây</span>
+                        <Switch
+                          checked={comps.countdown?.showSeconds !== false}
+                          onCheckedChange={(val) => updateComponent('countdown', { showSeconds: val })}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between p-2 rounded-lg bg-slate-950/60 border border-slate-800/80">
+                        <span className="text-[10px] text-slate-300 font-medium">Hiện tiến trình bar</span>
+                        <Switch
+                          checked={comps.countdown?.showProgressBar !== false}
+                          onCheckedChange={(val) => updateComponent('countdown', { showProgressBar: val })}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between p-2 rounded-lg bg-slate-950/60 border border-slate-800/80">
+                        <span className="text-[10px] text-slate-300 font-medium">Hiện nền (Background)</span>
+                        <Switch
+                          checked={comps.countdown?.showBackground !== false}
+                          onCheckedChange={(val) => updateComponent('countdown', { showBackground: val })}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between p-2 rounded-lg bg-slate-950/60 border border-slate-800/80">
+                        <span className="text-[10px] text-slate-300 font-medium">Hiện viền (Border)</span>
+                        <Switch
+                          checked={comps.countdown?.showBorder !== false}
+                          onCheckedChange={(val) => updateComponent('countdown', { showBorder: val })}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Colors Grid */}
+                  <div className="pt-2 border-t border-slate-700/60 space-y-2">
+                    <label className="text-[10px] text-slate-400 uppercase font-bold block">
+                      Màu sắc Countdown
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <ColorControl
+                        label="Màu số đếm (Color)"
+                        value={comps.countdown?.color || '#2563eb'}
+                        onChange={(val) => updateComponent('countdown', { color: val })}
+                      />
+                      <ColorControl
+                        label="Màu thanh tiến trình (Progress)"
+                        value={comps.countdown?.progressColor || comps.countdown?.color || '#2563eb'}
+                        onChange={(val) => updateComponent('countdown', { progressColor: val })}
+                      />
+                      <ColorControl
+                        label="Màu cảnh báo (≤ 2 giây)"
+                        value={comps.countdown?.warningColor || '#ef4444'}
+                        onChange={(val) => updateComponent('countdown', { warningColor: val })}
+                      />
+                      <ColorControl
+                        label="Màu nền Countdown"
+                        value={comps.countdown?.backgroundColor || '#ffffff'}
+                        onChange={(val) => updateComponent('countdown', { backgroundColor: val })}
+                      />
+                      <ColorControl
+                        label="Màu đường viền"
+                        value={comps.countdown?.borderColor || '#bfdbfe'}
+                        onChange={(val) => updateComponent('countdown', { borderColor: val })}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Dimensions & Thickness */}
                   <div className="space-y-3 pt-2 border-t border-slate-700/60">
+                    <label className="text-[10px] text-slate-400 uppercase font-bold block">
+                      Kích thước & Vị trí (Mặc định ở chính giữa khung 9:16)
+                    </label>
+
                     <SliderControl
-                      label="Vị trí X (%)"
+                      label="Vị trí X (%) (Mặc định chính giữa 50%)"
                       value={comps.countdown?.x ?? 50}
                       min={0}
                       max={100}
@@ -1014,13 +1646,13 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                       onChange={(v) => updateComponent('countdown', { x: v })}
                       presets={[
                         { label: 'Trái (15%)', value: 15 },
-                        { label: 'Giữa (50%)', value: 50 },
+                        { label: 'Chính giữa (50%)', value: 50 },
                         { label: 'Phải (85%)', value: 85 }
                       ]}
                     />
 
                     <SliderControl
-                      label="Vị trí Y (%)"
+                      label="Vị trí Y (%) (Mặc định chính giữa 50%)"
                       value={comps.countdown?.y ?? 50}
                       min={0}
                       max={100}
@@ -1028,30 +1660,30 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                       unit="%"
                       onChange={(v) => updateComponent('countdown', { y: v })}
                       presets={[
-                        { label: 'Đỉnh (12%)', value: 12 },
-                        { label: 'Giữa (50%)', value: 50 },
-                        { label: 'Dưới (88%)', value: 88 }
+                        { label: 'Đỉnh (14%)', value: 14 },
+                        { label: 'Chính giữa (50%)', value: 50 },
+                        { label: 'Dưới (86%)', value: 86 }
                       ]}
                     />
 
                     <SliderControl
                       label="Chiều rộng (%)"
-                      value={comps.countdown?.width ?? 30}
+                      value={comps.countdown?.width ?? 32}
                       min={10}
                       max={100}
                       step={1}
                       unit="%"
                       onChange={(v) => updateComponent('countdown', { width: v })}
                       presets={[
-                        { label: 'Nhỏ (25%)', value: 25 },
-                        { label: 'Chuẩn (35%)', value: 35 },
-                        { label: 'Lớn (50%)', value: 50 }
+                        { label: 'Gọn (25%)', value: 25 },
+                        { label: 'Chuẩn (32%)', value: 32 },
+                        { label: 'Rộng (50%)', value: 50 }
                       ]}
                     />
 
                     <SliderControl
                       label="Chiều cao (%)"
-                      value={comps.countdown?.height ?? 6}
+                      value={comps.countdown?.height ?? 8}
                       min={3}
                       max={30}
                       step={1}
@@ -1059,41 +1691,64 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                       onChange={(v) => updateComponent('countdown', { height: v })}
                       presets={[
                         { label: 'Mảnh (5%)', value: 5 },
-                        { label: 'Chuẩn (7%)', value: 7 },
-                        { label: 'Dày (12%)', value: 12 }
+                        { label: 'Chuẩn (8%)', value: 8 },
+                        { label: 'Dày (14%)', value: 14 }
+                      ]}
+                    />
+
+                    <SliderControl
+                      label="Độ dày thanh / nét (px)"
+                      value={comps.countdown?.thickness ?? comps.countdown?.strokeWidth ?? 8}
+                      min={2}
+                      max={24}
+                      step={1}
+                      unit="px"
+                      onChange={(v) => updateComponent('countdown', { thickness: v, strokeWidth: v })}
+                      presets={[
+                        { label: 'Mảnh 4px', value: 4 },
+                        { label: 'Chuẩn 8px', value: 8 },
+                        { label: 'Dày 14px', value: 14 }
                       ]}
                     />
 
                     <SliderControl
                       label="Cỡ chữ số (px)"
-                      value={comps.countdown?.fontSize ?? 24}
+                      value={comps.countdown?.fontSize ?? 28}
                       min={14}
-                      max={56}
+                      max={72}
                       step={1}
                       unit="px"
                       onChange={(v) => updateComponent('countdown', { fontSize: v })}
                       presets={[
-                        { label: 'Nhỏ 20px', value: 20 },
-                        { label: 'Vừa 26px', value: 26 },
-                        { label: 'Lớn 32px', value: 32 },
-                        { label: 'To 42px', value: 42 }
+                        { label: '20px', value: 20 },
+                        { label: '28px', value: 28 },
+                        { label: '36px', value: 36 },
+                        { label: '50px', value: 50 },
+                        { label: '64px', value: 64 }
                       ]}
                     />
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                      <ColorControl
-                        label="Màu chính"
-                        value={comps.countdown?.color || '#2563eb'}
-                        onChange={(val) => updateComponent('countdown', { color: val })}
-                      />
-                      <ColorControl
-                        label="Màu cảnh báo (sắp hết giờ)"
-                        value={comps.countdown?.warningColor || '#ef4444'}
-                        onChange={(val) => updateComponent('countdown', { warningColor: val })}
-                      />
-                    </div>
+                    <SliderControl
+                      label="Độ trong suốt (Opacity)"
+                      value={comps.countdown?.opacity !== undefined ? Math.round(comps.countdown.opacity * 100) : 100}
+                      min={20}
+                      max={100}
+                      step={5}
+                      unit="%"
+                      onChange={(v) => updateComponent('countdown', { opacity: v / 100 })}
+                    />
                   </div>
                 </div>
+
+                {/* Typography Font cho Countdown */}
+                <TypographyControlSection
+                  title="Typography & Font Countdown"
+                  style={comps.countdown || {}}
+                  onChange={(patch) => updateComponent('countdown', patch)}
+                  defaultFontSize={28}
+                  showDimensions={false}
+                  showColors={false}
+                />
               </div>
             )}
 
@@ -1102,12 +1757,45 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
             {/* ------------------------------------------------------------- */}
             {activeComp === 'questionBox' && (
               <div className="space-y-4">
+                {/* 1. Typography & Text Styling (Default: Montserrat 50px) */}
+                <TypographyControlSection
+                  title="Typography & Chữ Câu Hỏi"
+                  style={comps.questionBox || {}}
+                  onChange={(patch) => updateComponent('questionBox', patch)}
+                  defaultFontSize={50}
+                  allowShadowDefaultOff={false}
+                  showDimensions={true}
+                  showAlignment={true}
+                  showColors={true}
+                  xPresets={[
+                    { label: 'Căn giữa (6%)', value: 6 },
+                    { label: 'Sát mép (2%)', value: 2 },
+                    { label: 'Thu lề (10%)', value: 10 }
+                  ]}
+                  yPresets={[
+                    { label: 'Cao (10%)', value: 10 },
+                    { label: 'Chuẩn (16%)', value: 16 },
+                    { label: 'Hạ thấp (24%)', value: 24 }
+                  ]}
+                  widthPresets={[
+                    { label: 'Vừa (75%)', value: 75 },
+                    { label: 'Chuẩn (88%)', value: 88 },
+                    { label: 'Tràn viền (94%)', value: 94 }
+                  ]}
+                  heightPresets={[
+                    { label: 'Gọn (16%)', value: 16 },
+                    { label: 'Chuẩn (22%)', value: 22 },
+                    { label: 'Rộng (28%)', value: 28 }
+                  ]}
+                />
+
+                {/* 2. Shape, Background & Border of Question Box */}
                 <div className="bg-slate-800/40 p-3 rounded-xl border border-slate-800 space-y-3">
-                  <span className="font-bold text-slate-100 text-xs block">Khung Câu Hỏi</span>
+                  <span className="font-bold text-slate-100 text-xs block">Khung Nền & Viền Câu Hỏi</span>
 
                   {/* Shape */}
                   <div>
-                    <label className="text-[10px] text-slate-400 uppercase font-bold block mb-1">Hình khối (Shape)</label>
+                    <label className="text-[10px] text-slate-400 uppercase font-bold block mb-1">Hình khối khung (Shape)</label>
                     <div className="grid grid-cols-5 gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800 text-[10px]">
                       {[
                         { id: 'rounded', label: 'Bo góc' },
@@ -1118,10 +1806,11 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                       ].map((item) => (
                         <button
                           key={item.id}
+                          type="button"
                           onClick={() => updateComponent('questionBox', { shape: item.id as any })}
                           className={`py-1 rounded text-center font-semibold transition ${
                             (comps.questionBox?.shape || 'rounded') === item.id
-                              ? 'bg-sky-600 text-white'
+                              ? 'bg-sky-600 text-white font-bold'
                               : 'text-slate-400 hover:text-slate-200'
                           }`}
                         >
@@ -1131,99 +1820,24 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                     </div>
                   </div>
 
-                  {/* Position X / Y */}
+                  {/* Colors: Background & Border */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                    <ColorControl
+                      label="Màu nền khung"
+                      value={comps.questionBox?.backgroundColor || '#ffffff'}
+                      onChange={(val) => updateComponent('questionBox', { backgroundColor: val })}
+                    />
+                    <ColorControl
+                      label="Màu đường viền"
+                      value={comps.questionBox?.borderColor || '#bfdbfe'}
+                      onChange={(val) => updateComponent('questionBox', { borderColor: val })}
+                    />
+                  </div>
+
+                  {/* Sliders: Border Width & Border Radius */}
                   <div className="space-y-3 pt-1">
                     <SliderControl
-                      label="Vị trí X (%)"
-                      value={comps.questionBox?.x ?? 6}
-                      min={0}
-                      max={100}
-                      step={1}
-                      unit="%"
-                      onChange={(v) => updateComponent('questionBox', { x: v })}
-                      presets={[
-                        { label: 'Căn giữa (6%)', value: 6 },
-                        { label: 'Sát mép (2%)', value: 2 },
-                        { label: 'Thu lề (10%)', value: 10 }
-                      ]}
-                    />
-
-                    <SliderControl
-                      label="Vị trí Y (%)"
-                      value={comps.questionBox?.y ?? 16}
-                      min={0}
-                      max={100}
-                      step={1}
-                      unit="%"
-                      onChange={(v) => updateComponent('questionBox', { y: v })}
-                      presets={[
-                        { label: 'Cao (10%)', value: 10 },
-                        { label: 'Chuẩn (16%)', value: 16 },
-                        { label: 'Thấp (24%)', value: 24 }
-                      ]}
-                    />
-
-                    <SliderControl
-                      label="Chiều rộng (%)"
-                      value={comps.questionBox?.width ?? 88}
-                      min={20}
-                      max={100}
-                      step={1}
-                      unit="%"
-                      onChange={(v) => updateComponent('questionBox', { width: v })}
-                      presets={[
-                        { label: 'Vừa (75%)', value: 75 },
-                        { label: 'Chuẩn (88%)', value: 88 },
-                        { label: 'Tràn viền (94%)', value: 94 }
-                      ]}
-                    />
-
-                    <SliderControl
-                      label="Chiều cao (%)"
-                      value={comps.questionBox?.height ?? 22}
-                      min={8}
-                      max={50}
-                      step={1}
-                      unit="%"
-                      onChange={(v) => updateComponent('questionBox', { height: v })}
-                      presets={[
-                        { label: 'Nhỏ (16%)', value: 16 },
-                        { label: 'Chuẩn (22%)', value: 22 },
-                        { label: 'Lớn (28%)', value: 28 }
-                      ]}
-                    />
-
-                    <SliderControl
-                      label="Cỡ chữ câu hỏi (px)"
-                      value={comps.questionBox?.fontSize ?? 22}
-                      min={14}
-                      max={40}
-                      step={1}
-                      unit="px"
-                      onChange={(v) => updateComponent('questionBox', { fontSize: v })}
-                      presets={[
-                        { label: 'Nhỏ 18px', value: 18 },
-                        { label: 'Vừa 22px', value: 22 },
-                        { label: 'Lớn 26px', value: 26 },
-                        { label: 'To 30px', value: 30 }
-                      ]}
-                    />
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                      <ColorControl
-                        label="Màu chữ câu hỏi"
-                        value={comps.questionBox?.textColor || comps.questionBox?.color || '#0f172a'}
-                        onChange={(val) => updateComponent('questionBox', { textColor: val, color: val })}
-                      />
-                      <ColorControl
-                        label="Màu nền khung"
-                        value={comps.questionBox?.backgroundColor || '#ffffff'}
-                        onChange={(val) => updateComponent('questionBox', { backgroundColor: val })}
-                      />
-                    </div>
-
-                    <SliderControl
-                      label="Độ dày viền (px)"
+                      label="Độ dày viền khung (px)"
                       value={comps.questionBox?.borderWidth ?? 2}
                       min={0}
                       max={10}
@@ -1233,15 +1847,9 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                       presets={[
                         { label: 'Không viền', value: 0 },
                         { label: 'Mỏng 1.5px', value: 1.5 },
-                        { label: 'Vừa 2.5px', value: 2.5 },
-                        { label: 'Dày 4px', value: 4 }
+                        { label: 'Chuẩn 2.5px', value: 2.5 },
+                        { label: 'Đậm 4px', value: 4 }
                       ]}
-                    />
-
-                    <ColorControl
-                      label="Màu đường viền"
-                      value={comps.questionBox?.borderColor || '#bfdbfe'}
-                      onChange={(val) => updateComponent('questionBox', { borderColor: val })}
                     />
 
                     <SliderControl
@@ -1269,12 +1877,45 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
             {/* ------------------------------------------------------------- */}
             {activeComp === 'answerButtons' && (
               <div className="space-y-4">
+                {/* 1. Typography & Text Styling for Answers (Default: Montserrat 36px, Shadow OFF by default) */}
+                <TypographyControlSection
+                  title="Typography & Chữ Đáp Án"
+                  style={comps.answerButtons || {}}
+                  onChange={(patch) => updateComponent('answerButtons', patch)}
+                  defaultFontSize={36}
+                  allowShadowDefaultOff={true}
+                  showDimensions={true}
+                  showAlignment={true}
+                  showColors={true}
+                  xPresets={[
+                    { label: 'Căn giữa (6%)', value: 6 },
+                    { label: 'Sát mép (2%)', value: 2 },
+                    { label: 'Thu lề (10%)', value: 10 }
+                  ]}
+                  yPresets={[
+                    { label: 'Cao (35%)', value: 35 },
+                    { label: 'Chuẩn (43%)', value: 43 },
+                    { label: 'Hạ thấp (52%)', value: 52 }
+                  ]}
+                  widthPresets={[
+                    { label: 'Vừa (75%)', value: 75 },
+                    { label: 'Chuẩn (88%)', value: 88 },
+                    { label: 'Rộng (94%)', value: 94 }
+                  ]}
+                  heightPresets={[
+                    { label: 'Gọn (30%)', value: 30 },
+                    { label: 'Chuẩn (38%)', value: 38 },
+                    { label: 'Cao (48%)', value: 48 }
+                  ]}
+                />
+
+                {/* 2. Shape, Background & Card Styling for Answers */}
                 <div className="bg-slate-800/40 p-3 rounded-xl border border-slate-800 space-y-3">
-                  <span className="font-bold text-slate-100 text-xs block">Các Đáp Án (A, B, C)</span>
+                  <span className="font-bold text-slate-100 text-xs block">Khung Nút & Bố Cục Đáp Án</span>
 
                   {/* Shape */}
                   <div>
-                    <label className="text-[10px] text-slate-400 uppercase font-bold block mb-1">Hình khối nút</label>
+                    <label className="text-[10px] text-slate-400 uppercase font-bold block mb-1">Hình khối nút (Shape)</label>
                     <div className="grid grid-cols-4 gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800 text-[10px]">
                       {[
                         { id: 'pill', label: 'Capsule' },
@@ -1284,10 +1925,11 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                       ].map((item) => (
                         <button
                           key={item.id}
+                          type="button"
                           onClick={() => updateComponent('answerButtons', { shape: item.id as any })}
                           className={`py-1 rounded text-center font-semibold transition ${
                             (comps.answerButtons?.shape || 'rounded') === item.id
-                              ? 'bg-sky-600 text-white'
+                              ? 'bg-sky-600 text-white font-bold'
                               : 'text-slate-400 hover:text-slate-200'
                           }`}
                         >
@@ -1297,67 +1939,22 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                     </div>
                   </div>
 
+                  {/* Colors: Background & Border */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                    <ColorControl
+                      label="Màu nền nút đáp án"
+                      value={comps.answerButtons?.backgroundColor || '#ffffff'}
+                      onChange={(val) => updateComponent('answerButtons', { backgroundColor: val })}
+                    />
+                    <ColorControl
+                      label="Màu viền nút đáp án"
+                      value={comps.answerButtons?.borderColor || '#bfdbfe'}
+                      onChange={(val) => updateComponent('answerButtons', { borderColor: val })}
+                    />
+                  </div>
+
+                  {/* Sliders: Gap, Border Width, Border Radius */}
                   <div className="space-y-3 pt-1">
-                    <SliderControl
-                      label="Vị trí X (%)"
-                      value={comps.answerButtons?.x ?? 6}
-                      min={0}
-                      max={100}
-                      step={1}
-                      unit="%"
-                      onChange={(v) => updateComponent('answerButtons', { x: v })}
-                      presets={[
-                        { label: 'Căn giữa (6%)', value: 6 },
-                        { label: 'Sát mép (2%)', value: 2 },
-                        { label: 'Thu lề (10%)', value: 10 }
-                      ]}
-                    />
-
-                    <SliderControl
-                      label="Vị trí Y (%)"
-                      value={comps.answerButtons?.y ?? 43}
-                      min={0}
-                      max={100}
-                      step={1}
-                      unit="%"
-                      onChange={(v) => updateComponent('answerButtons', { y: v })}
-                      presets={[
-                        { label: 'Cao (35%)', value: 35 },
-                        { label: 'Chuẩn (43%)', value: 43 },
-                        { label: 'Thấp (52%)', value: 52 }
-                      ]}
-                    />
-
-                    <SliderControl
-                      label="Chiều rộng (%)"
-                      value={comps.answerButtons?.width ?? 88}
-                      min={20}
-                      max={100}
-                      step={1}
-                      unit="%"
-                      onChange={(v) => updateComponent('answerButtons', { width: v })}
-                      presets={[
-                        { label: 'Vừa (75%)', value: 75 },
-                        { label: 'Chuẩn (88%)', value: 88 },
-                        { label: 'Rộng (94%)', value: 94 }
-                      ]}
-                    />
-
-                    <SliderControl
-                      label="Chiều cao tổng cụm (%)"
-                      value={comps.answerButtons?.height ?? 38}
-                      min={15}
-                      max={60}
-                      step={1}
-                      unit="%"
-                      onChange={(v) => updateComponent('answerButtons', { height: v })}
-                      presets={[
-                        { label: 'Gọn (30%)', value: 30 },
-                        { label: 'Chuẩn (38%)', value: 38 },
-                        { label: 'Cao (48%)', value: 48 }
-                      ]}
-                    />
-
                     <SliderControl
                       label="Khoảng cách giữa các đáp án (px)"
                       value={comps.answerButtons?.gap ?? 12}
@@ -1374,33 +1971,36 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                     />
 
                     <SliderControl
-                      label="Cỡ chữ đáp án (px)"
-                      value={comps.answerButtons?.fontSize ?? 18}
-                      min={12}
-                      max={32}
-                      step={1}
+                      label="Độ dày viền nút (px)"
+                      value={comps.answerButtons?.borderWidth ?? 2}
+                      min={0}
+                      max={8}
+                      step={0.5}
                       unit="px"
-                      onChange={(v) => updateComponent('answerButtons', { fontSize: v })}
+                      onChange={(v) => updateComponent('answerButtons', { borderWidth: v })}
                       presets={[
-                        { label: 'Nhỏ 16px', value: 16 },
-                        { label: 'Vừa 18px', value: 18 },
-                        { label: 'Lớn 22px', value: 22 },
-                        { label: 'To 26px', value: 26 }
+                        { label: 'Không viền', value: 0 },
+                        { label: 'Mỏng 1.5px', value: 1.5 },
+                        { label: 'Chuẩn 2px', value: 2 },
+                        { label: 'Đậm 3.5px', value: 3.5 }
                       ]}
                     />
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                      <ColorControl
-                        label="Màu chữ đáp án"
-                        value={comps.answerButtons?.textColor || '#1e293b'}
-                        onChange={(val) => updateComponent('answerButtons', { textColor: val, color: val })}
-                      />
-                      <ColorControl
-                        label="Màu nền nút"
-                        value={comps.answerButtons?.backgroundColor || '#ffffff'}
-                        onChange={(val) => updateComponent('answerButtons', { backgroundColor: val })}
-                      />
-                    </div>
+                    <SliderControl
+                      label="Bo góc nút (Border Radius)"
+                      value={comps.answerButtons?.borderRadius ?? 18}
+                      min={0}
+                      max={40}
+                      step={1}
+                      unit="px"
+                      onChange={(v) => updateComponent('answerButtons', { borderRadius: v })}
+                      presets={[
+                        { label: 'Vuông (0px)', value: 0 },
+                        { label: 'Bo nhẹ (12px)', value: 12 },
+                        { label: 'Bo tròn (18px)', value: 18 },
+                        { label: 'Viên thuốc (35px)', value: 35 }
+                      ]}
+                    />
                   </div>
                 </div>
               </div>
@@ -1411,68 +2011,100 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
             {/* ------------------------------------------------------------- */}
             {activeComp === 'quizTitle' && (
               <div className="space-y-4">
+                {/* 1. Tiêu đề tùy chỉnh */}
+                <div className="bg-slate-800/40 p-3 rounded-xl border border-slate-800 space-y-2">
+                  <span className="font-bold text-slate-100 text-xs block">Nội dung Tiêu Đề (Header)</span>
+                  <Input
+                    value={comps.quizTitle?.text || ''}
+                    placeholder="Để trống sẽ lấy tên Quiz mặc định..."
+                    onChange={(e) => updateComponent('quizTitle', { text: e.target.value })}
+                    className="h-8 text-xs bg-slate-950 border-slate-700/80 text-slate-100"
+                  />
+                  <span className="text-[10px] text-slate-400 block">
+                    * Tiêu đề hiển thị cố định ở đầu mỗi video để thu hút người xem
+                  </span>
+                </div>
+
+                {/* 2. Typography & Chữ */}
+                <TypographyControlSection
+                  title="Typography & Chữ Tiêu Đề"
+                  style={comps.quizTitle || {}}
+                  onChange={(patch) => updateComponent('quizTitle', patch)}
+                  defaultFontSize={28}
+                  allowShadowDefaultOff={false}
+                  showDimensions={true}
+                  showAlignment={true}
+                  showColors={true}
+                  xPresets={[
+                    { label: 'Trái (6%)', value: 6 },
+                    { label: 'Giữa (50%)', value: 50 },
+                    { label: 'Phải (70%)', value: 70 }
+                  ]}
+                  yPresets={[
+                    { label: 'Đỉnh (4%)', value: 4 },
+                    { label: 'Chuẩn (6%)', value: 6 },
+                    { label: 'Hạ (10%)', value: 10 }
+                  ]}
+                  widthPresets={[
+                    { label: 'Vừa (70%)', value: 70 },
+                    { label: 'Chuẩn (86%)', value: 86 },
+                    { label: 'Tràn viền (94%)', value: 94 }
+                  ]}
+                  heightPresets={[
+                    { label: 'Mảnh (5%)', value: 5 },
+                    { label: 'Chuẩn (6%)', value: 6 },
+                    { label: 'Dày (8%)', value: 8 }
+                  ]}
+                />
+
+                {/* 3. Khung Nền & Viền Huy Hiệu */}
                 <div className="bg-slate-800/40 p-3 rounded-xl border border-slate-800 space-y-3">
-                  <span className="font-bold text-slate-100 text-xs block">Tiêu Đề Quiz / Header</span>
+                  <span className="font-bold text-slate-100 text-xs block">Huy Hiệu Nền & Viền Tiêu Đề</span>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <ColorControl
+                      label="Màu nền huy hiệu"
+                      value={comps.quizTitle?.backgroundColor || '#ffffff'}
+                      onChange={(val) => updateComponent('quizTitle', { backgroundColor: val })}
+                    />
+                    <ColorControl
+                      label="Màu viền huy hiệu"
+                      value={comps.quizTitle?.borderColor || '#bfdbfe'}
+                      onChange={(val) => updateComponent('quizTitle', { borderColor: val })}
+                    />
+                  </div>
 
                   <div className="space-y-3 pt-1">
                     <SliderControl
-                      label="Vị trí X (%)"
-                      value={comps.quizTitle?.x ?? 6}
+                      label="Độ dày viền (px)"
+                      value={comps.quizTitle?.borderWidth ?? 1}
                       min={0}
-                      max={100}
-                      step={1}
-                      unit="%"
-                      onChange={(v) => updateComponent('quizTitle', { x: v })}
+                      max={6}
+                      step={0.5}
+                      unit="px"
+                      onChange={(v) => updateComponent('quizTitle', { borderWidth: v })}
                       presets={[
-                        { label: 'Trái (6%)', value: 6 },
-                        { label: 'Giữa (50%)', value: 50 },
-                        { label: 'Phải (70%)', value: 70 }
+                        { label: 'Không viền', value: 0 },
+                        { label: 'Mảnh 1px', value: 1 },
+                        { label: 'Dày 2.5px', value: 2.5 }
                       ]}
                     />
 
                     <SliderControl
-                      label="Vị trí Y (%)"
-                      value={comps.quizTitle?.y ?? 5}
+                      label="Bo góc huy hiệu (Border Radius)"
+                      value={comps.quizTitle?.borderRadius ?? 16}
                       min={0}
-                      max={100}
-                      step={1}
-                      unit="%"
-                      onChange={(v) => updateComponent('quizTitle', { y: v })}
-                      presets={[
-                        { label: 'Đỉnh (4%)', value: 4 },
-                        { label: 'Chuẩn (6%)', value: 6 },
-                        { label: 'Hạ (10%)', value: 10 }
-                      ]}
-                    />
-
-                    <SliderControl
-                      label="Cỡ chữ tiêu đề (px)"
-                      value={comps.quizTitle?.fontSize ?? 18}
-                      min={12}
-                      max={36}
+                      max={35}
                       step={1}
                       unit="px"
-                      onChange={(v) => updateComponent('quizTitle', { fontSize: v })}
+                      onChange={(v) => updateComponent('quizTitle', { borderRadius: v })}
                       presets={[
-                        { label: 'Nhỏ 14px', value: 14 },
-                        { label: 'Vừa 18px', value: 18 },
-                        { label: 'Lớn 24px', value: 24 },
-                        { label: 'To 28px', value: 28 }
+                        { label: 'Vuông (0px)', value: 0 },
+                        { label: 'Bo nhẹ (10px)', value: 10 },
+                        { label: 'Bo tròn (16px)', value: 16 },
+                        { label: 'Viên thuốc (30px)', value: 30 }
                       ]}
                     />
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                      <ColorControl
-                        label="Màu chữ tiêu đề"
-                        value={comps.quizTitle?.color || '#1e3a8a'}
-                        onChange={(val) => updateComponent('quizTitle', { color: val })}
-                      />
-                      <ColorControl
-                        label="Màu nền huy hiệu"
-                        value={comps.quizTitle?.backgroundColor || '#dbeafe'}
-                        onChange={(val) => updateComponent('quizTitle', { backgroundColor: val })}
-                      />
-                    </div>
                   </div>
                 </div>
               </div>
@@ -1483,41 +2115,31 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
             {/* ------------------------------------------------------------- */}
             {activeComp === 'explanation' && (
               <div className="space-y-4">
+                {/* 1. Toggles: Hiển thị & TTS */}
                 <div className="bg-slate-800/40 p-3 rounded-xl border border-slate-800 space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-slate-100 text-xs">Hiển thị thẻ giải thích</span>
+                    <div>
+                      <span className="font-bold text-slate-100 text-xs block">Hiển thị Thẻ Giải Thích</span>
+                      <span className="text-[10px] text-slate-400">Xuất hiện ngay sau khi công bố đáp án đúng</span>
+                    </div>
                     <Switch
                       checked={comps.explanation?.enabled !== false}
                       onCheckedChange={(val) => updateComponent('explanation', { enabled: val })}
                     />
                   </div>
 
-                  <div className="space-y-3 pt-1">
-                    <SliderControl
-                      label="Vị trí X (%)"
-                      value={comps.explanation?.x ?? 6}
-                      min={0}
-                      max={100}
-                      step={1}
-                      unit="%"
-                      onChange={(v) => updateComponent('explanation', { x: v })}
+                  <div className="flex items-center justify-between pt-2 border-t border-slate-700/60">
+                    <div>
+                      <span className="font-bold text-slate-200 text-xs block">Đọc TTS phần Giải thích</span>
+                      <span className="text-[10px] text-slate-400">Tự động phát giọng đọc giải thích (nếu có)</span>
+                    </div>
+                    <Switch
+                      checked={comps.explanation?.readTts !== false}
+                      onCheckedChange={(val) => updateComponent('explanation', { readTts: val })}
                     />
+                  </div>
 
-                    <SliderControl
-                      label="Vị trí Y (%)"
-                      value={comps.explanation?.y ?? 83}
-                      min={0}
-                      max={100}
-                      step={1}
-                      unit="%"
-                      onChange={(v) => updateComponent('explanation', { y: v })}
-                      presets={[
-                        { label: 'Cao (75%)', value: 75 },
-                        { label: 'Chuẩn (83%)', value: 83 },
-                        { label: 'Đáy (90%)', value: 90 }
-                      ]}
-                    />
-
+                  <div className="pt-2 border-t border-slate-700/60">
                     <SliderControl
                       label="Thời lượng hiển thị giải thích (giây)"
                       value={comps.explanation?.displayDurationSec ?? 3.0}
@@ -1531,6 +2153,98 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                         { label: 'Vừa (3s)', value: 3 },
                         { label: 'Đầy đủ (4s)', value: 4 },
                         { label: 'Dài (5s)', value: 5 }
+                      ]}
+                    />
+                  </div>
+                </div>
+
+                {/* 2. Typography & Chữ */}
+                <TypographyControlSection
+                  title="Typography & Chữ Giải Thích"
+                  style={comps.explanation || {}}
+                  onChange={(patch) => updateComponent('explanation', patch)}
+                  defaultFontSize={24}
+                  allowShadowDefaultOff={false}
+                  showDimensions={true}
+                  showAlignment={true}
+                  showColors={true}
+                  xPresets={[
+                    { label: 'Căn giữa (6%)', value: 6 },
+                    { label: 'Sát mép (2%)', value: 2 },
+                    { label: 'Thu lề (10%)', value: 10 }
+                  ]}
+                  yPresets={[
+                    { label: 'Cao (75%)', value: 75 },
+                    { label: 'Chuẩn (83%)', value: 83 },
+                    { label: 'Đáy (90%)', value: 90 }
+                  ]}
+                  widthPresets={[
+                    { label: 'Vừa (75%)', value: 75 },
+                    { label: 'Chuẩn (88%)', value: 88 },
+                    { label: 'Tràn viền (94%)', value: 94 }
+                  ]}
+                  heightPresets={[
+                    { label: 'Gọn (8%)', value: 8 },
+                    { label: 'Chuẩn (10%)', value: 10 },
+                    { label: 'Rộng (14%)', value: 14 }
+                  ]}
+                />
+
+                {/* 3. Khung Thẻ Giải Thích */}
+                <div className="bg-slate-800/40 p-3 rounded-xl border border-slate-800 space-y-3">
+                  <span className="font-bold text-slate-100 text-xs block">Khung Nền & Viền Thẻ Giải Thích</span>
+
+                  <div className="flex items-center justify-between pb-1 border-b border-slate-700/60">
+                    <span className="text-[11px] text-slate-300 font-medium">Hiện Icon bóng đèn (💡)</span>
+                    <Switch
+                      checked={comps.explanation?.showIcon !== false}
+                      onCheckedChange={(val) => updateComponent('explanation', { showIcon: val })}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                    <ColorControl
+                      label="Màu nền khung"
+                      value={comps.explanation?.backgroundColor || '#ffffff'}
+                      onChange={(val) => updateComponent('explanation', { backgroundColor: val })}
+                    />
+                    <ColorControl
+                      label="Màu đường viền"
+                      value={comps.explanation?.borderColor || '#22c55e'}
+                      onChange={(val) => updateComponent('explanation', { borderColor: val })}
+                    />
+                  </div>
+
+                  <div className="space-y-3 pt-1">
+                    <SliderControl
+                      label="Độ dày viền (px)"
+                      value={comps.explanation?.borderWidth ?? 2}
+                      min={0}
+                      max={8}
+                      step={0.5}
+                      unit="px"
+                      onChange={(v) => updateComponent('explanation', { borderWidth: v })}
+                      presets={[
+                        { label: 'Không viền', value: 0 },
+                        { label: 'Mỏng 1.5px', value: 1.5 },
+                        { label: 'Chuẩn 2px', value: 2 },
+                        { label: 'Đậm 3.5px', value: 3.5 }
+                      ]}
+                    />
+
+                    <SliderControl
+                      label="Bo góc khung (Border Radius)"
+                      value={comps.explanation?.borderRadius ?? 16}
+                      min={0}
+                      max={35}
+                      step={1}
+                      unit="px"
+                      onChange={(v) => updateComponent('explanation', { borderRadius: v })}
+                      presets={[
+                        { label: 'Vuông (0px)', value: 0 },
+                        { label: 'Bo nhẹ (10px)', value: 10 },
+                        { label: 'Bo tròn (16px)', value: 16 },
+                        { label: 'Viên thuốc (28px)', value: 28 }
                       ]}
                     />
                   </div>
@@ -1640,33 +2354,102 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
             {activeComp === 'brand_audio' && (
               <div className="space-y-4">
                 <div className="bg-slate-800/40 p-3 rounded-xl border border-slate-800 space-y-3">
-                  <span className="font-bold text-slate-100 text-xs block">Kênh & Nhận diện</span>
+                  <span className="font-bold text-slate-100 text-xs block">Kênh & Nhận diện Thương hiệu</span>
 
                   <div>
-                    <label className="text-[10px] text-slate-400 block mb-1">Tên kênh</label>
+                    <label className="text-[10px] text-slate-400 block mb-1 font-semibold uppercase">Tên kênh (Channel Name)</label>
                     <Input
                       value={channel.name || ''}
-                      onChange={(e) => onChannelChange({ ...channel, name: e.target.value })}
-                      className="h-7 text-xs bg-slate-950 border-slate-800"
+                      onChange={(e) => {
+                        onChannelChange({ ...channel, name: e.target.value });
+                        updateComponent('logo', { channelName: e.target.value });
+                      }}
+                      className="h-8 text-xs bg-slate-950 border-slate-800 text-slate-100"
                     />
                   </div>
 
-                  <div className="flex items-center justify-between pt-1">
-                    <span className="text-[11px] text-slate-300">Hiện Watermark Logo</span>
+                  <div className="flex items-center justify-between pt-1 border-t border-slate-700/60">
+                    <div>
+                      <span className="text-[11px] text-slate-200 font-medium block">Hiện Logo Watermark</span>
+                      <span className="text-[10px] text-slate-400 block">Watermark nhận diện bản quyền trên video</span>
+                    </div>
                     <Switch
                       checked={channel.branding.identity.showLogo !== false}
-                      onCheckedChange={(val) =>
+                      onCheckedChange={(val) => {
                         onChannelChange({
                           ...channel,
                           branding: {
                             ...channel.branding,
                             identity: { ...channel.branding.identity, showLogo: val }
                           }
-                        })
-                      }
+                        });
+                        updateComponent('logo', { showLogo: val });
+                      }}
                     />
                   </div>
+
+                  <div className="flex items-center justify-between pt-1 border-t border-slate-700/60">
+                    <div>
+                      <span className="text-[11px] text-slate-200 font-medium block">Hiện Tên Kênh</span>
+                      <span className="text-[10px] text-slate-400 block">Hiển thị chữ tên kênh bên cạnh logo</span>
+                    </div>
+                    <Switch
+                      checked={comps.logo?.showChannelName !== false}
+                      onCheckedChange={(val) => updateComponent('logo', { showChannelName: val })}
+                    />
+                  </div>
+
+                  {channel.branding.identity.showLogo !== false && (
+                    <div className="pt-2 border-t border-slate-700/60 space-y-2.5">
+                      <SliderControl
+                        label="Kích thước Logo (px)"
+                        value={comps.logo?.logoSize ?? 42}
+                        min={24}
+                        max={80}
+                        step={2}
+                        unit="px"
+                        onChange={(v) => updateComponent('logo', { logoSize: v })}
+                        presets={[
+                          { label: 'Nhỏ 32px', value: 32 },
+                          { label: 'Chuẩn 42px', value: 42 },
+                          { label: 'Lớn 56px', value: 56 }
+                        ]}
+                      />
+                    </div>
+                  )}
                 </div>
+
+                {/* Typography Tên Kênh */}
+                <TypographyControlSection
+                  title="Typography & Chữ Tên Kênh"
+                  style={comps.logo || {}}
+                  onChange={(patch) => updateComponent('logo', patch)}
+                  defaultFontSize={18}
+                  allowShadowDefaultOff={false}
+                  showDimensions={true}
+                  showAlignment={true}
+                  showColors={true}
+                  xPresets={[
+                    { label: 'Góc phải (75%)', value: 75 },
+                    { label: 'Góc trái (8%)', value: 8 },
+                    { label: 'Giữa (40%)', value: 40 }
+                  ]}
+                  yPresets={[
+                    { label: 'Đỉnh (5%)', value: 5 },
+                    { label: 'Chuẩn (8%)', value: 8 },
+                    { label: 'Dưới (90%)', value: 90 }
+                  ]}
+                  widthPresets={[
+                    { label: 'Gọn (25%)', value: 25 },
+                    { label: 'Chuẩn (35%)', value: 35 },
+                    { label: 'Rộng (50%)', value: 50 }
+                  ]}
+                  heightPresets={[
+                    { label: 'Mảnh (4%)', value: 4 },
+                    { label: 'Chuẩn (6%)', value: 6 },
+                    { label: 'Dày (8%)', value: 8 }
+                  ]}
+                />
               </div>
             )}
 

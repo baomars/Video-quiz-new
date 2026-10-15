@@ -45,7 +45,7 @@ export const ChannelBrandTab: React.FC<ChannelBrandTabProps> = ({ channel, onCha
         fonts: {
           ...(branding.fonts || {}),
           [key]: value
-        }
+        } as any
       }
     });
   };
@@ -56,9 +56,9 @@ export const ChannelBrandTab: React.FC<ChannelBrandTabProps> = ({ channel, onCha
       branding: {
         ...branding,
         effects: {
-          ...branding.effects,
+          ...(branding.effects || {}),
           [key]: value
-        }
+        } as any
       }
     });
   };
@@ -188,13 +188,13 @@ export const ChannelBrandTab: React.FC<ChannelBrandTabProps> = ({ channel, onCha
               <div className="flex items-center gap-2">
                 <input
                   type="color"
-                  value={c.val.startsWith('#') && c.val.length === 7 ? c.val : '#3b82f6'}
+                  value={c.val && c.val.startsWith('#') && c.val.length === 7 ? c.val : '#3b82f6'}
                   onChange={(e) => updateColor(c.key, e.target.value)}
                   className="w-8 h-8 rounded-lg border-0 bg-transparent cursor-pointer shadow-xs"
                 />
                 <input
                   type="text"
-                  value={c.val}
+                  value={c.val || ''}
                   onChange={(e) => updateColor(c.key, e.target.value)}
                   className="w-full bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs text-slate-800 font-mono focus:outline-none"
                 />
@@ -250,52 +250,57 @@ export const ChannelBrandTab: React.FC<ChannelBrandTabProps> = ({ channel, onCha
           <span>4. Hiệu Ứng Hình Ảnh (Visual Effects)</span>
         </h3>
 
-        <div className="grid grid-cols-3 gap-4">
-          <div>
-            <label className="text-xs text-slate-600 font-semibold mb-1 block">Kiểu Đổ Bóng (Shadow):</label>
-            <select
-              value={branding.effects.shadowStyle}
-              onChange={(e) => updateEffect('shadowStyle', e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 focus:bg-white focus:border-amber-500 focus:outline-none shadow-sm"
-            >
-              <option value="none">Không đổ bóng</option>
-              <option value="subtle">Nhẹ nhàng (Subtle)</option>
-              <option value="elevated">Nổi khối (Elevated 3D)</option>
-              <option value="glow">Phát sáng (Glow)</option>
-            </select>
-          </div>
+        {(() => {
+          const effects = branding.effects || { shadowStyle: 'subtle', borderRadius: 16, glassmorphism: false };
+          return (
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <label className="text-xs text-slate-600 font-semibold mb-1 block">Kiểu Đổ Bóng (Shadow):</label>
+                <select
+                  value={effects.shadowStyle}
+                  onChange={(e) => updateEffect('shadowStyle', e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-800 focus:bg-white focus:border-amber-500 focus:outline-none shadow-sm"
+                >
+                  <option value="none">Không đổ bóng</option>
+                  <option value="subtle">Nhẹ nhàng (Subtle)</option>
+                  <option value="elevated">Nổi khối (Elevated 3D)</option>
+                  <option value="glow">Phát sáng (Glow)</option>
+                </select>
+              </div>
 
-          <div>
-            <label className="text-xs text-slate-600 font-semibold mb-1 block">Bo góc thẻ (Border Radius):</label>
-            <div className="flex items-center gap-3">
-              <input
-                type="range"
-                min={0}
-                max={32}
-                value={branding.effects.borderRadius}
-                onChange={(e) => updateEffect('borderRadius', Number(e.target.value))}
-                className="w-full accent-amber-500"
-              />
-              <span className="text-xs font-mono font-bold text-slate-700 w-8">{branding.effects.borderRadius}px</span>
-            </div>
-          </div>
+              <div>
+                <label className="text-xs text-slate-600 font-semibold mb-1 block">Bo góc thẻ (Border Radius):</label>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="range"
+                    min={0}
+                    max={32}
+                    value={effects.borderRadius}
+                    onChange={(e) => updateEffect('borderRadius', Number(e.target.value))}
+                    className="w-full accent-amber-500"
+                  />
+                  <span className="text-xs font-mono font-bold text-slate-700 w-8">{effects.borderRadius}px</span>
+                </div>
+              </div>
 
-          <div>
-            <label className="text-xs text-slate-600 font-semibold mb-1 block">Hiệu ứng Kính (Glassmorphism):</label>
-            <div className="flex items-center gap-2 pt-2">
-              <input
-                type="checkbox"
-                id="glassToggle"
-                checked={branding.effects.glassmorphism}
-                onChange={(e) => updateEffect('glassmorphism', e.target.checked)}
-                className="w-4 h-4 accent-amber-500 cursor-pointer"
-              />
-              <label htmlFor="glassToggle" className="text-xs text-slate-700 cursor-pointer font-medium">
-                Bật nền mờ trong suốt (Blur glass)
-              </label>
+              <div>
+                <label className="text-xs text-slate-600 font-semibold mb-1 block">Hiệu ứng Kính (Glassmorphism):</label>
+                <div className="flex items-center gap-2 pt-2">
+                  <input
+                    type="checkbox"
+                    id="glassToggle"
+                    checked={effects.glassmorphism}
+                    onChange={(e) => updateEffect('glassmorphism', e.target.checked)}
+                    className="w-4 h-4 accent-amber-500 cursor-pointer"
+                  />
+                  <label htmlFor="glassToggle" className="text-xs text-slate-700 cursor-pointer font-medium">
+                    Bật nền mờ trong suốt (Blur glass)
+                  </label>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
+          );
+        })()}
       </section>
     </div>
   );

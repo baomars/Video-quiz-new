@@ -9,7 +9,7 @@ import {
   DialogDescription
 } from '../ui/dialog';
 import { Film, Sparkles, X, Minimize2 } from 'lucide-react';
-import { RenderJob, BatchRenderJob } from './BackgroundRenderWidget';
+import { RenderJob, BatchRenderJob } from './RenderTab';
 
 interface ExportModalProps {
   isOpen: boolean;

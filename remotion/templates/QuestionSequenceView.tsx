@@ -112,7 +112,8 @@ export const QuestionSequenceView: React.FC<QuestionSequenceViewProps> = ({
   const cardsDelayFrame = questionIndex === 0 ? 8 : -1;
 
   // Question number formatting
-  const qNumFormat = comps.questionNumber.format || 'câu-n';
+  const qNumStyle: any = comps.questionNumber || {};
+  const qNumFormat = qNumStyle.format || 'câu-n';
   const qNumText = qNumFormat === 'q-n'
     ? `QUESTION ${questionIndex + 1}/${totalQuestions}`
     : qNumFormat === 'badge'
@@ -120,15 +121,15 @@ export const QuestionSequenceView: React.FC<QuestionSequenceViewProps> = ({
     : `CÂU ${questionIndex + 1} / ${totalQuestions}`;
 
   const numEntrance = questionIndex === 0
-    ? getEntranceTransform(comps.questionNumber.animation || 'fade', frame, fps, 2)
+    ? getEntranceTransform(qNumStyle.animation || 'fade', frame, fps, 2)
     : { opacity: 1, transform: 'none' };
 
-  const numWidth = comps.questionNumber.width ?? 80;
-  const numLeft = comps.questionNumber.x !== undefined
-    ? `${comps.questionNumber.x}%`
-    : comps.questionNumber.horizontalAlign === 'center'
+  const numWidth = qNumStyle.width ?? 80;
+  const numLeft = qNumStyle.x !== undefined
+    ? `${qNumStyle.x}%`
+    : qNumStyle.horizontalAlign === 'center'
     ? `${(100 - numWidth) / 2}%`
-    : comps.questionNumber.horizontalAlign === 'right'
+    : qNumStyle.horizontalAlign === 'right'
     ? `${100 - numWidth - 10}%`
     : '10%';
 
@@ -154,29 +155,29 @@ export const QuestionSequenceView: React.FC<QuestionSequenceViewProps> = ({
         style={{
           position: 'absolute',
           left: numLeft,
-          top: `${comps.questionNumber.y}%`,
-          width: `${comps.questionNumber.width}%`,
-          height: `${comps.questionNumber.height}%`,
+          top: `${qNumStyle.y ?? 14}%`,
+          width: `${numWidth}%`,
+          height: `${qNumStyle.height ?? 5}%`,
           display: 'flex',
           alignItems: 'center',
-          justifyContent: comps.questionNumber.textAlign === 'left' ? 'flex-start' : comps.questionNumber.textAlign === 'right' ? 'flex-end' : 'center',
-          fontFamily: comps.questionNumber.fontFamily || branding?.fonts?.primary || branding?.typography?.headingFont || 'Be Vietnam Pro, sans-serif',
-          fontSize: `${comps.questionNumber.fontSize || 20}px`,
-          fontWeight: comps.questionNumber.fontWeight || '700',
-          color: comps.questionNumber.color || primaryColor,
-          backgroundColor: comps.questionNumber.backgroundColor || 'transparent',
-          borderRadius: `${comps.questionNumber.borderRadius || 12}px`,
+          justifyContent: qNumStyle.textAlign === 'left' ? 'flex-start' : qNumStyle.textAlign === 'right' ? 'flex-end' : 'center',
+          fontFamily: qNumStyle.fontFamily || branding?.fonts?.primary || branding?.typography?.headingFont || 'Be Vietnam Pro, sans-serif',
+          fontSize: `${qNumStyle.fontSize || 20}px`,
+          fontWeight: qNumStyle.fontWeight || '700',
+          color: qNumStyle.color || primaryColor,
+          backgroundColor: qNumStyle.backgroundColor || 'transparent',
+          borderRadius: `${qNumStyle.borderRadius || 12}px`,
           letterSpacing: '0.04em',
           zIndex: 10,
-          opacity: contentOpacity,
-          ...numEntrance
+          ...numEntrance,
+          opacity: (numEntrance.opacity ?? 1) * contentOpacity
         }}
       >
         {qNumText}
       </div>
 
       {/* 3. Illustration Frame (Optional - only renders if images present) */}
-      {hasIllustration && (
+      {hasIllustration && comps.illustration && (
         <IllustrationFrame
           style={comps.illustration}
           layoutMode={template.illustrationLayout}
@@ -226,7 +227,7 @@ export const QuestionSequenceView: React.FC<QuestionSequenceViewProps> = ({
 
       {/* 7. Explanation Card upon Reveal (Fully customizable via template.components.explanation) */}
       {isRevealed && question.explanation && (comps.explanation?.enabled !== false) && (() => {
-        const expStyle = comps.explanation || {};
+        const expStyle: any = comps.explanation || {};
         const expX = expStyle.x ?? 6;
         const expY = expStyle.y ?? 84;
         const expW = expStyle.width ?? 88;
@@ -237,8 +238,8 @@ export const QuestionSequenceView: React.FC<QuestionSequenceViewProps> = ({
         const expBorderWidth = expStyle.borderWidth ?? 2;
         const expPadding = expStyle.padding ?? 12;
         const expTextColor = expStyle.textColor || expStyle.color || '#1e293b';
-        const expFontFamily = expStyle.fontFamily || branding?.fonts?.primary || branding?.typography?.bodyFont || 'Be Vietnam Pro, sans-serif';
-        const expFontSize = expStyle.fontSize ?? 15;
+        const expFontFamily = expStyle.fontFamily || branding?.fonts?.primary || 'Montserrat, sans-serif';
+        const expFontSize = expStyle.fontSize ?? 18;
         const expFontWeight = expStyle.fontWeight || '600';
         const expTextAlign = expStyle.textAlign || 'left';
         const expShadow = expStyle.boxShadow || '0 8px 25px rgba(22, 163, 74, 0.18)';
@@ -319,7 +320,22 @@ export const QuestionSequenceView: React.FC<QuestionSequenceViewProps> = ({
               <span style={{ fontSize: `${Math.max(11, expFontSize - 2)}px`, fontWeight: '800', color: expBorderColor, textTransform: 'uppercase' }}>
                 {titleText}
               </span>
-              <span style={{ fontSize: `${expFontSize}px`, color: expTextColor, fontFamily: expFontFamily, lineHeight: 1.35, fontWeight: expFontWeight }}>
+              <span
+                style={{
+                  fontSize: `${expFontSize}px`,
+                  color: expTextColor,
+                  fontFamily: expFontFamily,
+                  lineHeight: typeof expStyle.lineHeight === 'number' ? expStyle.lineHeight : 1.35,
+                  letterSpacing: expStyle.letterSpacing ? `${expStyle.letterSpacing}px` : undefined,
+                  fontWeight: expFontWeight,
+                  WebkitTextStroke: expStyle.textStrokeEnabled && expStyle.textStrokeWidth
+                    ? `${expStyle.textStrokeWidth}px ${expStyle.textStrokeColor || '#000000'}`
+                    : undefined,
+                  textShadow: expStyle.textShadowEnabled
+                    ? `${expStyle.textShadowOffsetX ?? 0}px ${expStyle.textShadowOffsetY ?? 2}px ${expStyle.textShadowBlur ?? 6}px ${expStyle.textShadowColor || 'rgba(0,0,0,0.4)'}`
+                    : undefined
+                }}
+              >
                 {question.explanation}
               </span>
             </div>

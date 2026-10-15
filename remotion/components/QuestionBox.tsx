@@ -231,12 +231,16 @@ export const QuestionBox: React.FC<QuestionBoxProps> = React.memo(({
         style={{
           position: 'relative',
           zIndex: 2,
-          fontFamily: style.fontFamily || 'Be Vietnam Pro, sans-serif',
-          fontSize: `${style.fontSize || 28}px`,
+          fontFamily: style.fontFamily || 'Montserrat, sans-serif',
+          fontSize: `${style.fontSize || 50}px`,
           fontWeight: style.fontWeight || '800',
           color: textColor,
-          WebkitTextStroke: strokeWidth > 0 ? `${strokeWidth}px ${strokeColor}` : undefined,
-          textShadow: style.textShadow || (strokeWidth > 0 ? undefined : '0 2px 10px rgba(0,0,0,0.1)'),
+          WebkitTextStroke: style.textStrokeEnabled
+            ? `${style.textStrokeWidth || 2}px ${style.textStrokeColor || '#000000'}`
+            : strokeWidth > 0 ? `${strokeWidth}px ${strokeColor}` : undefined,
+          textShadow: style.textShadowEnabled
+            ? `${style.textShadowOffsetX || 0}px ${style.textShadowOffsetY || 3}px ${style.textShadowBlur || 8}px ${style.textShadowColor || 'rgba(0,0,0,0.4)'}`
+            : style.textShadow,
           textAlign,
           lineHeight: style.lineHeight || 1.35,
           letterSpacing: `${style.letterSpacing || 0}px`,

@@ -97,7 +97,7 @@ interface RenderLogEntry {
   message: string;
 }
 
-interface RenderJob {
+export interface RenderJob {
   jobId: string;
   fileName?: string;
   status: 'pending' | 'queued' | 'processing' | 'completed' | 'failed';
@@ -125,7 +125,7 @@ interface RenderJob {
   completedAt?: string;
 }
 
-interface BatchRenderJob {
+export interface BatchRenderJob {
   batchId: string;
   status: 'pending' | 'processing' | 'completed' | 'failed';
   totalVideos: number;
@@ -353,8 +353,9 @@ export const RenderTab: React.FC<RenderTabProps> = ({
     try {
       setIsUploadingBgs(true);
       const res = await uploadImage(file);
-      if (res.url) {
-        setExportUploadedBgUrl(res.url);
+      const bgUrl = res.optimizedUrl || res.originalUrl;
+      if (bgUrl) {
+        setExportUploadedBgUrl(bgUrl);
         setExportBgMode('upload');
       }
     } catch (err: any) {
@@ -1837,18 +1838,18 @@ export const RenderTab: React.FC<RenderTabProps> = ({
                         <span className={`font-bold block truncate ${isRunning ? 'text-amber-300' : isCompleted ? 'text-white' : isFailed ? 'text-rose-300' : 'text-slate-400'}`}>
                           {stg.name}
                         </span>
-                        {stg.message && (
+                        {(stg as any).message && (
                           <span className="text-[10px] text-slate-400 block truncate font-normal">
-                            {stg.message}
+                            {(stg as any).message}
                           </span>
                         )}
                       </div>
                     </div>
 
                     <div className="flex items-center gap-2 shrink-0 ml-2">
-                      {stg.durationMs && (
+                      {(stg as any).durationMs && (
                         <span className="text-[10px] font-mono text-slate-500">
-                          {(stg.durationMs / 1000).toFixed(1)}s
+                          {((stg as any).durationMs / 1000).toFixed(1)}s
                         </span>
                       )}
                       {isRunning && (

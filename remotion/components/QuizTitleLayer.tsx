@@ -34,7 +34,8 @@ export const QuizTitleLayer: React.FC<QuizTitleLayerProps> = React.memo(({
   }
 
   // Freeze transform after entrance animation (25 frames) to avoid per-frame matrix recalculations
-  const transform = (style.animation === 'none' || frame >= 25)
+  const anim = style.animation as string | undefined;
+  const transform = (anim === 'none' || frame >= 25)
     ? { opacity: 1, transform: 'none' }
     : getEntranceTransform(style.animation || 'slide-up', frame, fps, 0);
 
@@ -69,7 +70,8 @@ export const QuizTitleLayer: React.FC<QuizTitleLayerProps> = React.memo(({
         padding: `${style.padding ?? 10}px 18px`,
         zIndex: 11,
         boxSizing: 'border-box',
-        ...transform
+        ...transform,
+        opacity: (transform.opacity ?? 1) * (style.opacity !== undefined ? style.opacity : 1.0)
       }}
     >
       <span
@@ -80,7 +82,13 @@ export const QuizTitleLayer: React.FC<QuizTitleLayerProps> = React.memo(({
           color: style.color || defaultColor,
           textAlign: textAlign,
           lineHeight: style.lineHeight || 1.3,
-          letterSpacing: style.letterSpacing ? `${style.letterSpacing}em` : '0.02em',
+          letterSpacing: style.letterSpacing ? `${style.letterSpacing}px` : '0.02em',
+          WebkitTextStroke: style.textStrokeEnabled && style.textStrokeWidth
+            ? `${style.textStrokeWidth}px ${style.textStrokeColor || '#000000'}`
+            : undefined,
+          textShadow: style.textShadowEnabled
+            ? `${style.textShadowOffsetX ?? 0}px ${style.textShadowOffsetY ?? 3}px ${style.textShadowBlur ?? 8}px ${style.textShadowColor || 'rgba(0,0,0,0.4)'}`
+            : undefined,
           textTransform: 'uppercase',
           width: '100%',
           overflow: 'hidden',

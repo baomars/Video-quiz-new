@@ -35,6 +35,16 @@ export interface ResolvedOptionLayout {
   labelBgColor?: string;
   labelSize?: number;
   textShadow?: string;
+  textShadowEnabled?: boolean;
+  textShadowBlur?: number;
+  textShadowOffsetX?: number;
+  textShadowOffsetY?: number;
+  textShadowColor?: string;
+  textStrokeEnabled?: boolean;
+  textStrokeWidth?: number;
+  textStrokeColor?: string;
+  letterSpacing?: number;
+  lineHeight?: number | string;
   boxShadow?: string;
   glowColor?: string;
   glowRadius?: number;
@@ -263,6 +273,16 @@ export function resolveOptionLayout(
     labelBgColor: indOpt?.labelBgColor,
     labelSize: indOpt?.labelSize,
     textShadow: indOpt?.textShadow ?? cfg.textShadow,
+    textShadowEnabled: indOpt?.textShadowEnabled !== undefined ? indOpt.textShadowEnabled : cfg.textShadowEnabled,
+    textShadowBlur: indOpt?.textShadowBlur ?? cfg.textShadowBlur,
+    textShadowOffsetX: indOpt?.textShadowOffsetX ?? cfg.textShadowOffsetX,
+    textShadowOffsetY: indOpt?.textShadowOffsetY ?? cfg.textShadowOffsetY,
+    textShadowColor: indOpt?.textShadowColor || cfg.textShadowColor,
+    textStrokeEnabled: indOpt?.textStrokeEnabled !== undefined ? indOpt.textStrokeEnabled : cfg.textStrokeEnabled,
+    textStrokeWidth: indOpt?.textStrokeWidth ?? cfg.textStrokeWidth,
+    textStrokeColor: indOpt?.textStrokeColor || cfg.textStrokeColor,
+    letterSpacing: indOpt?.letterSpacing ?? cfg.letterSpacing,
+    lineHeight: indOpt?.lineHeight ?? cfg.lineHeight,
     boxShadow: indOpt?.boxShadow ?? cfg.boxShadow,
     glowColor: indOpt?.glowColor ?? cfg.glowColor,
     glowRadius: indOpt?.glowRadius ?? cfg.glowRadius

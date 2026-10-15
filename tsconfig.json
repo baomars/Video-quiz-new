@@ -17,6 +17,7 @@
     "noFallthroughCasesInSwitch": true,
     "baseUrl": ".",
     "paths": {
+      "remotion": ["./node_modules/remotion"],
       "@/*": ["./frontend/src/*"],
       "@remotion/*": ["./remotion/*"]
     }

@@ -1,7 +1,7 @@
 import type { SKRSContext2D, Image } from '@napi-rs/canvas';
 import { interpolate, spring } from 'remotion';
 import { Channel, VideoTemplate, Quiz, TimelineQuestionCue, OptionKey } from '../../../../remotion/types/index.js';
-import { parseColor, drawRoundedRect, wrapText, getEntranceTransform, drawShapePath, drawHexagonPath } from './canvasHelper.js';
+import { parseColor, drawRoundedRect, wrapText, getEntranceTransform, drawShapePath, drawHexagonPath, drawHudPath } from './canvasHelper.js';
 import { resolveOptionLayout } from '../../../../remotion/utils/answerLayoutHelper.js';
 
 export interface SceneDrawContext {
@@ -614,14 +614,33 @@ function drawQuizTitle(
   ctx.stroke();
 
   // Text
+  const titleFont = style.fontFamily ? style.fontFamily.split(',')[0].replace(/['"]/g, '').trim() : 'Montserrat';
   ctx.fillStyle = style.color || channel.branding.colors.primary || '#1e3a8a';
   const fontSize = style.fontSize || 24;
-  ctx.font = `800 ${fontSize}px "Montserrat", "Be Vietnam Pro", sans-serif`;
-  ctx.textAlign = 'center';
+  ctx.font = `${style.fontWeight || '800'} ${fontSize}px "${titleFont}", "Montserrat", "Be Vietnam Pro", sans-serif`;
+  ctx.textAlign = style.textAlign || 'center';
   ctx.textBaseline = 'middle';
 
   const titleText = effectiveText.toUpperCase();
-  ctx.fillText(titleText, left + cardW / 2, top + cardH / 2, cardW - 36);
+  const textX = style.textAlign === 'left' ? (left + 18) : style.textAlign === 'right' ? (left + cardW - 18) : (left + cardW / 2);
+  const textY = top + cardH / 2;
+
+  if (style.textShadowEnabled) {
+    ctx.shadowColor = style.textShadowColor || 'rgba(0, 0, 0, 0.4)';
+    ctx.shadowBlur = style.textShadowBlur ?? 8;
+    ctx.shadowOffsetX = style.textShadowOffsetX ?? 0;
+    ctx.shadowOffsetY = style.textShadowOffsetY ?? 3;
+  } else {
+    ctx.shadowColor = 'transparent';
+  }
+
+  if (style.textStrokeEnabled && style.textStrokeWidth) {
+    ctx.strokeStyle = style.textStrokeColor || '#000000';
+    ctx.lineWidth = style.textStrokeWidth * 2;
+    ctx.strokeText(titleText, textX, textY, cardW - 36);
+  }
+  ctx.fillText(titleText, textX, textY, cardW - 36);
+  ctx.shadowColor = 'transparent';
 
   ctx.restore();
 }
@@ -666,8 +685,9 @@ function drawLogoWatermark(
   }
 
   if (showName && channelName) {
+    const chFont = style?.fontFamily ? style.fontFamily.split(',')[0].replace(/['"]/g, '').trim() : 'Montserrat';
     ctx.fillStyle = style?.color || channel.branding?.colors?.primary || '#ffffff';
-    ctx.font = `800 ${style?.fontSize || 18}px "Be Vietnam Pro", "Montserrat", sans-serif`;
+    ctx.font = `${style?.fontWeight || '800'} ${style?.fontSize || 18}px "${chFont}", "Montserrat", "Be Vietnam Pro", sans-serif`;
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
     ctx.shadowColor = 'rgba(0, 0, 0, 0.35)';
@@ -980,22 +1000,36 @@ function drawQuestionBox(
   }
 
   // Question Text (Multiline wrapped)
-  const fontSize = s.fontSize || 24;
+  const fontSize = s.fontSize || 50;
+  const qFont = s.fontFamily ? s.fontFamily.split(',')[0].replace(/['"]/g, '').trim() : 'Montserrat';
   ctx.fillStyle = s.textColor || s.color || '#0f172a';
-  ctx.font = `${s.fontWeight || '700'} ${fontSize}px "Be Vietnam Pro", sans-serif`;
+  ctx.font = `${s.fontWeight || '700'} ${fontSize}px "${qFont}", "Montserrat", "Be Vietnam Pro", sans-serif`;
   ctx.textAlign = s.textAlign || 'center';
   ctx.textBaseline = 'middle';
 
   const maxTextW = cardW - 48;
   const lines = wrapText(ctx, questionText, maxTextW, 4);
-  const lineSpacing = fontSize * 1.35;
+  const lineSpacing = fontSize * (typeof s.lineHeight === 'number' ? s.lineHeight : 1.35);
   const startY = top + cardH / 2 - ((lines.length - 1) * lineSpacing) / 2;
   const textX = (s.textAlign === 'left') ? (left + 24) : (left + cardW / 2);
 
+  if (s.textShadowEnabled) {
+    ctx.shadowColor = s.textShadowColor || 'rgba(0,0,0,0.4)';
+    ctx.shadowBlur = s.textShadowBlur ?? 8;
+    ctx.shadowOffsetX = s.textShadowOffsetX ?? 0;
+    ctx.shadowOffsetY = s.textShadowOffsetY ?? 3;
+  }
+
   for (let i = 0; i < lines.length; i++) {
+    if (s.textStrokeEnabled && s.textStrokeWidth) {
+      ctx.strokeStyle = s.textStrokeColor || '#000000';
+      ctx.lineWidth = s.textStrokeWidth * 2;
+      ctx.strokeText(lines[i], textX, startY + i * lineSpacing);
+    }
     ctx.fillText(lines[i], textX, startY + i * lineSpacing);
   }
 
+  ctx.shadowColor = 'transparent';
   ctx.restore();
 }
 
@@ -1228,15 +1262,17 @@ function drawAnswerCards(
     // Option Text
     const textX = badgeX + badgeSize + 14;
     const textY = cardTop + cardH / 2;
+    const optFont = layout.fontFamily ? layout.fontFamily.split(',')[0].replace(/['"]/g, '').trim() : 'Montserrat';
     ctx.fillStyle = textColor;
-    ctx.font = `${layout.fontWeight} ${layout.fontSize}px "${layout.fontFamily.split(',')[0].replace(/"/g, '') || 'Be Vietnam Pro'}", sans-serif`;
+    ctx.font = `${layout.fontWeight || '700'} ${layout.fontSize}px "${optFont}", "Montserrat", "Be Vietnam Pro", sans-serif`;
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
 
-    if (layout.textShadow && layout.textShadow !== 'none') {
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
-      ctx.shadowBlur = 6;
-      ctx.shadowOffsetY = 2;
+    if (layout.textShadowEnabled) {
+      ctx.shadowColor = layout.textShadowColor || 'rgba(0, 0, 0, 0.4)';
+      ctx.shadowBlur = layout.textShadowBlur ?? 6;
+      ctx.shadowOffsetX = layout.textShadowOffsetX ?? 0;
+      ctx.shadowOffsetY = layout.textShadowOffsetY ?? 2;
     } else {
       ctx.shadowColor = 'transparent';
       ctx.shadowBlur = 0;
@@ -1246,6 +1282,11 @@ function drawAnswerCards(
 
     const maxOptionW = cardW - (badgeSize + 36);
     const optionText = options[key] || '';
+    if (layout.textStrokeEnabled && layout.textStrokeWidth) {
+      ctx.strokeStyle = layout.textStrokeColor || '#000000';
+      ctx.lineWidth = layout.textStrokeWidth * 2;
+      ctx.strokeText(optionText, textX, textY, maxOptionW);
+    }
     ctx.fillText(optionText, textX, textY, maxOptionW);
     ctx.shadowColor = 'transparent';
 
@@ -1310,84 +1351,405 @@ function drawCountdownTimer(
   ctx.globalAlpha = style.opacity ?? 1.0;
   ctx.translate(centerX, centerY);
 
-  const styleType = countdownStyle || style.countdownStyle || 'clean-text';
+  const normStyle: string = (
+    countdownStyle === 'circle-radial' || countdownStyle === 'circle' ? 'circular-progress' :
+    countdownStyle === 'bar-horizontal' || countdownStyle === 'bar-bottom' || countdownStyle === 'bar' ? 'horizontal-progress' :
+    countdownStyle === 'clean-text' ? 'minimal-number' :
+    countdownStyle === 'badge' ? 'pill-timer' :
+    countdownStyle || style.countdownStyle || 'circular-progress'
+  );
 
-  if (
-    styleType === 'circle-radial' ||
-    styleType === 'bar-horizontal' ||
-    styleType === 'circle' ||
-    styleType === 'bar'
-  ) {
-    const isLegacyWide = (style.width || 0) > 40;
-    const size = isLegacyWide ? 84 : Math.max(64, Math.min(widthPx, 110));
-    const strokeW = style.strokeWidth || 6;
-    const radius = size / 2 - strokeW;
+  const showSeconds = style.showSeconds !== false;
+  const showProgressBar = style.showProgressBar !== false;
+  const showBackground = style.showBackground !== false;
+  const showBorder = style.showBorder !== false;
+  const fontSize = style.fontSize || 38;
+  const fontFamily = style.fontFamily ? style.fontFamily.split(',')[0].replace(/['"]/g, '').trim() : 'Montserrat';
+  const fontWeight = style.fontWeight || '900';
+  const strokeW = style.strokeWidth || style.thickness || 6;
+  const progressColor = style.progressColor || activeColor;
+
+  // 1. CIRCULAR PROGRESS
+  if (normStyle === 'circular-progress') {
+    const size = Math.max(72, Math.min(widthPx, 120));
+    const radius = size / 2 - strokeW - 2;
+
+    if (showBackground) {
+      ctx.beginPath();
+      ctx.arc(0, 0, radius, 0, Math.PI * 2);
+      ctx.fillStyle = parseColor(style.backgroundColor || 'rgba(15, 23, 42, 0.85)');
+      ctx.fill();
+      if (showBorder) {
+        ctx.strokeStyle = style.borderColor || 'rgba(255, 255, 255, 0.15)';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      }
+    }
 
     // Background track
     ctx.beginPath();
     ctx.arc(0, 0, radius, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
-    ctx.fill();
-    ctx.strokeStyle = '#e2e8f0';
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
     ctx.lineWidth = strokeW;
     ctx.stroke();
 
-    // Progress arc
-    const startAngle = -Math.PI / 2;
-    const endAngle = startAngle + remainingFraction * (Math.PI * 2);
+    // Animated progress circle
+    if (showProgressBar) {
+      const startAngle = -Math.PI / 2;
+      const endAngle = startAngle + remainingFraction * (Math.PI * 2);
+      ctx.beginPath();
+      ctx.arc(0, 0, radius, startAngle, endAngle, false);
+      ctx.strokeStyle = progressColor;
+      ctx.lineWidth = strokeW;
+      ctx.lineCap = 'round';
+      ctx.stroke();
+    }
+
+    // Centered Number
+    if (showSeconds) {
+      ctx.fillStyle = activeColor;
+      ctx.font = `${fontWeight} ${fontSize}px "${fontFamily}", "Montserrat", sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(String(remainingSec), 0, 0);
+    }
+  }
+  // 2. RADIAL RING
+  else if (normStyle === 'radial-ring') {
+    const size = Math.max(72, Math.min(widthPx, 120));
+    const radius = size / 2 - strokeW - 2;
+
+    if (showBackground) {
+      ctx.beginPath();
+      ctx.arc(0, 0, radius, 0, Math.PI * 2);
+      ctx.fillStyle = parseColor(style.backgroundColor || 'rgba(0, 0, 0, 0.75)');
+      ctx.fill();
+    }
+
     ctx.beginPath();
-    ctx.arc(0, 0, radius, startAngle, endAngle, false);
-    ctx.strokeStyle = activeColor;
+    ctx.arc(0, 0, radius, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
     ctx.lineWidth = strokeW;
-    ctx.lineCap = 'round';
     ctx.stroke();
 
-    // Number
+    if (showProgressBar) {
+      const startAngle = -Math.PI / 2;
+      const endAngle = startAngle + remainingFraction * (Math.PI * 2);
+      ctx.beginPath();
+      ctx.arc(0, 0, radius, startAngle, endAngle, false);
+      ctx.strokeStyle = progressColor;
+      ctx.lineWidth = strokeW + 2;
+      ctx.lineCap = 'butt';
+      ctx.stroke();
+    }
+
+    if (showSeconds) {
+      ctx.fillStyle = activeColor;
+      ctx.font = `${fontWeight} ${fontSize}px "${fontFamily}", "Montserrat", sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(String(remainingSec), 0, -4);
+
+      ctx.font = `700 10px "${fontFamily}", "Montserrat", sans-serif`;
+      ctx.fillText('SEC', 0, fontSize * 0.42);
+    }
+  }
+  // 3. HORIZONTAL PROGRESS BAR
+  else if (normStyle === 'horizontal-progress') {
+    const barW = Math.max(widthPx, 120);
+    const barH = Math.max(heightPx, 14);
+
+    if (showSeconds) {
+      ctx.fillStyle = activeColor;
+      ctx.font = `${fontWeight} ${Math.max(14, fontSize - 6)}px "${fontFamily}", "Montserrat", sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(`${remainingSec}s`, 0, -barH - 4);
+    }
+
+    if (showProgressBar) {
+      const rad = style.borderRadius ?? 9999;
+      if (showBackground) {
+        ctx.fillStyle = parseColor(style.backgroundColor || 'rgba(15, 23, 42, 0.7)');
+        drawRoundedRect(ctx, -barW / 2, -barH / 2, barW, barH, rad);
+        ctx.fill();
+        if (showBorder) {
+          ctx.strokeStyle = style.borderColor || 'rgba(255, 255, 255, 0.2)';
+          ctx.lineWidth = style.borderWidth ?? 2;
+          ctx.stroke();
+        }
+      }
+
+      const fillW = Math.max(0, barW * remainingFraction);
+      if (fillW > 0) {
+        ctx.fillStyle = progressColor;
+        drawRoundedRect(ctx, -barW / 2, -barH / 2, fillW, barH, rad);
+        ctx.fill();
+      }
+    }
+  }
+  // 4. VERTICAL PROGRESS BAR
+  else if (normStyle === 'vertical-progress') {
+    const barW = Math.max(20, strokeW * 3);
+    const barH = Math.max(heightPx, 100);
+
+    if (showSeconds) {
+      ctx.fillStyle = activeColor;
+      ctx.font = `${fontWeight} ${Math.max(12, fontSize - 8)}px "${fontFamily}", "Montserrat", sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(`${remainingSec}s`, 0, -barH / 2 - 12);
+    }
+
+    if (showProgressBar) {
+      const rad = style.borderRadius ?? 12;
+      if (showBackground) {
+        ctx.fillStyle = parseColor(style.backgroundColor || 'rgba(15, 23, 42, 0.7)');
+        drawRoundedRect(ctx, -barW / 2, -barH / 2, barW, barH, rad);
+        ctx.fill();
+        if (showBorder) {
+          ctx.strokeStyle = style.borderColor || 'rgba(255, 255, 255, 0.2)';
+          ctx.lineWidth = style.borderWidth ?? 2;
+          ctx.stroke();
+        }
+      }
+
+      const fillH = Math.max(0, barH * remainingFraction);
+      if (fillH > 0) {
+        ctx.fillStyle = progressColor;
+        drawRoundedRect(ctx, -barW / 2, barH / 2 - fillH, barW, fillH, rad);
+        ctx.fill();
+      }
+    }
+  }
+  // 5. SEGMENTED BAR
+  else if (normStyle === 'segmented-bar') {
+    const barW = Math.max(widthPx, 120);
+    const barH = 14;
+    const totalSegments = style.segmentCount || 8;
+    const activeSegments = Math.ceil(remainingFraction * totalSegments);
+    const gap = 4;
+    const segW = (barW - gap * (totalSegments - 1)) / totalSegments;
+
+    if (showSeconds) {
+      ctx.fillStyle = activeColor;
+      ctx.font = `${fontWeight} ${Math.max(14, fontSize - 6)}px "${fontFamily}", "Montserrat", sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(`${remainingSec}s`, 0, -barH - 4);
+    }
+
+    if (showProgressBar) {
+      for (let i = 0; i < totalSegments; i++) {
+        const segX = -barW / 2 + i * (segW + gap);
+        const isActive = i < activeSegments;
+        ctx.fillStyle = isActive ? progressColor : 'rgba(255, 255, 255, 0.12)';
+        drawRoundedRect(ctx, segX, -barH / 2, segW, barH, 3);
+        ctx.fill();
+      }
+    }
+  }
+  // 6. NEON COUNTDOWN
+  else if (normStyle === 'neon-countdown') {
+    const size = Math.max(76, Math.min(widthPx, 120));
+    const radius = size / 2 - strokeW - 2;
+
+    ctx.save();
+    ctx.shadowColor = progressColor;
+    ctx.shadowBlur = 24;
+
+    ctx.beginPath();
+    ctx.arc(0, 0, radius, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(5, 5, 20, 0.85)';
+    ctx.fill();
+    ctx.strokeStyle = progressColor;
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    if (showProgressBar) {
+      const startAngle = -Math.PI / 2;
+      const endAngle = startAngle + remainingFraction * (Math.PI * 2);
+      ctx.beginPath();
+      ctx.arc(0, 0, radius, startAngle, endAngle, false);
+      ctx.strokeStyle = progressColor;
+      ctx.lineWidth = strokeW;
+      ctx.lineCap = 'round';
+      ctx.stroke();
+    }
+
+    if (showSeconds) {
+      ctx.fillStyle = '#ffffff';
+      ctx.font = `${fontWeight} ${fontSize}px "${fontFamily}", "Montserrat", sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(String(remainingSec), 0, 0);
+    }
+    ctx.restore();
+  }
+  // 7. DIGITAL COUNTDOWN
+  else if (normStyle === 'digital-countdown') {
+    const boxW = Math.max(140, widthPx);
+    const boxH = Math.max(46, heightPx);
+
+    if (showBackground) {
+      ctx.fillStyle = parseColor(style.backgroundColor || '#0a0a14');
+      drawRoundedRect(ctx, -boxW / 2, -boxH / 2, boxW, boxH, style.borderRadius ?? 8);
+      ctx.fill();
+      if (showBorder) {
+        ctx.strokeStyle = style.borderColor || '#38bdf8';
+        ctx.lineWidth = style.borderWidth ?? 2;
+        ctx.stroke();
+      }
+    }
+
     ctx.fillStyle = activeColor;
-    ctx.font = `900 ${style.fontSize || 32}px "Be Vietnam Pro", sans-serif`;
+    ctx.font = `900 ${Math.max(18, fontSize - 6)}px monospace, "Montserrat", sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(`00:0${remainingSec}`, 0, 0);
+  }
+  // 8. FLIP TIMER
+  else if (normStyle === 'flip-timer') {
+    const cardW = Math.max(64, fontSize * 1.5);
+    const cardH = Math.max(70, fontSize * 1.7);
+
+    ctx.fillStyle = '#1e293b';
+    drawRoundedRect(ctx, -cardW / 2, -cardH / 2, cardW, cardH, style.borderRadius ?? 12);
+    ctx.fill();
+    if (showBorder) {
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = style.borderWidth ?? 2;
+      ctx.stroke();
+    }
+
+    // Split seam
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(-cardW / 2, -1, cardW, 2);
+
+    ctx.fillStyle = activeColor;
+    ctx.font = `${fontWeight} ${fontSize + 6}px "${fontFamily}", "Montserrat", sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(String(remainingSec), 0, 0);
-  } else if (styleType === 'pill-timer' || styleType === 'badge') {
-    const pillW = Math.max(widthPx, 110);
-    const pillH = Math.max(heightPx, 40);
-    const rad = style.borderRadius ?? (pillH / 2);
-    const bW = style.borderWidth ?? 2;
-    const bCol = style.borderColor || activeColor;
-    const bgCol = parseColor(style.backgroundColor || 'rgba(255, 255, 255, 0.95)', 0.95);
+  }
+  // 9. MINIMAL NUMBER
+  else if (normStyle === 'minimal-number') {
+    ctx.fillStyle = activeColor;
+    ctx.font = `${fontWeight} ${fontSize + 16}px "${fontFamily}", "Montserrat", sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
 
-    ctx.save();
-    if (style.boxShadow && style.boxShadow !== 'none') {
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.08)';
-      ctx.shadowBlur = 16;
-      ctx.shadowOffsetY = 4;
+    if (style.textStrokeEnabled) {
+      ctx.strokeStyle = style.textStrokeColor || '#000000';
+      ctx.lineWidth = (style.textStrokeWidth || 2) * 2;
+      ctx.strokeText(String(remainingSec), 0, 0);
     }
-    ctx.fillStyle = bgCol;
-    drawRoundedRect(ctx, -pillW / 2, -pillH / 2, pillW, pillH, rad);
-    ctx.fill();
-    ctx.strokeStyle = bCol;
-    ctx.lineWidth = bW;
-    ctx.stroke();
-    ctx.restore();
+    ctx.fillText(String(remainingSec), 0, 0);
+  }
+  // 10. PILL TIMER
+  else if (normStyle === 'pill-timer') {
+    const pillW = Math.max(widthPx, 130);
+    const pillH = Math.max(heightPx, 42);
+    const rad = style.borderRadius ?? (pillH / 2);
 
-    const fSize = style.fontSize || 20;
-    ctx.font = `800 ${fSize}px "Be Vietnam Pro", sans-serif`;
+    if (showBackground) {
+      ctx.fillStyle = parseColor(style.backgroundColor || 'rgba(15, 23, 42, 0.92)', 0.92);
+      drawRoundedRect(ctx, -pillW / 2, -pillH / 2, pillW, pillH, rad);
+      ctx.fill();
+      if (showBorder) {
+        ctx.strokeStyle = style.borderColor || 'rgba(255, 255, 255, 0.2)';
+        ctx.lineWidth = style.borderWidth ?? 2;
+        ctx.stroke();
+      }
+    }
+
+    const badgeR = (pillH - 8) / 2;
+    const badgeX = -pillW / 2 + 4 + badgeR;
+    if (showSeconds) {
+      ctx.beginPath();
+      ctx.arc(badgeX, 0, badgeR, 0, Math.PI * 2);
+      ctx.fillStyle = activeColor;
+      ctx.fill();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = `${fontWeight} ${Math.max(12, fontSize - 12)}px "${fontFamily}", "Montserrat", sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(String(remainingSec), badgeX, 0);
+    }
+
+    if (showProgressBar) {
+      const trackX = badgeX + badgeR + 8;
+      const trackW = pillW / 2 - 12 - trackX;
+      const trackH = 8;
+      if (trackW > 0) {
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+        drawRoundedRect(ctx, trackX, -trackH / 2, trackW, trackH, 4);
+        ctx.fill();
+
+        const progW = trackW * remainingFraction;
+        if (progW > 0) {
+          ctx.fillStyle = progressColor;
+          drawRoundedRect(ctx, trackX, -trackH / 2, progW, trackH, 4);
+          ctx.fill();
+        }
+      }
+    }
+  }
+  // 11. DOT COUNTDOWN
+  else if (normStyle === 'dot-countdown') {
+    const totalDots = style.dotCount || 5;
+    const activeDots = Math.ceil(remainingFraction * totalDots);
+    const dotR = 6;
+    const gap = 10;
+    const totalW = totalDots * (dotR * 2) + (totalDots - 1) * gap;
+
+    if (showSeconds) {
+      ctx.fillStyle = activeColor;
+      ctx.font = `${fontWeight} ${Math.max(14, fontSize - 8)}px "${fontFamily}", "Montserrat", sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(`${remainingSec}s`, 0, -16);
+    }
+
+    for (let i = 0; i < totalDots; i++) {
+      const dx = -totalW / 2 + dotR + i * (dotR * 2 + gap);
+      const isActive = i < activeDots;
+      ctx.beginPath();
+      ctx.arc(dx, 6, dotR, 0, Math.PI * 2);
+      ctx.fillStyle = isActive ? progressColor : 'rgba(255, 255, 255, 0.15)';
+      ctx.fill();
+    }
+  }
+  // 12. CORNER HUD
+  else if (normStyle === 'corner-hud') {
+    const hudW = Math.max(130, widthPx);
+    const hudH = Math.max(38, heightPx);
+
+    if (showBackground) {
+      ctx.fillStyle = parseColor(style.backgroundColor || 'rgba(6, 11, 25, 0.85)');
+      drawHudPath(ctx, -hudW / 2, -hudH / 2, hudW, hudH, 10);
+      ctx.fill();
+      if (showBorder) {
+        ctx.strokeStyle = style.borderColor || '#38bdf8';
+        ctx.lineWidth = style.borderWidth ?? 2;
+        ctx.stroke();
+      }
+    }
+
+    ctx.fillStyle = '#38bdf8';
+    ctx.font = `800 11px "${fontFamily}", "Montserrat", sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillStyle = activeColor;
-    const showIcon = style.showIcon !== false;
-    const text = showIcon ? `⏱️ ${remainingSec}s` : `${remainingSec}s`;
-    ctx.fillText(text, 0, 0);
-  } else {
-    // clean-text
-    const fSize = style.fontSize || 24;
-    ctx.font = `800 ${fSize}px "Be Vietnam Pro", sans-serif`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillStyle = activeColor;
-    const showIcon = style.showIcon !== false;
-    const text = showIcon ? `⏱️ ${remainingSec}s` : `${remainingSec}s`;
-    ctx.fillText(text, 0, 0);
+    ctx.fillText(`TIMER [${remainingSec}S]`, 0, -4);
+
+    if (showProgressBar) {
+      const lineW = hudW - 24;
+      ctx.fillStyle = 'rgba(56, 189, 248, 0.2)';
+      ctx.fillRect(-lineW / 2, 8, lineW, 3);
+      ctx.fillStyle = progressColor;
+      ctx.fillRect(-lineW / 2, 8, lineW * remainingFraction, 3);
+    }
   }
 
   ctx.restore();
@@ -1489,21 +1851,38 @@ function drawExplanationCard(
   ctx.fillText(titleText.toUpperCase(), left + iconOffset, top + padding);
 
   // Explanation Body
+  const expFont = style.fontFamily ? style.fontFamily.split(',')[0].replace(/['"]/g, '').trim() : 'Montserrat';
   ctx.fillStyle = textColor;
-  ctx.font = `${fontWeight} ${fontSize}px "Be Vietnam Pro", sans-serif`;
+  ctx.font = `${fontWeight} ${fontSize}px "${expFont}", "Montserrat", "Be Vietnam Pro", sans-serif`;
   ctx.textBaseline = 'top';
   const maxTextW = cardW - iconOffset - 16;
   const lines = wrapText(ctx, explanation, maxTextW, 2);
   const bodyStartY = top + padding + 18;
-  const lineSpacing = fontSize * 1.35;
+  const lineSpacing = fontSize * (typeof style.lineHeight === 'number' ? style.lineHeight : 1.35);
+
+  if (style.textShadowEnabled) {
+    ctx.shadowColor = style.textShadowColor || 'rgba(0, 0, 0, 0.4)';
+    ctx.shadowBlur = style.textShadowBlur ?? 6;
+    ctx.shadowOffsetX = style.textShadowOffsetX ?? 0;
+    ctx.shadowOffsetY = style.textShadowOffsetY ?? 2;
+  } else {
+    ctx.shadowColor = 'transparent';
+  }
+
   for (let i = 0; i < lines.length; i++) {
     const lineX = (textAlign === 'center')
       ? left + iconOffset + (maxTextW - ctx.measureText(lines[i]).width) / 2
       : (textAlign === 'right')
       ? left + cardW - 16 - ctx.measureText(lines[i]).width
       : left + iconOffset;
+    if (style.textStrokeEnabled && style.textStrokeWidth) {
+      ctx.strokeStyle = style.textStrokeColor || '#000000';
+      ctx.lineWidth = style.textStrokeWidth * 2;
+      ctx.strokeText(lines[i], lineX, bodyStartY + i * lineSpacing);
+    }
     ctx.fillText(lines[i], lineX, bodyStartY + i * lineSpacing);
   }
+  ctx.shadowColor = 'transparent';
 
   ctx.restore();
 }

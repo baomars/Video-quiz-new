@@ -45,7 +45,7 @@ export interface ChapterConfig {
   shortName: string;
   startPct: number;
   endPct: number;
-  icon: React.ComponentType<{ size?: number; className?: string }>;
+  icon: React.ComponentType<{ size?: number | string; className?: string } | any>;
 }
 
 export const PIPELINE_CHAPTERS: ChapterConfig[] = [

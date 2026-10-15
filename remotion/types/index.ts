@@ -12,17 +12,36 @@ export type LayoutType =
   | 'retro-arcade';
 export type IllustrationLayout = 'single' | 'split-2-horizontal' | 'split-2-vertical' | 'overlay';
 export type AnswerLayout = 'vertical-list' | 'grid-2x2' | 'compact-pills';
-export type CountdownStyle = 'clean-text' | 'bar-horizontal' | 'circle-radial' | 'pill-timer' | 'badge';
+export type CountdownStyle =
+  | 'circular-progress'
+  | 'radial-ring'
+  | 'horizontal-progress'
+  | 'vertical-progress'
+  | 'segmented-bar'
+  | 'neon-countdown'
+  | 'digital-countdown'
+  | 'flip-timer'
+  | 'minimal-number'
+  | 'pill-timer'
+  | 'dot-countdown'
+  | 'corner-hud'
+  // Legacy aliases
+  | 'clean-text'
+  | 'bar-horizontal'
+  | 'circle-radial'
+  | 'badge'
+  | 'bar-bottom';
 export type TransitionType = 'fade' | 'slide' | 'zoom' | 'wipe' | 'bounce' | 'pop';
 export type AnimationType = 'fade' | 'slide-up' | 'pop' | 'scale-in' | 'bounce';
-export type MotionDirection = 'zoom-in' | 'zoom-out' | 'pan-left' | 'pan-right' | 'pan-up' | 'pan-down';
+export type MotionDirection = 'none' | 'zoom-in' | 'zoom-out' | 'pan-left' | 'pan-right' | 'pan-up' | 'pan-down';
 export type MotionEffect =
   | 'random-motion'
   | 'zoom-in'
   | 'zoom-out'
   | 'pan-left'
   | 'pan-right'
-  | 'pan-up';
+  | 'pan-up'
+  | 'pan-down';
 export type HorizontalAlign = 'left' | 'center' | 'right';
 export type VerticalAlign = 'top' | 'center' | 'bottom';
 export type OptionKey = 'A' | 'B' | 'C';
@@ -90,6 +109,7 @@ export interface ComponentStyle {
   fontSize?: number;
   fontWeight?: string;
   lineHeight?: number | string;
+  letterSpacing?: number;
   color?: string;
   textColor?: string;
   backgroundColor?: string;
@@ -113,10 +133,19 @@ export interface ComponentStyle {
   popShadowColor?: string;
   chamferSize?: number;
   markerHighlight?: boolean;
+  textStrokeEnabled?: boolean;
   textStrokeWidth?: number;
   textStrokeColor?: string;
+  textShadowEnabled?: boolean;
+  textShadowBlur?: number;
+  textShadowOffsetX?: number;
+  textShadowOffsetY?: number;
+  textShadowColor?: string;
   textShadow?: string;
   rotation?: number;
+  showBorder?: boolean;
+  showBackground?: boolean;
+  showProgress?: boolean;
 }
 
 export type AnswerLayoutComposition =
@@ -266,6 +295,13 @@ export interface VideoTemplate {
       hideBox?: boolean;
       countdownStyle?: CountdownStyle;
       warningColor?: string;
+      progressColor?: string;
+      showProgressBar?: boolean;
+      showBackground?: boolean;
+      showBorder?: boolean;
+      thickness?: number;
+      segmentCount?: number;
+      dotCount?: number;
     };
     progressBar?: ComponentStyle & { thickness?: number };
     explanation?: ExplanationConfig;

@@ -110,9 +110,12 @@ export const AssetManagerModal: React.FC<AssetManagerModalProps> = ({
       const res = await uploadImage(file);
       onChannelChange({
         ...channel,
-        brand: {
-          ...channel.brand,
-          logoUrl: res.optimizedUrl || res.originalUrl
+        branding: {
+          ...channel.branding,
+          identity: {
+            ...channel.branding?.identity,
+            logoUrl: res.optimizedUrl || res.originalUrl
+          }
         }
       });
     } catch (err: any) {
@@ -186,7 +189,7 @@ export const AssetManagerModal: React.FC<AssetManagerModalProps> = ({
               { id: 'transition', label: 'Whoosh chuyển câu (Transition)', desc: 'Phát đồng bộ khi chuyển sang câu mới' },
               { id: 'reveal', label: 'Swoosh mở giải thích (Reveal)', desc: 'Phát khi mở thẻ giải thích' }
             ].map((sfx) => {
-              const customUrl = channel.audio?.sfx?.[sfx.id];
+              const customUrl = (channel.audio?.sfx as any)?.[sfx.id];
               return (
                 <div
                   key={sfx.id}
@@ -269,9 +272,9 @@ export const AssetManagerModal: React.FC<AssetManagerModalProps> = ({
               <h4 className="text-xs font-bold text-slate-200">Logo / Watermark Kênh:</h4>
               <div className="flex items-center gap-3">
                 <div className="w-16 h-16 rounded-xl border border-slate-700 bg-slate-950 overflow-hidden flex items-center justify-center">
-                  {channel.brand?.logoUrl ? (
+                  {channel.branding?.identity?.logoUrl ? (
                     <img
-                      src={channel.brand.logoUrl}
+                      src={channel.branding.identity.logoUrl}
                       alt="Logo"
                       className="w-full h-full object-contain"
                     />

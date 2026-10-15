@@ -253,29 +253,55 @@ export const AnswerCards: React.FC<AnswerCardsProps> = React.memo(({
             }}
           >
             {/* Option Letter Badge */}
-            <div
-              style={{
-                width: `${badgeSize}px`,
-                height: `${badgeSize}px`,
-                borderRadius: badgeRadius,
-                clipPath: badgeClipPath,
-                backgroundColor: badgeBg,
-                color: badgeColor,
-                border: isRevealed && isCorrect ? '2px solid #ffffff' : `1.5px solid ${badgeColor}66`,
-                boxShadow: isRevealed && isCorrect ? '0 0 15px rgba(255,255,255,0.8)' : undefined,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontFamily: layout.fontFamily,
-                fontSize: `${layout.fontSize - 2}px`,
-                fontWeight: '900',
-                marginRight: '14px',
-                flexShrink: 0,
-                opacity: contentOpacity
-              }}
-            >
-              {isRevealed && isCorrect ? '✓' : key}
-            </div>
+            {badgeShape === 'comic-bracket' || badgeShape === 'comic-crescent' ? (
+              <div
+                style={{
+                  width: `${badgeSize}px`,
+                  height: `${badgeSize}px`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontFamily: '"Montserrat", "Be Vietnam Pro", sans-serif',
+                  fontSize: `${Math.round(layout.fontSize * 1.35)}px`,
+                  fontWeight: '900',
+                  color: isRevealed && isCorrect ? '#22c55e' : badgeColor,
+                  WebkitTextStroke: '2.5px #000000',
+                  paintOrder: 'stroke fill',
+                  textShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                  marginRight: '14px',
+                  flexShrink: 0,
+                  opacity: contentOpacity
+                }}
+              >
+                {isRevealed && isCorrect ? '✓' : `${key})`}
+              </div>
+            ) : (
+              <div
+                style={{
+                  width: `${badgeSize}px`,
+                  height: `${badgeSize}px`,
+                  borderRadius: badgeRadius,
+                  clipPath: badgeClipPath,
+                  backgroundColor: badgeBg,
+                  color: badgeColor,
+                  border: isRevealed && isCorrect
+                    ? '2px solid #ffffff'
+                    : (layout.popShadow || layout.borderWidth >= 3 || layout.borderColor === '#000000' ? '3.5px solid #000000' : `1.5px solid ${badgeColor}66`),
+                  boxShadow: isRevealed && isCorrect ? '0 0 15px rgba(255,255,255,0.8)' : undefined,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontFamily: layout.fontFamily,
+                  fontSize: `${layout.fontSize - 2}px`,
+                  fontWeight: '900',
+                  marginRight: '14px',
+                  flexShrink: 0,
+                  opacity: contentOpacity
+                }}
+              >
+                {isRevealed && isCorrect ? '✓' : key}
+              </div>
+            )}
 
             {/* Option Text */}
             <div

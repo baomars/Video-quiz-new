@@ -1108,18 +1108,24 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                   {/* Shape */}
                   <div>
                     <label className="text-[10px] text-slate-400 uppercase font-bold block mb-1">Hình khối (Shape)</label>
-                    <div className="grid grid-cols-4 gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800 text-[10px]">
-                      {['rounded', 'speech-bubble', 'pill', 'pop-art'].map((sh) => (
+                    <div className="grid grid-cols-5 gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800 text-[10px]">
+                      {[
+                        { id: 'rounded', label: 'Bo góc' },
+                        { id: 'banner-pointed', label: 'Lục giác' },
+                        { id: 'speech-bubble', label: 'Thoại' },
+                        { id: 'pill', label: 'Capsule' },
+                        { id: 'pop-art', label: 'Pop Art' }
+                      ].map((item) => (
                         <button
-                          key={sh}
-                          onClick={() => updateComponent('questionBox', { shape: sh })}
+                          key={item.id}
+                          onClick={() => updateComponent('questionBox', { shape: item.id as any })}
                           className={`py-1 rounded text-center font-semibold transition ${
-                            (comps.questionBox?.shape || 'rounded') === sh
+                            (comps.questionBox?.shape || 'rounded') === item.id
                               ? 'bg-sky-600 text-white'
                               : 'text-slate-400 hover:text-slate-200'
                           }`}
                         >
-                          {sh}
+                          {item.label}
                         </button>
                       ))}
                     </div>
@@ -1270,17 +1276,22 @@ export const InspectorPanel: React.FC<InspectorPanelProps> = ({
                   <div>
                     <label className="text-[10px] text-slate-400 uppercase font-bold block mb-1">Hình khối nút</label>
                     <div className="grid grid-cols-4 gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800 text-[10px]">
-                      {['rounded', 'pill', 'bubble', 'pop-art'].map((sh) => (
+                      {[
+                        { id: 'pill', label: 'Capsule' },
+                        { id: 'rounded', label: 'Bo góc' },
+                        { id: 'bubble', label: 'Bong bóng' },
+                        { id: 'pop-art', label: 'Pop Art' }
+                      ].map((item) => (
                         <button
-                          key={sh}
-                          onClick={() => updateComponent('answerButtons', { shape: sh })}
+                          key={item.id}
+                          onClick={() => updateComponent('answerButtons', { shape: item.id as any })}
                           className={`py-1 rounded text-center font-semibold transition ${
-                            (comps.answerButtons?.shape || 'rounded') === sh
+                            (comps.answerButtons?.shape || 'rounded') === item.id
                               ? 'bg-sky-600 text-white'
                               : 'text-slate-400 hover:text-slate-200'
                           }`}
                         >
-                          {sh}
+                          {item.label}
                         </button>
                       ))}
                     </div>

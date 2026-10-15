@@ -1098,6 +1098,328 @@ export const TEMPLATE_LIBRARY: LayoutTemplateItem[] = [
         }
       }
     }
+  },
+  // ---------------------------------------------------------------------------
+  // TEMPLATE 08 — HEXAGON BANNER ARCADE (Comic • Pointed Hexagon White)
+  // ---------------------------------------------------------------------------
+  {
+    id: 'tmpl-hexagon-banner',
+    name: '08. Hexagon Banner Arcade',
+    tag: 'Comic • Banner Lục Giác Trắng',
+    badgeColor: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/40',
+    description: 'Khung câu hỏi lục giác đỉnh nhọn viền đen dày, 3 nút đáp án capsule viền đen với nhãn A), B), C) comic sắc màu nổi bật.',
+    icon: '⚡',
+    previewGradient: 'linear-gradient(135deg, #ffffff 0%, #f1f5f9 50%, #e2e8f0 100%)',
+    accentColors: ['#000000', '#38bdf8', '#f472b6', '#a3e635'],
+    branding: {
+      colors: {
+        primary: '#000000',
+        secondary: '#38bdf8',
+        accent: '#f472b6',
+        background: '#ffffff',
+        cardBg: '#ffffff',
+        text: '#000000',
+        correct: '#16a34a',
+        wrong: '#ef4444',
+        border: '#000000'
+      },
+      typography: {
+        headingFont: 'Montserrat, sans-serif',
+        bodyFont: 'Montserrat, sans-serif'
+      }
+    },
+    template: {
+      id: 'tmpl-hexagon-banner',
+      name: 'Hexagon Banner Arcade',
+      layoutType: 'classic-stacked',
+      illustrationLayout: 'single',
+      answerLayout: 'vertical-list',
+      countdownStyle: 'bar-horizontal',
+      transitionType: 'fade',
+      timing: {
+        countdownSeconds: 5,
+        revealSeconds: 3,
+        transitionFrames: 15,
+        endBufferSeconds: 2.5,
+        explanationDisplayDuration: 3.0
+      },
+      components: {
+        background: {
+          x: 0, y: 0, width: 100, height: 100,
+          type: 'solid',
+          backgroundColor: '#ffffff'
+        },
+        header: {
+          x: 8, y: 4, width: 84, height: 4,
+          enabled: false,
+          badgeStyle: false,
+          fontFamily: 'Montserrat, sans-serif',
+          fontSize: 16,
+          fontWeight: '900',
+          color: '#000000',
+          backgroundColor: 'transparent'
+        },
+        quizTitle: {
+          x: 8, y: 4, width: 84, height: 4,
+          enabled: false,
+          badgeStyle: false,
+          fontFamily: 'Montserrat, sans-serif',
+          fontSize: 18,
+          fontWeight: '900',
+          color: '#000000',
+          backgroundColor: 'transparent'
+        },
+        questionNumber: {
+          x: 8, y: 9, width: 84, height: 4,
+          format: 'câu-n',
+          fontFamily: 'Montserrat, sans-serif',
+          fontSize: 16,
+          fontWeight: '800',
+          color: '#000000'
+        },
+        illustration: {
+          x: 10, y: 6, width: 80, height: 26,
+          borderRadius: 16,
+          borderWidth: 4,
+          borderColor: '#000000',
+          objectFit: 'cover'
+        },
+        questionBox: {
+          x: 6, y: 14, width: 88, height: 26,
+          shape: 'banner-pointed',
+          borderRadius: 0,
+          borderWidth: 6,
+          borderColor: '#000000',
+          backgroundColor: '#ffffff',
+          bgOpacity: 1.0,
+          color: '#000000',
+          textColor: '#000000',
+          fontFamily: 'Montserrat, sans-serif',
+          fontSize: 26,
+          fontWeight: '900',
+          boxShadow: 'none',
+          padding: 24,
+          animation: 'pop'
+        },
+        answerButtons: {
+          x: 10, y: 56, width: 80, height: 28,
+          shape: 'pill',
+          layoutComposition: 'stacked',
+          optionBadgeShape: 'comic-bracket',
+          readTts: true,
+          gap: 16,
+          borderRadius: 9999,
+          borderWidth: 5,
+          borderColor: '#000000',
+          backgroundColor: '#ffffff',
+          bgOpacity: 1.0,
+          color: '#000000',
+          textColor: '#000000',
+          fontFamily: 'Montserrat, sans-serif',
+          fontSize: 22,
+          fontWeight: '800',
+          boxShadow: 'none',
+          padding: 14,
+          animation: 'slide-up',
+          options: {
+            A: { labelColor: '#38bdf8', labelBgColor: 'transparent', labelShape: 'comic-bracket' },
+            B: { labelColor: '#f472b6', labelBgColor: 'transparent', labelShape: 'comic-bracket' },
+            C: { labelColor: '#a3e635', labelBgColor: 'transparent', labelShape: 'comic-bracket' }
+          }
+        },
+        countdown: {
+          x: 10, y: 88, width: 80, height: 3,
+          countdownStyle: 'bar-horizontal',
+          strokeWidth: 6,
+          color: '#000000',
+          showSeconds: true
+        },
+        explanation: {
+          enabled: true,
+          readTts: true,
+          displayDurationSec: 3.0,
+          showIcon: true,
+          x: 10, y: 88, width: 80, height: 7,
+          shape: 'rounded',
+          borderRadius: 14,
+          borderWidth: 2,
+          borderColor: '#000000',
+          backgroundColor: '#ffffff',
+          color: '#000000',
+          textColor: '#000000',
+          fontFamily: 'Montserrat, sans-serif',
+          fontSize: 15,
+          fontWeight: '700',
+          padding: 10
+        }
+      }
+    }
+  },
+  // ---------------------------------------------------------------------------
+  // TEMPLATE 09 — CHROMA POP 3D (Sticker 3D • Phông Xanh TikTok)
+  // ---------------------------------------------------------------------------
+  {
+    id: 'tmpl-chroma-pop-green',
+    name: '09. Chroma Pop 3D',
+    tag: 'Sticker 3D • Phông Xanh TikTok',
+    badgeColor: 'bg-green-500/20 text-green-400 border-green-500/40',
+    description: 'Nền phông xanh Chroma Green chuẩn TikTok/CapCut, khung câu hỏi và đáp án bo tròn viền đen đổ bóng 3D Pop Art, nhãn tròn Đỏ-Lam-Tím rực rỡ.',
+    icon: '🟩',
+    previewGradient: 'linear-gradient(135deg, #22c55e 0%, #16a34a 50%, #15803d 100%)',
+    accentColors: ['#22c55e', '#ef4444', '#3b82f6', '#8b5cf6'],
+    branding: {
+      colors: {
+        primary: '#22c55e',
+        secondary: '#3b82f6',
+        accent: '#ef4444',
+        background: '#22c55e',
+        cardBg: '#ffffff',
+        text: '#000000',
+        correct: '#16a34a',
+        wrong: '#ef4444',
+        border: '#000000'
+      },
+      typography: {
+        headingFont: 'Montserrat, sans-serif',
+        bodyFont: 'Montserrat, sans-serif'
+      }
+    },
+    template: {
+      id: 'tmpl-chroma-pop-green',
+      name: 'Chroma Pop 3D',
+      layoutType: 'classic-stacked',
+      illustrationLayout: 'single',
+      answerLayout: 'vertical-list',
+      countdownStyle: 'bar-horizontal',
+      transitionType: 'pop',
+      timing: {
+        countdownSeconds: 5,
+        revealSeconds: 3,
+        transitionFrames: 15,
+        endBufferSeconds: 2.5,
+        explanationDisplayDuration: 3.0
+      },
+      components: {
+        background: {
+          x: 0, y: 0, width: 100, height: 100,
+          type: 'solid',
+          backgroundColor: '#22c55e'
+        },
+        header: {
+          x: 8, y: 4, width: 84, height: 4,
+          enabled: false,
+          badgeStyle: false,
+          fontFamily: 'Montserrat, sans-serif',
+          fontSize: 16,
+          fontWeight: '900',
+          color: '#ffffff',
+          backgroundColor: 'transparent'
+        },
+        quizTitle: {
+          x: 8, y: 4, width: 84, height: 4,
+          enabled: false,
+          badgeStyle: false,
+          fontFamily: 'Montserrat, sans-serif',
+          fontSize: 18,
+          fontWeight: '900',
+          color: '#ffffff',
+          backgroundColor: 'transparent'
+        },
+        questionNumber: {
+          x: 8, y: 9, width: 84, height: 4,
+          format: 'câu-n',
+          fontFamily: 'Montserrat, sans-serif',
+          fontSize: 16,
+          fontWeight: '900',
+          color: '#ffffff'
+        },
+        illustration: {
+          x: 10, y: 6, width: 80, height: 26,
+          borderRadius: 24,
+          borderWidth: 5,
+          borderColor: '#000000',
+          popShadow: true,
+          popShadowOffset: 8,
+          popShadowColor: '#000000',
+          objectFit: 'cover'
+        },
+        questionBox: {
+          x: 8, y: 14, width: 84, height: 26,
+          shape: 'rounded',
+          borderRadius: 32,
+          borderWidth: 6,
+          borderColor: '#000000',
+          backgroundColor: '#ffffff',
+          bgOpacity: 1.0,
+          popShadow: true,
+          popShadowOffset: 10,
+          popShadowColor: '#000000',
+          color: '#000000',
+          textColor: '#000000',
+          fontFamily: 'Montserrat, sans-serif',
+          fontSize: 26,
+          fontWeight: '900',
+          padding: 22,
+          animation: 'pop'
+        },
+        answerButtons: {
+          x: 8, y: 56, width: 84, height: 28,
+          shape: 'pill',
+          layoutComposition: 'stacked',
+          optionBadgeShape: 'circle',
+          readTts: true,
+          gap: 16,
+          borderRadius: 9999,
+          borderWidth: 6,
+          borderColor: '#000000',
+          backgroundColor: '#ffffff',
+          bgOpacity: 1.0,
+          popShadow: true,
+          popShadowOffset: 8,
+          popShadowColor: '#000000',
+          color: '#000000',
+          textColor: '#000000',
+          fontFamily: 'Montserrat, sans-serif',
+          fontSize: 22,
+          fontWeight: '800',
+          padding: 14,
+          animation: 'slide-up',
+          options: {
+            A: { labelColor: '#ffffff', labelBgColor: '#ef4444', labelShape: 'circle' },
+            B: { labelColor: '#ffffff', labelBgColor: '#3b82f6', labelShape: 'circle' },
+            C: { labelColor: '#ffffff', labelBgColor: '#8b5cf6', labelShape: 'circle' }
+          }
+        },
+        countdown: {
+          x: 8, y: 88, width: 84, height: 3,
+          countdownStyle: 'bar-horizontal',
+          strokeWidth: 6,
+          color: '#ffffff',
+          showSeconds: true
+        },
+        explanation: {
+          enabled: true,
+          readTts: true,
+          displayDurationSec: 3.0,
+          showIcon: true,
+          x: 8, y: 88, width: 84, height: 7,
+          shape: 'rounded',
+          borderRadius: 16,
+          borderWidth: 3,
+          borderColor: '#000000',
+          backgroundColor: '#ffffff',
+          popShadow: true,
+          popShadowOffset: 6,
+          popShadowColor: '#000000',
+          color: '#000000',
+          textColor: '#000000',
+          fontFamily: 'Montserrat, sans-serif',
+          fontSize: 15,
+          fontWeight: '700',
+          padding: 10
+        }
+      }
+    }
   }
 ];
 

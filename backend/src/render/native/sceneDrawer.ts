@@ -1151,46 +1151,78 @@ function drawAnswerCards(
     const badgeY = cardTop + (cardH - badgeSize) / 2;
 
     const bShape = layout.labelShape || 'circle';
-    if (bShape === 'square') {
-      drawRoundedRect(ctx, badgeX, badgeY, badgeSize, badgeSize, 8);
-    } else if (bShape === 'pill') {
-      drawRoundedRect(ctx, badgeX, badgeY, badgeSize, badgeSize, 12);
-    } else if (bShape === 'hexagon') {
-      drawHexagonPath(ctx, badgeX, badgeY, badgeSize, badgeSize);
-    } else {
-      ctx.beginPath();
-      ctx.arc(badgeX + badgeSize / 2, badgeY + badgeSize / 2, badgeSize / 2, 0, Math.PI * 2);
-    }
 
-    if (isRevealed && isCorrect) {
-      ctx.fillStyle = '#ffffff';
-      ctx.fill();
-      ctx.save();
-      ctx.strokeStyle = '#15803d';
-      ctx.lineWidth = 3.5;
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-      ctx.beginPath();
-      const cx = badgeX + badgeSize / 2;
-      const cy = badgeY + badgeSize / 2;
-      ctx.moveTo(cx - 8, cy);
-      ctx.lineTo(cx - 2, cy + 6);
-      ctx.lineTo(cx + 8, cy - 6);
-      ctx.stroke();
-      ctx.restore();
-    } else {
-      const bBg = layout.labelBgColor || `${primaryColor}22`;
+    if (bShape === 'comic-bracket' || bShape === 'comic-crescent') {
       const bCol = layout.labelColor || primaryColor;
-      ctx.fillStyle = bBg;
-      ctx.fill();
-      ctx.strokeStyle = `${bCol}66`;
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
-      ctx.fillStyle = bCol;
-      ctx.font = `900 ${Math.round(badgeSize * 0.48)}px "Be Vietnam Pro", sans-serif`;
+      const badgeFont = `900 ${Math.round(badgeSize * 0.85)}px "Montserrat", "Be Vietnam Pro", sans-serif`;
+      ctx.font = badgeFont;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(key, badgeX + badgeSize / 2, badgeY + badgeSize / 2);
+      const cx = badgeX + badgeSize / 2;
+      const cy = badgeY + badgeSize / 2;
+
+      if (isRevealed && isCorrect) {
+        ctx.save();
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 5;
+        ctx.lineJoin = 'round';
+        ctx.strokeText('✓', cx, cy);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText('✓', cx, cy);
+        ctx.restore();
+      } else {
+        ctx.save();
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 6;
+        ctx.lineJoin = 'round';
+        ctx.strokeText(`${key})`, cx, cy);
+        ctx.fillStyle = bCol;
+        ctx.fillText(`${key})`, cx, cy);
+        ctx.restore();
+      }
+    } else {
+      if (bShape === 'square') {
+        drawRoundedRect(ctx, badgeX, badgeY, badgeSize, badgeSize, 8);
+      } else if (bShape === 'pill') {
+        drawRoundedRect(ctx, badgeX, badgeY, badgeSize, badgeSize, 12);
+      } else if (bShape === 'hexagon') {
+        drawHexagonPath(ctx, badgeX, badgeY, badgeSize, badgeSize);
+      } else {
+        ctx.beginPath();
+        ctx.arc(badgeX + badgeSize / 2, badgeY + badgeSize / 2, badgeSize / 2, 0, Math.PI * 2);
+      }
+
+      if (isRevealed && isCorrect) {
+        ctx.fillStyle = '#ffffff';
+        ctx.fill();
+        ctx.save();
+        ctx.strokeStyle = '#15803d';
+        ctx.lineWidth = 3.5;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.beginPath();
+        const cx = badgeX + badgeSize / 2;
+        const cy = badgeY + badgeSize / 2;
+        ctx.moveTo(cx - 8, cy);
+        ctx.lineTo(cx - 2, cy + 6);
+        ctx.lineTo(cx + 8, cy - 6);
+        ctx.stroke();
+        ctx.restore();
+      } else {
+        const bBg = layout.labelBgColor || `${primaryColor}22`;
+        const bCol = layout.labelColor || primaryColor;
+        const isBoldSticker = layout.popShadow || layout.borderWidth >= 3 || layout.borderColor === '#000000';
+        ctx.fillStyle = bBg;
+        ctx.fill();
+        ctx.strokeStyle = isBoldSticker ? '#000000' : `${bCol}66`;
+        ctx.lineWidth = isBoldSticker ? 4 : 1.5;
+        ctx.stroke();
+        ctx.fillStyle = bCol;
+        ctx.font = `900 ${Math.round(badgeSize * 0.48)}px "Be Vietnam Pro", sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(key, badgeX + badgeSize / 2, badgeY + badgeSize / 2);
+      }
     }
 
     // Option Text

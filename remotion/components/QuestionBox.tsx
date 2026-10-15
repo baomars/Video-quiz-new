@@ -167,7 +167,9 @@ export const QuestionBox: React.FC<QuestionBoxProps> = React.memo(({
       break;
   }
 
-  if (style.popShadow) {
+  const isPointedBanner = style.shape === 'banner-pointed' || style.shape === 'chevron-banner' || style.shape === 'hexagon-banner';
+
+  if (style.popShadow && !isPointedBanner) {
     effectiveBoxShadow = `${style.popShadowOffset || 6}px ${style.popShadowOffset || 6}px 0px ${style.popShadowColor || '#111827'}`;
   }
 
@@ -179,12 +181,12 @@ export const QuestionBox: React.FC<QuestionBoxProps> = React.memo(({
         top: `${effectiveY}%`,
         width: `${style.width}%`,
         height: `${effectiveHeight}%`,
-        backgroundColor: effectiveBg,
-        borderRadius: computedBorderRadius,
-        border: borderWidth > 0 ? `${borderWidth}px ${computedBorderStyle} ${borderColor}` : 'none',
-        clipPath: computedClipPath,
-        boxShadow: effectiveBoxShadow,
-        padding: `${style.padding || 18}px`,
+        backgroundColor: isPointedBanner ? 'transparent' : effectiveBg,
+        borderRadius: isPointedBanner ? '0px' : computedBorderRadius,
+        border: !isPointedBanner && borderWidth > 0 ? `${borderWidth}px ${computedBorderStyle} ${borderColor}` : 'none',
+        clipPath: isPointedBanner ? undefined : computedClipPath,
+        boxShadow: isPointedBanner ? 'none' : effectiveBoxShadow,
+        padding: isPointedBanner ? `${style.padding || 20}px 32px` : `${style.padding || 18}px`,
         display: 'flex',
         flexDirection: 'column',
         justifyContent,
@@ -194,8 +196,41 @@ export const QuestionBox: React.FC<QuestionBoxProps> = React.memo(({
         ...entrance
       }}
     >
+      {isPointedBanner && (
+        <svg
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            width: '100%',
+            height: '100%',
+            overflow: 'visible',
+            pointerEvents: 'none'
+          }}
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+        >
+          {style.popShadow && (
+            <polygon
+              points="0,10 50,0 100,10 100,90 50,100 0,90"
+              transform={`translate(${((style.popShadowOffset || 6) * 0.15)}, ${((style.popShadowOffset || 6) * 0.15)})`}
+              fill={style.popShadowColor || '#111827'}
+            />
+          )}
+          <polygon
+            points="0,10 50,0 100,10 100,90 50,100 0,90"
+            fill={effectiveBg}
+            stroke={borderColor}
+            strokeWidth={borderWidth}
+            vectorEffect="non-scaling-stroke"
+            strokeLinejoin="round"
+          />
+        </svg>
+      )}
       <div
         style={{
+          position: 'relative',
+          zIndex: 2,
           fontFamily: style.fontFamily || 'Be Vietnam Pro, sans-serif',
           fontSize: `${style.fontSize || 28}px`,
           fontWeight: style.fontWeight || '800',

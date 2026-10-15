@@ -486,6 +486,143 @@ const PRESET_TEMPLATES: LayoutPresetDefinition[] = [
         opacity: 0.85
       }
     }
+  },
+  {
+    id: 'hexagon-banner',
+    name: 'A5 — Hexagon Banner Arcade',
+    tag: 'Comic • Lục Giác',
+    badgeColor: 'bg-cyan-100 text-cyan-700 border-cyan-200',
+    layoutType: 'classic-stacked',
+    illustrationLayout: 'single',
+    answerLayout: 'vertical-list',
+    countdownStyle: 'bar-horizontal',
+    description: 'Khung câu hỏi lục giác đỉnh nhọn viền đen dày, 3 nút đáp án capsule viền đen với nhãn A), B), C) comic sắc màu nổi bật',
+    components: {
+      questionBox: {
+        x: 6,
+        y: 16,
+        width: 88,
+        height: 24,
+        shape: 'banner-pointed',
+        fontSize: 26,
+        fontWeight: '900',
+        borderWidth: 6,
+        borderColor: '#000000',
+        backgroundColor: '#ffffff',
+        padding: 22,
+        textAlign: 'center',
+        horizontalAlign: 'center',
+        verticalAlign: 'center',
+        animation: 'pop'
+      },
+      answerButtons: {
+        x: 10,
+        y: 58,
+        width: 80,
+        height: 28,
+        shape: 'pill',
+        fontSize: 22,
+        fontWeight: '800',
+        borderRadius: 9999,
+        borderWidth: 5,
+        borderColor: '#000000',
+        backgroundColor: '#ffffff',
+        padding: 14,
+        gap: 16,
+        horizontalAlign: 'center',
+        verticalAlign: 'center',
+        textAlign: 'left',
+        optionBadgeShape: 'comic-bracket',
+        animation: 'slide-up'
+      },
+      countdown: {
+        x: 10,
+        y: 90,
+        width: 80,
+        height: 2,
+        borderRadius: 10,
+        strokeWidth: 6,
+        color: '#000000',
+        showSeconds: true,
+        horizontalAlign: 'center'
+      }
+    }
+  },
+  {
+    id: 'chroma-pop-green',
+    name: 'A6 — Chroma Pop 3D',
+    tag: 'Phông Xanh 3D',
+    badgeColor: 'bg-green-100 text-green-700 border-green-200',
+    layoutType: 'classic-stacked',
+    illustrationLayout: 'single',
+    answerLayout: 'vertical-list',
+    countdownStyle: 'bar-horizontal',
+    description: 'Nền phông xanh Chroma Green chuẩn TikTok/CapCut, khung câu hỏi và đáp án bo tròn viền đen đổ bóng 3D Pop Art, nhãn tròn Đỏ-Lam-Tím',
+    components: {
+      background: {
+        x: 0,
+        y: 0,
+        width: 100,
+        height: 100,
+        type: 'solid',
+        backgroundColor: '#22c55e'
+      },
+      questionBox: {
+        x: 8,
+        y: 16,
+        width: 84,
+        height: 24,
+        shape: 'rounded',
+        borderRadius: 32,
+        borderWidth: 6,
+        borderColor: '#000000',
+        backgroundColor: '#ffffff',
+        popShadow: true,
+        popShadowOffset: 10,
+        popShadowColor: '#000000',
+        fontSize: 26,
+        fontWeight: '900',
+        padding: 22,
+        textAlign: 'center',
+        horizontalAlign: 'center',
+        verticalAlign: 'center',
+        animation: 'pop'
+      },
+      answerButtons: {
+        x: 8,
+        y: 56,
+        width: 84,
+        height: 28,
+        shape: 'pill',
+        fontSize: 22,
+        fontWeight: '800',
+        borderRadius: 9999,
+        borderWidth: 6,
+        borderColor: '#000000',
+        backgroundColor: '#ffffff',
+        popShadow: true,
+        popShadowOffset: 8,
+        popShadowColor: '#000000',
+        padding: 14,
+        gap: 16,
+        horizontalAlign: 'center',
+        verticalAlign: 'center',
+        textAlign: 'left',
+        optionBadgeShape: 'circle',
+        animation: 'slide-up'
+      },
+      countdown: {
+        x: 8,
+        y: 88,
+        width: 84,
+        height: 2,
+        borderRadius: 10,
+        strokeWidth: 6,
+        color: '#ffffff',
+        showSeconds: true,
+        horizontalAlign: 'center'
+      }
+    }
   }
 ];
 

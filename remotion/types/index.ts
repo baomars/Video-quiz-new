@@ -71,6 +71,9 @@ export type ComponentShape =
   | 'blob'
   | 'ticket'
   | 'badge'
+  | 'banner-pointed'
+  | 'chevron-banner'
+  | 'hexagon-banner'
   | 'sharp';
 
 export type ComponentBorderStyle = 'solid' | 'dashed' | 'dotted' | 'double' | 'doodle' | 'none';
@@ -128,9 +131,9 @@ export type AnswerLayoutComposition =
   | 'asymmetric'
   | 'custom';
 
-export type OptionBadgeShape = 'circle' | 'square' | 'pill' | 'hexagon' | 'diamond' | 'badge';
+export type OptionBadgeShape = 'circle' | 'square' | 'pill' | 'hexagon' | 'diamond' | 'badge' | 'comic-bracket' | 'comic-crescent';
 
-export interface IndividualOptionConfig extends ComponentStyle {
+export interface IndividualOptionConfig extends Partial<ComponentStyle> {
   enabled?: boolean;
   labelColor?: string;
   labelBgColor?: string;

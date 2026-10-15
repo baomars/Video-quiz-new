@@ -348,6 +348,25 @@ export function drawSpeechBubblePath(
   ctx.closePath();
 }
 
+export function drawBannerPointedPath(
+  ctx: SKRSContext2D,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  peakRatio: number = 0.10
+): void {
+  const peak = height * peakRatio;
+  ctx.beginPath();
+  ctx.moveTo(x, y + peak);
+  ctx.lineTo(x + width / 2, y);
+  ctx.lineTo(x + width, y + peak);
+  ctx.lineTo(x + width, y + height - peak);
+  ctx.lineTo(x + width / 2, y + height);
+  ctx.lineTo(x, y + height - peak);
+  ctx.closePath();
+}
+
 export function drawShapePath(
   ctx: SKRSContext2D,
   x: number,
@@ -390,6 +409,11 @@ export function drawShapePath(
       break;
     case 'speech-bubble':
       drawSpeechBubblePath(ctx, x, y, width, height);
+      break;
+    case 'banner-pointed':
+    case 'chevron-banner':
+    case 'hexagon-banner':
+      drawBannerPointedPath(ctx, x, y, width, height, 0.10);
       break;
     case 'bubble':
       drawRoundedRect(ctx, x, y, width, height, [30, 12, 30, 12]);

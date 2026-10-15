@@ -235,6 +235,34 @@ app.delete('/api/voices/clone/:id', (req, res) => {
   }
 });
 
+// --- Google Drive Cloud Persistence for Voice Clones ---
+app.get('/api/voices/drive/status', (req, res) => {
+  try {
+    const status = voiceStudio.getDriveStatus();
+    res.json({ success: true, ...status });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.post('/api/voices/drive/import', (req, res) => {
+  try {
+    const result = voiceStudio.syncFromDrive();
+    res.json(result);
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.post('/api/voices/drive/backup', (req, res) => {
+  try {
+    const result = voiceStudio.syncToDrive();
+    res.json(result);
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 app.post(['/api/tts/preview', '/api/voices/preview'], async (req, res) => {
   try {
     const { text, voice, rate, pitch, volume, speed } = req.body;

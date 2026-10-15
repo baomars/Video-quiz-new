@@ -5,8 +5,12 @@ import {
   cloneVoice,
   deleteClonedVoice,
   previewTTS,
+  fetchDriveVoiceStatus,
+  importVoicesFromDrive,
+  backupVoicesToDrive,
   VoiceInfo,
-  ClonedVoice
+  ClonedVoice,
+  DriveVoiceStatus
 } from '../../services/api';
 import {
   Mic,
@@ -28,7 +32,13 @@ import {
   HelpCircle,
   Layers,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Cloud,
+  CloudDownload,
+  CloudUpload,
+  RefreshCw,
+  FolderSync,
+  Search
 } from 'lucide-react';
 
 interface LanguageTtsTabProps {
@@ -68,18 +78,36 @@ export const LanguageTtsTab: React.FC<LanguageTtsTabProps> = ({
   // Active sub-tab in Voice Studio
   const [subTab, setSubTab] = useState<'preset' | 'clone' | 'tuning' | 'scripts'>('preset');
 
+  // Voice library filter & search
+  const [voiceFilter, setVoiceFilter] = useState<'all' | 'bac' | 'trung' | 'nam' | 'en' | 'cloned'>('all');
+  const [voiceSearchQuery, setVoiceSearchQuery] = useState<string>('');
+
+  // Google Drive Cloud Persistence state
+  const [driveStatus, setDriveStatus] = useState<DriveVoiceStatus | null>(null);
+  const [isSyncingDrive, setIsSyncingDrive] = useState<boolean>(false);
+  const [driveMsg, setDriveMsg] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
+
   // Accordion open states
   const [isTuningOpen, setIsTuningOpen] = useState<boolean>(true);
   const [isScriptsOpen, setIsScriptsOpen] = useState<boolean>(true);
 
   const langConfig = channel.languages[activeLanguage] || channel.languages.vi || {
-    voice: 'Hải Đăng',
+    voice: 'Trúc Ly',
     rate: '+0%',
     pitch: '+0Hz',
     volume: '+0%',
     revealScript: 'Đáp án chính xác là',
     introScript: 'Chào mừng các bạn đến với thử thách đố vui!',
     outroScript: 'Nhớ follow kênh để đón xem câu đố tiếp theo!'
+  };
+
+  const loadDriveStatus = async () => {
+    try {
+      const status = await fetchDriveVoiceStatus();
+      setDriveStatus(status);
+    } catch (err) {
+      console.warn('[VoiceStudio] Could not fetch Drive status:', err);
+    }
   };
 
   const loadData = () => {
@@ -92,11 +120,40 @@ export const LanguageTtsTab: React.FC<LanguageTtsTabProps> = ({
       })
       .catch((err) => console.error('[VoiceStudio] Error loading voice data:', err))
       .finally(() => setIsLoading(false));
+    loadDriveStatus();
   };
 
   useEffect(() => {
     loadData();
   }, [activeLanguage]);
+
+  const handleImportFromDrive = async () => {
+    setIsSyncingDrive(true);
+    setDriveMsg(null);
+    try {
+      const res = await importVoicesFromDrive();
+      setDriveMsg({ type: 'success', text: res.message });
+      loadData();
+    } catch (err: any) {
+      setDriveMsg({ type: 'error', text: err.message || 'Lỗi khi nhập giọng từ Google Drive.' });
+    } finally {
+      setIsSyncingDrive(false);
+    }
+  };
+
+  const handleBackupToDrive = async () => {
+    setIsSyncingDrive(true);
+    setDriveMsg(null);
+    try {
+      const res = await backupVoicesToDrive();
+      setDriveMsg({ type: 'success', text: res.message });
+      loadDriveStatus();
+    } catch (err: any) {
+      setDriveMsg({ type: 'error', text: err.message || 'Lỗi khi lưu giọng vào Google Drive.' });
+    } finally {
+      setIsSyncingDrive(false);
+    }
+  };
 
   const updateConfig = (key: string, value: any) => {
     onChannelChange({
@@ -229,6 +286,32 @@ export const LanguageTtsTab: React.FC<LanguageTtsTabProps> = ({
     return true;
   });
 
+  const displayedVoices = filterVoicesByLang.filter(v => {
+    // 1. Tag filter
+    if (voiceFilter === 'cloned') {
+      if (!v.isCloned) return false;
+    } else if (voiceFilter === 'bac') {
+      if (v.isCloned || v.region !== 'Bắc') return false;
+    } else if (voiceFilter === 'trung') {
+      if (v.isCloned || v.region !== 'Trung') return false;
+    } else if (voiceFilter === 'nam') {
+      if (v.isCloned || v.region !== 'Nam') return false;
+    } else if (voiceFilter === 'en') {
+      if (v.isCloned || (!v.locale?.startsWith('en') && v.region !== 'US')) return false;
+    }
+
+    // 2. Search query
+    if (voiceSearchQuery.trim()) {
+      const q = voiceSearchQuery.toLowerCase();
+      const matchName = v.name.toLowerCase().includes(q);
+      const matchStyle = v.style?.toLowerCase().includes(q) || false;
+      const matchRole = v.suggestedRole?.toLowerCase().includes(q) || false;
+      if (!matchName && !matchStyle && !matchRole) return false;
+    }
+
+    return true;
+  });
+
   return (
     <div className="space-y-5 pb-16 text-slate-100 select-none">
       {/* 1. TOP HEADER & ENGINE STATUS */}
@@ -317,14 +400,56 @@ export const LanguageTtsTab: React.FC<LanguageTtsTabProps> = ({
 
       {/* 2. TAB 1: PRESET & CLONED VOICES LIBRARY */}
       {subTab === 'preset' && (
-        <section className="space-y-3">
+        <section className="space-y-3.5">
           <div className="flex items-center justify-between px-1">
             <span className="text-xs font-extrabold text-slate-300 uppercase tracking-wider">
-              Chọn giọng đọc chính ({filterVoicesByLang.length} giọng sẵn có)
+              Chọn giọng đọc chính ({displayedVoices.length}/{filterVoicesByLang.length} giọng)
             </span>
             <span className="text-[11px] text-amber-400 font-medium">
               Đang chọn: <strong className="font-bold text-white">{langConfig.voice}</strong>
             </span>
+          </div>
+
+          {/* Search & Region Filter Bar */}
+          <div className="flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center justify-between bg-slate-900/70 p-2.5 rounded-xl border border-slate-800">
+            {/* Filter Pills */}
+            <div className="flex items-center gap-1 overflow-x-auto scrollbar-none py-0.5">
+              {[
+                { id: 'all', label: 'Tất cả' },
+                { id: 'bac', label: 'Miền Bắc' },
+                { id: 'nam', label: 'Miền Nam' },
+                { id: 'trung', label: 'Miền Trung' },
+                { id: 'en', label: 'Tiếng Anh' },
+                { id: 'cloned', label: `Giọng Clone (${clonedVoices.length})` }
+              ].map((f) => {
+                const isActive = voiceFilter === f.id;
+                return (
+                  <button
+                    key={f.id}
+                    onClick={() => setVoiceFilter(f.id as any)}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-bold transition whitespace-nowrap ${
+                      isActive
+                        ? 'bg-amber-500 text-slate-950 shadow-sm'
+                        : 'bg-slate-800/80 hover:bg-slate-800 text-slate-300 hover:text-white'
+                    }`}
+                  >
+                    {f.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Quick Search Box */}
+            <div className="relative min-w-[160px] sm:w-48">
+              <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+              <input
+                type="text"
+                value={voiceSearchQuery}
+                onChange={(e) => setVoiceSearchQuery(e.target.value)}
+                placeholder="Tìm tên / phong cách..."
+                className="w-full pl-7 pr-3 py-1 bg-slate-950/80 border border-slate-800 rounded-lg text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
+              />
+            </div>
           </div>
 
           {isLoading ? (
@@ -332,9 +457,20 @@ export const LanguageTtsTab: React.FC<LanguageTtsTabProps> = ({
               <Loader2 size={24} className="animate-spin text-amber-500" />
               <span className="text-xs">Đang tải danh sách giọng đọc VieNeu AI...</span>
             </div>
+          ) : displayedVoices.length === 0 ? (
+            <div className="p-8 text-center text-slate-400 flex flex-col items-center justify-center gap-2 bg-slate-900/60 rounded-2xl border border-slate-800">
+              <span className="text-sm font-semibold text-slate-300">Không tìm thấy giọng đọc phù hợp</span>
+              <p className="text-xs text-slate-500">Hãy thử đổi bộ lọc vùng miền hoặc từ khóa tìm kiếm</p>
+              <button
+                onClick={() => { setVoiceFilter('all'); setVoiceSearchQuery(''); }}
+                className="mt-2 px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-amber-400"
+              >
+                Hiển thị tất cả {filterVoicesByLang.length} giọng
+              </button>
+            </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
-              {filterVoicesByLang.map((v) => {
+              {displayedVoices.map((v) => {
                 const isSelected = langConfig.voice === v.id;
                 const isPlaying = playingVoiceId === v.id;
 
@@ -435,6 +571,105 @@ export const LanguageTtsTab: React.FC<LanguageTtsTabProps> = ({
                 Tải lên 1 đoạn âm thanh mẫu (từ 3 đến 15 giây) để tạo giọng AI độc quyền cho bạn
               </p>
             </div>
+          </div>
+
+          {/* GOOGLE DRIVE CLOUD PERSISTENCE PANEL */}
+          <div className="bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950/40 p-4 rounded-xl border border-indigo-500/30 space-y-3 shadow-md">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 flex items-center justify-center font-bold shrink-0">
+                  <Cloud size={16} />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h4 className="text-xs font-black text-white uppercase tracking-wider">
+                      Lưu Trữ Đám Mây Google Drive
+                    </h4>
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                        driveStatus?.connected
+                          ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                          : 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                      }`}
+                    >
+                      {driveStatus?.connected ? 'Đã kết nối Drive' : 'Chưa gắn kết Drive'}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-400 mt-0.5">
+                    Thư mục riêng biệt chống trùng: <strong className="text-amber-400 font-mono font-bold">"{driveStatus?.folderName || 'Tên-dự-án voice clone'}"</strong>
+                  </p>
+                </div>
+              </div>
+
+              {/* Sync Actions */}
+              <div className="flex items-center gap-2 shrink-0 flex-wrap">
+                <button
+                  onClick={handleImportFromDrive}
+                  disabled={isSyncingDrive}
+                  className="px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white shadow-sm disabled:opacity-50"
+                  title="Tải lại toàn bộ giọng clone và file âm thanh mẫu từ Google Drive"
+                >
+                  {isSyncingDrive ? <Loader2 size={13} className="animate-spin" /> : <CloudDownload size={13} />}
+                  <span>Nhập lại từ Drive</span>
+                </button>
+
+                <button
+                  onClick={handleBackupToDrive}
+                  disabled={isSyncingDrive}
+                  className="px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 disabled:opacity-50"
+                  title="Lưu tất cả giọng clone và file âm thanh mẫu hiện tại vào Google Drive"
+                >
+                  {isSyncingDrive ? <Loader2 size={13} className="animate-spin" /> : <CloudUpload size={13} />}
+                  <span>Lưu vào Drive</span>
+                </button>
+
+                <button
+                  onClick={loadDriveStatus}
+                  className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition"
+                  title="Làm mới trạng thái kết nối Google Drive"
+                >
+                  <RefreshCw size={13} />
+                </button>
+              </div>
+            </div>
+
+            {/* Status counts & Explanatory note */}
+            <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] pt-2 border-t border-slate-800/80 text-slate-400">
+              <div className="flex items-center gap-3">
+                <span>
+                  📁 Trên Google Drive: <strong className="text-white font-bold">{driveStatus?.driveVoiceCount || 0}</strong> giọng
+                </span>
+                <span>•</span>
+                <span>
+                  💻 Trong phiên hiện tại: <strong className="text-white font-bold">{clonedVoices.length}</strong> giọng
+                </span>
+              </div>
+              <span className="text-[10px] text-slate-500 italic">
+                * Tự động lưu file .wav và metadata để dùng lại vĩnh viễn ở các phiên Colab sau.
+              </span>
+            </div>
+
+            {/* Notification message */}
+            {driveMsg && (
+              <div
+                className={`p-2.5 rounded-xl text-xs flex items-center justify-between gap-2 ${
+                  driveMsg.type === 'success'
+                    ? 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/30'
+                    : 'bg-rose-500/10 text-rose-300 border border-rose-500/30'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  {driveMsg.type === 'success' ? <CheckCircle2 size={14} /> : <AlertCircle size={14} />}
+                  <span>{driveMsg.text}</span>
+                </div>
+                <button
+                  onClick={() => setDriveMsg(null)}
+                  className="text-slate-400 hover:text-white font-bold px-1"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="bg-slate-950/80 p-4 rounded-xl border border-slate-800 space-y-3.5">

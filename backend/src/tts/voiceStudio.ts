@@ -99,13 +99,13 @@ export class VoiceStudioService {
     };
 
     // Auto-persist sample to Google Drive if connected
-    const driveDir = process.env.DRIVE_VOICES_DIR || '/content/drive/MyDrive/VideoQuiz_Data/voices';
-    if (fs.existsSync(driveDir)) {
+    const driveDir = this.provider.getDriveVoicesDir();
+    if (driveDir && fs.existsSync(driveDir)) {
       try {
         const driveSamples = path.join(driveDir, 'samples');
         fs.mkdirSync(driveSamples, { recursive: true });
         fs.copyFileSync(targetWavPath, path.join(driveSamples, `${voiceId}.wav`));
-        console.log(`[VoiceStudio] Đã sao lưu mẫu âm thanh giọng "${rawName}" lên Google Drive!`);
+        console.log(`[VoiceStudio] Đã sao lưu mẫu âm thanh giọng "${rawName}" lên Google Drive ("${path.basename(driveDir)}")!`);
       } catch (e) {
         console.warn('[VoiceStudio] Không thể sao lưu file mẫu lên Google Drive:', e);
       }
@@ -123,10 +123,12 @@ export class VoiceStudioService {
       if (fs.existsSync(samplePath)) {
         try { fs.unlinkSync(samplePath); } catch {}
       }
-      const driveDir = process.env.DRIVE_VOICES_DIR || '/content/drive/MyDrive/VideoQuiz_Data/voices';
-      const driveSample = path.join(driveDir, 'samples', `${id}.wav`);
-      if (fs.existsSync(driveSample)) {
-        try { fs.unlinkSync(driveSample); } catch {}
+      const driveDir = this.provider.getDriveVoicesDir();
+      if (driveDir && fs.existsSync(driveDir)) {
+        const driveSample = path.join(driveDir, 'samples', `${id}.wav`);
+        if (fs.existsSync(driveSample)) {
+          try { fs.unlinkSync(driveSample); } catch {}
+        }
       }
     }
     return ok;
@@ -138,5 +140,17 @@ export class VoiceStudioService {
 
   public reload(): void {
     this.provider.reloadClonedVoices();
+  }
+
+  public syncFromDrive() {
+    return this.provider.syncFromDrive();
+  }
+
+  public syncToDrive() {
+    return this.provider.syncToDrive();
+  }
+
+  public getDriveStatus() {
+    return this.provider.getDriveStatus();
   }
 }

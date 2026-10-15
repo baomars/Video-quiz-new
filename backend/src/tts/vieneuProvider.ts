@@ -59,34 +59,74 @@ export class VieNeuProvider implements ITTSProvider {
     this.startPythonService();
   }
 
-  private getDriveVoicesDir(): string | null {
-    const driveDir = process.env.DRIVE_VOICES_DIR || '/content/drive/MyDrive/VideoQuiz_Data/voices';
-    if (fs.existsSync(driveDir)) {
-      return driveDir;
+  public getProjectVoiceCloneFolderName(): string {
+    const rawName = process.env.PROJECT_NAME || path.basename(process.cwd());
+    const cleanName = rawName.trim().replace(/[\\/:*?"<>|]/g, '-');
+    return `${cleanName} voice clone`;
+  }
+
+  public getDriveVoicesDir(): string | null {
+    if (process.env.DRIVE_VOICES_DIR && fs.existsSync(process.env.DRIVE_VOICES_DIR)) {
+      return process.env.DRIVE_VOICES_DIR;
     }
+
+    const folderName = this.getProjectVoiceCloneFolderName();
+
+    // 1. Standard Google Colab mount location: /content/drive/MyDrive/<projectName> voice clone
+    const colabMyDrive = '/content/drive/MyDrive';
+    if (fs.existsSync(colabMyDrive)) {
+      const targetDir = path.join(colabMyDrive, folderName);
+      if (!fs.existsSync(targetDir)) {
+        try {
+          fs.mkdirSync(targetDir, { recursive: true });
+        } catch (e) {
+          console.warn('[VieNeuProvider] Không thể tự động tạo thư mục trên Google Drive:', e);
+        }
+      }
+      return targetDir;
+    }
+
+    // 2. Check variant locations if Drive is mounted in different format
+    const candidatePaths = [
+      `/content/drive/MyDrive/${folderName}`,
+      `/content/drive/MyDrive/${folderName.replace(/\s+/g, '_')}`,
+      `/content/drive/MyDrive/Video-quiz-new voice clone`,
+      `/content/drive/MyDrive/Video quiz new voice clone`
+    ];
+    for (const p of candidatePaths) {
+      if (fs.existsSync(p)) return p;
+    }
+
     return null;
   }
 
   private loadClonedVoices() {
     try {
       const driveDir = this.getDriveVoicesDir();
-      // If local cloned_voices.json doesn't exist but Drive has it, sync from Drive
+      const localSamples = path.join(path.dirname(this.clonedVoicesPath), 'samples');
+      if (!fs.existsSync(localSamples)) {
+        fs.mkdirSync(localSamples, { recursive: true });
+      }
+
+      // If local cloned_voices.json doesn't exist but Drive has it, auto-restore from Drive
       if (driveDir && fs.existsSync(path.join(driveDir, 'cloned_voices.json'))) {
-        if (!fs.existsSync(this.clonedVoicesPath) || fs.statSync(this.clonedVoicesPath).size < 10) {
-          fs.copyFileSync(path.join(driveDir, 'cloned_voices.json'), this.clonedVoicesPath);
+        const driveMetaPath = path.join(driveDir, 'cloned_voices.json');
+        const shouldRestore = !fs.existsSync(this.clonedVoicesPath) || fs.statSync(this.clonedVoicesPath).size < 10;
+        if (shouldRestore) {
+          fs.copyFileSync(driveMetaPath, this.clonedVoicesPath);
           const driveSamples = path.join(driveDir, 'samples');
-          const localSamples = path.join(path.dirname(this.clonedVoicesPath), 'samples');
           if (fs.existsSync(driveSamples)) {
-            fs.mkdirSync(localSamples, { recursive: true });
+            let sampleCount = 0;
             for (const f of fs.readdirSync(driveSamples)) {
               const src = path.join(driveSamples, f);
               const dst = path.join(localSamples, f);
               if (!fs.existsSync(dst)) {
                 fs.copyFileSync(src, dst);
+                sampleCount++;
               }
             }
+            console.log(`[VieNeuProvider] Đã tự động phục hồi ${sampleCount} file âm thanh giọng clone từ Google Drive: "${path.basename(driveDir)}"!`);
           }
-          console.log('[VieNeuProvider] Đã tự động phục hồi toàn bộ giọng clone từ Google Drive!');
         }
       }
 
@@ -94,7 +134,15 @@ export class VieNeuProvider implements ITTSProvider {
         const raw = fs.readFileSync(this.clonedVoicesPath, 'utf-8');
         const list: ClonedVoiceRecord[] = JSON.parse(raw);
         if (Array.isArray(list)) {
-          list.forEach(v => this.clonedVoices.set(v.id, v));
+          list.forEach(v => {
+            const expectedSample = path.join(localSamples, `${v.id}.wav`);
+            const finalRecord: ClonedVoiceRecord = {
+              ...v,
+              samplePath: fs.existsSync(expectedSample) ? expectedSample : v.samplePath,
+              sampleUrl: `/uploads/voices/${v.id}.wav`
+            };
+            this.clonedVoices.set(v.id, finalRecord);
+          });
         }
       }
     } catch (err) {
@@ -112,11 +160,164 @@ export class VieNeuProvider implements ITTSProvider {
       const driveDir = this.getDriveVoicesDir();
       if (driveDir) {
         fs.writeFileSync(path.join(driveDir, 'cloned_voices.json'), content, 'utf-8');
-        console.log('[VieNeuProvider] Đã tự động lưu danh sách giọng clone lên Google Drive!');
+        console.log(`[VieNeuProvider] Đã tự động lưu danh sách giọng clone lên Google Drive: "${path.basename(driveDir)}"`);
       }
     } catch (err) {
       console.error('[VieNeuProvider] Không thể lưu danh sách cloned voices:', err);
     }
+  }
+
+  public syncFromDrive(): { success: boolean; count: number; folder: string; message: string } {
+    const driveDir = this.getDriveVoicesDir();
+    if (!driveDir) {
+      return {
+        success: false,
+        count: 0,
+        folder: '',
+        message: 'Google Drive chưa được kết nối (chỉ hoạt động khi chạy trên Google Colab đã mount Drive).'
+      };
+    }
+
+    const driveMeta = path.join(driveDir, 'cloned_voices.json');
+    const driveSamples = path.join(driveDir, 'samples');
+    const localSamples = path.join(path.dirname(this.clonedVoicesPath), 'samples');
+    fs.mkdirSync(localSamples, { recursive: true });
+
+    let restoredCount = 0;
+
+    if (fs.existsSync(driveMeta)) {
+      try {
+        const raw = fs.readFileSync(driveMeta, 'utf-8');
+        const list: ClonedVoiceRecord[] = JSON.parse(raw);
+        if (Array.isArray(list)) {
+          // Copy all samples from Drive to local
+          if (fs.existsSync(driveSamples)) {
+            for (const f of fs.readdirSync(driveSamples)) {
+              const src = path.join(driveSamples, f);
+              const dst = path.join(localSamples, f);
+              if (fs.existsSync(src) && (!fs.existsSync(dst) || fs.statSync(dst).size === 0)) {
+                fs.copyFileSync(src, dst);
+              }
+            }
+          }
+
+          // Register in memory & Python bridge
+          for (const item of list) {
+            const expectedLocalPath = path.join(localSamples, `${item.id}.wav`);
+            const finalRecord: ClonedVoiceRecord = {
+              ...item,
+              samplePath: fs.existsSync(expectedLocalPath) ? expectedLocalPath : item.samplePath,
+              sampleUrl: `/uploads/voices/${item.id}.wav`
+            };
+            this.clonedVoices.set(item.id, finalRecord);
+            restoredCount++;
+
+            this.sendCommand({
+              cmd: 'clone',
+              voice_name: item.id,
+              ref_audio_path: finalRecord.samplePath
+            }, 10000).catch(() => {});
+          }
+
+          fs.writeFileSync(this.clonedVoicesPath, JSON.stringify(Array.from(this.clonedVoices.values()), null, 2), 'utf-8');
+        }
+      } catch (e: any) {
+        return {
+          success: false,
+          count: restoredCount,
+          folder: driveDir,
+          message: `Lỗi đọc dữ liệu Google Drive: ${e.message}`
+        };
+      }
+    }
+
+    return {
+      success: true,
+      count: restoredCount,
+      folder: driveDir,
+      message: `Đã khôi phục thành công ${restoredCount} giọng clone từ Google Drive: "${path.basename(driveDir)}"!`
+    };
+  }
+
+  public syncToDrive(): { success: boolean; count: number; folder: string; message: string } {
+    const driveDir = this.getDriveVoicesDir();
+    if (!driveDir) {
+      return {
+        success: false,
+        count: 0,
+        folder: '',
+        message: 'Google Drive chưa được kết nối (chỉ hoạt động khi chạy trên Google Colab đã mount Drive).'
+      };
+    }
+
+    try {
+      const driveSamples = path.join(driveDir, 'samples');
+      fs.mkdirSync(driveSamples, { recursive: true });
+
+      const list = Array.from(this.clonedVoices.values());
+      const driveMeta = path.join(driveDir, 'cloned_voices.json');
+      fs.writeFileSync(driveMeta, JSON.stringify(list, null, 2), 'utf-8');
+
+      let copiedSamples = 0;
+      for (const voice of list) {
+        if (voice.samplePath && fs.existsSync(voice.samplePath)) {
+          const dst = path.join(driveSamples, `${voice.id}.wav`);
+          fs.copyFileSync(voice.samplePath, dst);
+          copiedSamples++;
+        }
+      }
+
+      return {
+        success: true,
+        count: list.length,
+        folder: driveDir,
+        message: `Đã sao lưu an toàn ${list.length} giọng clone và ${copiedSamples} file mẫu vào Google Drive: "${path.basename(driveDir)}"!`
+      };
+    } catch (e: any) {
+      return {
+        success: false,
+        count: 0,
+        folder: driveDir,
+        message: `Lỗi sao lưu lên Drive: ${e.message}`
+      };
+    }
+  }
+
+  public getDriveStatus(): {
+    connected: boolean;
+    folderName: string;
+    folderPath: string | null;
+    driveVoiceCount: number;
+    localVoiceCount: number;
+  } {
+    const driveDir = this.getDriveVoicesDir();
+    const folderName = this.getProjectVoiceCloneFolderName();
+    if (!driveDir) {
+      return {
+        connected: false,
+        folderName,
+        folderPath: null,
+        driveVoiceCount: 0,
+        localVoiceCount: this.clonedVoices.size
+      };
+    }
+
+    let driveCount = 0;
+    const driveMeta = path.join(driveDir, 'cloned_voices.json');
+    if (fs.existsSync(driveMeta)) {
+      try {
+        const list = JSON.parse(fs.readFileSync(driveMeta, 'utf-8'));
+        if (Array.isArray(list)) driveCount = list.length;
+      } catch {}
+    }
+
+    return {
+      connected: true,
+      folderName: path.basename(driveDir),
+      folderPath: driveDir,
+      driveVoiceCount: driveCount,
+      localVoiceCount: this.clonedVoices.size
+    };
   }
 
   public reloadClonedVoices() {
@@ -389,12 +590,29 @@ export class VieNeuProvider implements ITTSProvider {
     } catch {
       // Fallback preset voices if bridge is busy
       baseVoices = [
+        { id: 'Trúc Ly', name: 'Trúc Ly (Nữ - Miền Nam) ⭐', gender: 'Female', locale: 'vi-VN', region: 'Nam', style: 'Dịu dàng, truyền cảm, siêu tự nhiên (Khuyên dùng VieNeu v3)', suggestedRole: 'Host chính đố vui, giải thích' },
+        { id: 'Thiện Minh', name: 'Thiện Minh (Nam - Miền Bắc) ⭐', gender: 'Male', locale: 'vi-VN', region: 'Bắc', style: 'Đĩnh đạc, chuẩn phát thanh viên, sắc nét (Khuyên dùng VieNeu v3)', suggestedRole: 'Host đố vui kiến thức chuẩn, tài liệu' },
         { id: 'Hải Đăng', name: 'Hải Đăng (Nam - Miền Bắc)', gender: 'Male', locale: 'vi-VN', region: 'Bắc', style: 'Chững chạc, truyền cảm, tin cậy', suggestedRole: 'Host đố vui kiến thức, phóng sự' },
         { id: 'Xuân Vĩnh', name: 'Xuân Vĩnh (Nam - Miền Nam)', gender: 'Male', locale: 'vi-VN', region: 'Nam', style: 'Trầm ấm, gần gũi, sôi nổi', suggestedRole: 'Game show, TikTok Shorts, hài hước' },
         { id: 'Mai Chi', name: 'Mai Chi (Nữ - Miền Bắc)', gender: 'Female', locale: 'vi-VN', region: 'Bắc', style: 'Dịu dàng, trong trẻo, tự nhiên', suggestedRole: 'Kể chuyện, quiz tổng hợp, đời sống' },
         { id: 'Thảo Nhi', name: 'Thảo Nhi (Nữ - Miền Nam)', gender: 'Female', locale: 'vi-VN', region: 'Nam', style: 'Tươi vui, năng động, thanh thoát', suggestedRole: 'Gen Z quiz, tin nhanh, giải trí' },
         { id: 'Bảo Ngọc', name: 'Bảo Ngọc (Nữ - Miền Trung)', gender: 'Female', locale: 'vi-VN', region: 'Trung', style: 'Mộc mạc, rõ ràng, sâu lắng', suggestedRole: 'Văn hóa, lịch sử, văn học' },
         { id: 'Minh Quân', name: 'Minh Quân (Nam - Miền Trung)', gender: 'Male', locale: 'vi-VN', region: 'Trung', style: 'Hào sảng, đĩnh đạc, rõ chữ', suggestedRole: 'Phim tài liệu, khoa học viễn tưởng' },
+        { id: 'Quỳnh Như', name: 'Quỳnh Như (Nữ - Miền Nam)', gender: 'Female', locale: 'vi-VN', region: 'Nam', style: 'Ngọt ngào, MC truyền hình, cuốn hút', suggestedRole: 'Chương trình đố vui giải trí, điện ảnh' },
+        { id: 'Tuấn Kiệt', name: 'Tuấn Kiệt (Nam - Miền Nam)', gender: 'Male', locale: 'vi-VN', region: 'Nam', style: 'Trầm ấm, kể chuyện lôi cuốn, review phim', suggestedRole: 'Đố vui trinh thám, review phim' },
+        { id: 'Hoàng Nam', name: 'Hoàng Nam (Nam - Miền Bắc)', gender: 'Male', locale: 'vi-VN', region: 'Bắc', style: 'Trầm hùng, trang trọng, thời sự', suggestedRole: 'Bản tin thời sự, lịch sử' },
+        { id: 'Phương Linh', name: 'Phương Linh (Nữ - Miền Bắc)', gender: 'Female', locale: 'vi-VN', region: 'Bắc', style: 'Êm dịu, nhẹ nhàng, phong cách podcast', suggestedRole: 'Đố vui thư giãn, chữa lành' },
+        { id: 'Ánh Dương', name: 'Ánh Dương (Nữ - Miền Bắc)', gender: 'Female', locale: 'vi-VN', region: 'Bắc', style: 'Trẻ trung, hiện đại, bắt tai', suggestedRole: 'Đố vui công nghệ, mẹo vặt' },
+        { id: 'Duy Khang', name: 'Duy Khang (Nam - Miền Nam)', gender: 'Male', locale: 'vi-VN', region: 'Nam', style: 'Kịch tính, mạnh mẽ, dồn dập', suggestedRole: 'Đố vui tốc độ, thể thao' },
+        { id: 'Hương Giang', name: 'Hương Giang (Nữ - Miền Trung)', gender: 'Female', locale: 'vi-VN', region: 'Trung', style: 'Đằm thắm, ngọt ngào, chất giọng Huế', suggestedRole: 'Thơ ca, ẩm thực miền Trung' },
+        { id: 'Hùng Dũng', name: 'Hùng Dũng (Nam - Miền Bắc)', gender: 'Male', locale: 'vi-VN', region: 'Bắc', style: 'Trầm dày, nam tính, giọng phim rạp', suggestedRole: 'Trailer câu hỏi kịch tính' },
+        { id: 'Thanh Thảo', name: 'Thanh Thảo (Nữ - Miền Nam)', gender: 'Female', locale: 'vi-VN', region: 'Nam', style: 'Năng động, tươi sáng, quảng cáo', suggestedRole: 'Đố vui thương hiệu, mẹo mua sắm' },
+        { id: 'Gia Huy', name: 'Gia Huy (Nam - Miền Bắc)', gender: 'Male', locale: 'vi-VN', region: 'Bắc', style: 'Vui tươi, hóm hỉnh, Gen Z', suggestedRole: 'Đố vui hài hước, đố mẹo' },
+        { id: 'Ngọc Bích', name: 'Ngọc Bích (Nữ - Miền Bắc)', gender: 'Female', locale: 'vi-VN', region: 'Bắc', style: 'Chuẩn mực, giọng đọc sách, tinh tế', suggestedRole: 'Đố vui từ vựng, sách tinh hoa' },
+        { id: 'Khánh An', name: 'Khánh An (Nữ - Miền Nam)', gender: 'Female', locale: 'vi-VN', region: 'Nam', style: 'Mộc mạc, gần gũi, đời thường', suggestedRole: 'Đố vui phong tục, chuyện làng quê' },
+        { id: 'Việt Anh', name: 'Việt Anh (Nam - Miền Bắc)', gender: 'Male', locale: 'vi-VN', region: 'Bắc', style: 'Tưng bừng, phong thái MC gameshow', suggestedRole: 'Gameshow đố vui có thưởng' },
+        { id: 'Thu Hà', name: 'Thu Hà (Nữ - Miền Bắc)', gender: 'Female', locale: 'vi-VN', region: 'Bắc', style: 'Rành mạch, khoa học, thuyết minh', suggestedRole: 'Thế giới động vật, khoa học tự nhiên' },
+        { id: 'Adam bựa', name: 'Adam bựa (Nam - Hài hước / Meme)', gender: 'Male', locale: 'vi-VN', region: 'Bắc', style: 'Hài hước, châm biếm, viral Shorts', suggestedRole: 'Đố troll, câu đố khó đỡ' },
         { id: 'en-US-Jenny', name: 'Jenny (Female - English)', gender: 'Female', locale: 'en-US', region: 'US', style: 'Clear, friendly, natural', suggestedRole: 'English trivia host' },
         { id: 'en-US-Guy', name: 'Guy (Male - English)', gender: 'Male', locale: 'en-US', region: 'US', style: 'Confident, engaging', suggestedRole: 'English game show host' }
       ];

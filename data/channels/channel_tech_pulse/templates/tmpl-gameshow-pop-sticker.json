@@ -196,8 +196,8 @@
       "horizontalAlign": "left"
     },
     "explanation": {
-      "enabled": true,
-      "readTts": true,
+      "enabled": false,
+      "readTts": false,
       "displayDurationSec": 3,
       "showIcon": true,
       "x": 6,

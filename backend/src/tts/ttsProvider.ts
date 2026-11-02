@@ -17,6 +17,7 @@ export interface TTSVoice {
   style?: string;
   isCloned?: boolean;
   sampleUrl?: string;
+  engine?: 'edge' | 'vieneu';
 }
 
 export interface TTSRequest {
@@ -29,6 +30,121 @@ export interface TTSRequest {
   ref_audio?: string;
   channelId?: string;
   lang?: string;
+  engine?: 'edge' | 'vieneu';
+}
+
+export const EDGE_TTS_VOICES: TTSVoice[] = [
+  {
+    id: 'vi-VN-HoaiMyNeural',
+    name: 'Hoài My (Nữ - Miền Nam) ⭐',
+    gender: 'Female',
+    locale: 'vi-VN',
+    region: 'Nam',
+    style: 'Truyền cảm, tự nhiên, siêu mượt (Microsoft Edge-TTS)',
+    suggestedRole: 'Host đố vui thân thiện, câu hỏi tổng hợp',
+    engine: 'edge'
+  },
+  {
+    id: 'vi-VN-NamMinhNeural',
+    name: 'Nam Minh (Nam - Miền Bắc) ⭐',
+    gender: 'Male',
+    locale: 'vi-VN',
+    region: 'Bắc',
+    style: 'Trầm ấm, rõ ràng, dứt khoát (Microsoft Edge-TTS)',
+    suggestedRole: 'Host đố vui công nghệ, thời sự, khoa học',
+    engine: 'edge'
+  },
+  {
+    id: 'en-US-JennyNeural',
+    name: 'Jenny (Female - English US) ⭐',
+    gender: 'Female',
+    locale: 'en-US',
+    region: 'US',
+    style: 'Friendly, natural, conversational (Microsoft Edge-TTS)',
+    suggestedRole: 'English trivia host, quiz',
+    engine: 'edge'
+  },
+  {
+    id: 'en-US-GuyNeural',
+    name: 'Guy (Male - English US) ⭐',
+    gender: 'Male',
+    locale: 'en-US',
+    region: 'US',
+    style: 'Confident, casual, engaging (Microsoft Edge-TTS)',
+    suggestedRole: 'Game show host, tech quiz',
+    engine: 'edge'
+  },
+  {
+    id: 'en-US-AriaNeural',
+    name: 'Aria (Female - English US)',
+    gender: 'Female',
+    locale: 'en-US',
+    region: 'US',
+    style: 'Expressive, clear, versatile (Microsoft Edge-TTS)',
+    suggestedRole: 'Documentary, dramatic quiz',
+    engine: 'edge'
+  },
+  {
+    id: 'en-US-ChristopherNeural',
+    name: 'Christopher (Male - English US)',
+    gender: 'Male',
+    locale: 'en-US',
+    region: 'US',
+    style: 'Authoritative, deep, steady (Microsoft Edge-TTS)',
+    suggestedRole: 'Deep documentary, mystery quiz',
+    engine: 'edge'
+  },
+  {
+    id: 'en-US-EricNeural',
+    name: 'Eric (Male - English US)',
+    gender: 'Male',
+    locale: 'en-US',
+    region: 'US',
+    style: 'Youthful, energetic, upbeat (Microsoft Edge-TTS)',
+    suggestedRole: 'Shorts viral, pop culture',
+    engine: 'edge'
+  },
+  {
+    id: 'en-US-AnaNeural',
+    name: 'Ana (Female - English US Teen)',
+    gender: 'Female',
+    locale: 'en-US',
+    region: 'US',
+    style: 'Cute, cheerful, lively (Microsoft Edge-TTS)',
+    suggestedRole: 'Kids quiz, playful trivia',
+    engine: 'edge'
+  },
+  {
+    id: 'en-GB-SoniaNeural',
+    name: 'Sonia (Female - British English)',
+    gender: 'Female',
+    locale: 'en-GB',
+    region: 'UK',
+    style: 'British accent, elegant, warm (Microsoft Edge-TTS)',
+    suggestedRole: 'Classic British trivia, literature',
+    engine: 'edge'
+  },
+  {
+    id: 'en-GB-RyanNeural',
+    name: 'Ryan (Male - British English)',
+    gender: 'Male',
+    locale: 'en-GB',
+    region: 'UK',
+    style: 'British accent, crisp, sophisticated (Microsoft Edge-TTS)',
+    suggestedRole: 'British game show, intellectual quiz',
+    engine: 'edge'
+  }
+];
+
+export function isEdgeVoiceIdentifier(voice?: string): boolean {
+  if (!voice) return false;
+  return (
+    voice.endsWith('Neural') ||
+    voice.startsWith('vi-VN-') ||
+    (voice.startsWith('en-US-') && voice.endsWith('Neural')) ||
+    (voice.startsWith('en-GB-') && voice.endsWith('Neural')) ||
+    EDGE_TTS_VOICES.some((v) => v.id === voice)
+  );
 }
 
 export interface TTSResult {
@@ -189,8 +305,13 @@ export class EdgeTTSProvider implements ITTSProvider {
           try {
             await execFileAsync('edge-tts', args, { timeout: 25000 });
           } catch (err: any) {
-            // If edge-tts isn't directly in path, try python -m edge_tts
-            await execFileAsync('python', ['-m', 'edge_tts', ...args], { timeout: 25000 });
+            // Try python3 (standard on Linux/Colab)
+            try {
+              await execFileAsync('python3', ['-m', 'edge_tts', ...args], { timeout: 25000 });
+            } catch (err2: any) {
+              // Try python (standard on Windows)
+              await execFileAsync('python', ['-m', 'edge_tts', ...args], { timeout: 25000 });
+            }
           }
 
           // Verify file was written and is not empty
@@ -261,25 +382,15 @@ export class EdgeTTSProvider implements ITTSProvider {
   }
 
   public async listVoices(lang?: string): Promise<TTSVoice[]> {
-    const popularVoices: TTSVoice[] = [
-      { id: 'vi-VN-HoaiMyNeural', name: 'Hoài My (Nữ - Truyền cảm, Tự nhiên)', gender: 'Female', locale: 'vi-VN', suggestedRole: 'Giọng đọc đố vui thân thiện' },
-      { id: 'vi-VN-NamMinhNeural', name: 'Nam Minh (Nam - Trầm ấm, Rõ ràng)', gender: 'Male', locale: 'vi-VN', suggestedRole: 'Giọng đọc nam công nghệ, phóng sự' },
-      { id: 'en-US-JennyNeural', name: 'Jenny (Female - Friendly, Natural)', gender: 'Female', locale: 'en-US', suggestedRole: 'Trivia host' },
-      { id: 'en-US-GuyNeural', name: 'Guy (Male - Confident, Engaging)', gender: 'Male', locale: 'en-US', suggestedRole: 'Tech / Game show host' },
-      { id: 'en-US-AriaNeural', name: 'Aria (Female - Clear, Expressive)', gender: 'Female', locale: 'en-US', suggestedRole: 'Documentary style' },
-      { id: 'en-US-ChristopherNeural', name: 'Christopher (Male - Authoritative)', gender: 'Male', locale: 'en-US', suggestedRole: 'Deep documentary' },
-      { id: 'en-GB-SoniaNeural', name: 'Sonia (Female - British, Elegant)', gender: 'Female', locale: 'en-GB', suggestedRole: 'Classic British trivia' }
-    ];
-
-    if (!lang) return popularVoices;
+    if (!lang) return EDGE_TTS_VOICES;
 
     if (lang === 'vi') {
-      return popularVoices.filter(v => v.locale.startsWith('vi'));
+      return EDGE_TTS_VOICES.filter(v => v.locale.startsWith('vi'));
     }
     if (lang === 'en') {
-      return popularVoices.filter(v => v.locale.startsWith('en'));
+      return EDGE_TTS_VOICES.filter(v => v.locale.startsWith('en'));
     }
 
-    return popularVoices;
+    return EDGE_TTS_VOICES;
   }
 }

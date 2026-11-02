@@ -265,17 +265,18 @@ app.post('/api/voices/drive/backup', (req, res) => {
 
 app.post(['/api/tts/preview', '/api/voices/preview'], async (req, res) => {
   try {
-    const { text, voice, rate, pitch, volume, speed } = req.body;
+    const { text, voice, rate, pitch, volume, speed, engine } = req.body;
     if (!text) {
       return res.status(400).json({ success: false, error: 'Text required' });
     }
     const result = await ttsProvider.generate({
       text,
-      voice: voice || 'Hải Đăng',
+      voice: voice || 'vi-VN-HoaiMyNeural',
       rate: rate || '+0%',
       pitch: pitch || '+0Hz',
       volume: volume || '+0%',
-      speed: typeof speed === 'number' ? speed : undefined
+      speed: typeof speed === 'number' ? speed : undefined,
+      engine: engine || undefined
     });
     res.json({ success: true, result });
   } catch (err: any) {

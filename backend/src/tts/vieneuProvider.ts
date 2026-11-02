@@ -3,7 +3,15 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { spawn, ChildProcess } from 'child_process';
-import { ITTSProvider, TTSRequest, TTSResult, TTSVoice } from './ttsProvider.js';
+import {
+  ITTSProvider,
+  TTSRequest,
+  TTSResult,
+  TTSVoice,
+  EdgeTTSProvider,
+  EDGE_TTS_VOICES,
+  isEdgeVoiceIdentifier
+} from './ttsProvider.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -42,12 +50,15 @@ export class VieNeuProvider implements ITTSProvider {
   private lineBuffer: string = '';
   private clonedVoices: Map<string, ClonedVoiceRecord> = new Map();
   private clonedVoicesPath: string;
+  private edgeProvider: EdgeTTSProvider;
 
   constructor(cacheDir: string, dataVoicesDir?: string) {
     this.cacheDir = cacheDir;
     if (!fs.existsSync(this.cacheDir)) {
       fs.mkdirSync(this.cacheDir, { recursive: true });
     }
+
+    this.edgeProvider = new EdgeTTSProvider(this.cacheDir);
 
     const voicesDir = dataVoicesDir || path.resolve(process.cwd(), 'data', 'voices');
     if (!fs.existsSync(voicesDir)) {
@@ -467,6 +478,10 @@ export class VieNeuProvider implements ITTSProvider {
     this.pythonProcess.stdin.write(payload);
   }
 
+  public isEdgeVoice(voice?: string): boolean {
+    return isEdgeVoiceIdentifier(voice);
+  }
+
   public computeHash(req: TTSRequest): string {
     const text = req.text.trim();
     const voice = req.voice || 'Hải Đăng';
@@ -478,6 +493,10 @@ export class VieNeuProvider implements ITTSProvider {
   }
 
   public getCached(req: TTSRequest): TTSResult | null {
+    if (req.engine === 'edge' || this.isEdgeVoice(req.voice)) {
+      return this.edgeProvider.getCached(req);
+    }
+
     const text = req.text?.trim();
     if (!text) return null;
     const hash = this.computeHash(req);
@@ -518,7 +537,12 @@ export class VieNeuProvider implements ITTSProvider {
       throw new Error('TTS text cannot be empty');
     }
 
-    // 1. Check instant cache first
+    // 1. Direct routing to Edge-TTS provider if requested or detected
+    if (req.engine === 'edge' || this.isEdgeVoice(req.voice)) {
+      return this.edgeProvider.generate(req);
+    }
+
+    // 2. Check instant cache first
     const cached = this.getCached(req);
     if (cached) {
       return cached;
@@ -628,10 +652,28 @@ export class VieNeuProvider implements ITTSProvider {
       style: cv.style || 'Giọng nhân bản từ file mẫu',
       suggestedRole: cv.suggestedRole || 'Giọng AI độc quyền',
       isCloned: true,
-      sampleUrl: cv.sampleUrl
+      sampleUrl: cv.sampleUrl,
+      engine: 'vieneu'
     }));
 
-    const allVoices = [...clonedList, ...baseVoices];
+    // Get Edge-TTS voices
+    const edgeVoices = await this.edgeProvider.listVoices();
+
+    // Map base voices with engine: 'vieneu'
+    const taggedBaseVoices: TTSVoice[] = baseVoices.map(v => ({
+      ...v,
+      engine: (v.engine || 'vieneu') as 'edge' | 'vieneu'
+    }));
+
+    // Combine: Edge-TTS voices first, then VieNeu neural voices, then Cloned voices
+    const voiceMap = new Map<string, TTSVoice>();
+    for (const v of edgeVoices) voiceMap.set(v.id, v);
+    for (const v of taggedBaseVoices) {
+      if (!voiceMap.has(v.id)) voiceMap.set(v.id, v);
+    }
+    for (const v of clonedList) voiceMap.set(v.id, v);
+
+    const allVoices = Array.from(voiceMap.values());
 
     if (!lang) return allVoices;
     if (lang === 'vi') return allVoices.filter(v => v.locale.startsWith('vi') || (v as any).isCloned);

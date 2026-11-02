@@ -18,13 +18,74 @@ tts_engine = None
 # Built-in official preset voices of VieNeu-TTS v3 (Đầy đủ các giọng thông dụng 3 miền & Quốc tế)
 PRESET_VOICES = [
     {
+        "id": "vi-VN-HoaiMyNeural",
+        "name": "Hoài My (Nữ - Miền Nam) ⭐",
+        "gender": "Female",
+        "locale": "vi-VN",
+        "region": "Nam",
+        "style": "Truyền cảm, tự nhiên, siêu mượt (Microsoft Edge-TTS)",
+        "suggestedRole": "Host đố vui thân thiện, câu hỏi tổng hợp",
+        "engine": "edge"
+    },
+    {
+        "id": "vi-VN-NamMinhNeural",
+        "name": "Nam Minh (Nam - Miền Bắc) ⭐",
+        "gender": "Male",
+        "locale": "vi-VN",
+        "region": "Bắc",
+        "style": "Trầm ấm, rõ ràng, dứt khoát (Microsoft Edge-TTS)",
+        "suggestedRole": "Host đố vui công nghệ, thời sự, khoa học",
+        "engine": "edge"
+    },
+    {
+        "id": "en-US-JennyNeural",
+        "name": "Jenny (Female - English US) ⭐",
+        "gender": "Female",
+        "locale": "en-US",
+        "region": "US",
+        "style": "Natural, friendly, conversational (Microsoft Edge-TTS)",
+        "suggestedRole": "English trivia host, quiz",
+        "engine": "edge"
+    },
+    {
+        "id": "en-US-GuyNeural",
+        "name": "Guy (Male - English US) ⭐",
+        "gender": "Male",
+        "locale": "en-US",
+        "region": "US",
+        "style": "Confident, casual, engaging (Microsoft Edge-TTS)",
+        "suggestedRole": "Game show host, tech quiz",
+        "engine": "edge"
+    },
+    {
+        "id": "en-US-AriaNeural",
+        "name": "Aria (Female - English US)",
+        "gender": "Female",
+        "locale": "en-US",
+        "region": "US",
+        "style": "Expressive, clear, versatile (Microsoft Edge-TTS)",
+        "suggestedRole": "Documentary, dramatic quiz",
+        "engine": "edge"
+    },
+    {
+        "id": "en-US-ChristopherNeural",
+        "name": "Christopher (Male - English US)",
+        "gender": "Male",
+        "locale": "en-US",
+        "region": "US",
+        "style": "Authoritative, deep, steady (Microsoft Edge-TTS)",
+        "suggestedRole": "Deep documentary, mystery quiz",
+        "engine": "edge"
+    },
+    {
         "id": "Trúc Ly",
         "name": "Trúc Ly (Nữ - Miền Nam) ⭐",
         "gender": "Female",
         "locale": "vi-VN",
         "region": "Nam",
         "style": "Dịu dàng, truyền cảm, siêu tự nhiên (Khuyên dùng VieNeu v3)",
-        "suggestedRole": "Host chính đố vui, đọc giải thích, tin tức"
+        "suggestedRole": "Host chính đố vui, đọc giải thích, tin tức",
+        "engine": "vieneu"
     },
     {
         "id": "Thiện Minh",
@@ -282,6 +343,37 @@ def get_audio_duration_ffprobe(file_path):
     return 1.5
 
 
+def is_edge_voice(voice):
+    if not voice:
+        return False
+    return "Neural" in voice or voice.startswith("vi-VN-") or (voice.startswith("en-") and "Neural" in voice)
+
+
+def generate_edge_tts(text, voice, speed, out_path):
+    import subprocess
+    rate_str = f"{int((speed - 1.0) * 100):+d}%"
+    edge_voice = voice if is_edge_voice(voice) else "vi-VN-HoaiMyNeural"
+    edge_args = [
+        "--voice", edge_voice,
+        "--rate", rate_str,
+        "--text", text,
+        "--write-media", out_path
+    ]
+    try:
+        subprocess.run(["edge-tts"] + edge_args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=25, check=True)
+    except Exception:
+        subprocess.run([sys.executable, "-m", "edge_tts"] + edge_args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=25, check=True)
+
+    duration = get_audio_duration_ffprobe(out_path)
+    return {
+        "success": True,
+        "engine": "edge-tts",
+        "voice": edge_voice,
+        "duration_sec": duration,
+        "sample_rate": 24000
+    }
+
+
 def handle_generate(req):
     text = req.get("text", "").strip()
     voice = req.get("voice", "Hải Đăng")
@@ -293,6 +385,14 @@ def handle_generate(req):
         return {"success": False, "error": "Missing text or output_path"}
 
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
+
+    # 0. Direct Edge-TTS Generation if requested or detected
+    if req.get("engine") == "edge" or is_edge_voice(voice):
+        try:
+            return generate_edge_tts(text, voice, speed, out_path)
+        except Exception as e:
+            sys.stderr.write(f"[VieNeu Bridge] Direct Edge-TTS generation error: {e}\n")
+            return {"success": False, "error": f"Edge-TTS failed: {str(e)}"}
 
     # 1. Try Vieneu if available on Colab
     if VIENEU_AVAILABLE and tts_engine is not None:

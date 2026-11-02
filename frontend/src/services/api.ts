@@ -132,6 +132,7 @@ export interface VoiceInfo {
   suggestedRole?: string;
   isCloned?: boolean;
   sampleUrl?: string;
+  engine?: 'vieneu' | 'edge';
 }
 
 export interface ClonedVoice {
@@ -167,31 +168,37 @@ export async function fetchVoices(lang?: string): Promise<VoiceInfo[]> {
     console.warn('[API] Failed to fetch voices, using default VieNeu voice list:', err);
   }
   return [
-    { id: 'Trúc Ly', name: 'Trúc Ly (Nữ - Miền Nam) ⭐', gender: 'Female', locale: 'vi-VN', region: 'Nam', style: 'Dịu dàng, truyền cảm, siêu tự nhiên', suggestedRole: 'Host chính đố vui, đọc giải thích' },
-    { id: 'Thiện Minh', name: 'Thiện Minh (Nam - Miền Bắc) ⭐', gender: 'Male', locale: 'vi-VN', region: 'Bắc', style: 'Đĩnh đạc, chuẩn phát thanh viên', suggestedRole: 'Host đố vui kiến thức chuẩn' },
-    { id: 'Hải Đăng', name: 'Hải Đăng (Nam - Miền Bắc)', gender: 'Male', locale: 'vi-VN', region: 'Bắc', style: 'Chững chạc, truyền cảm', suggestedRole: 'Host đố vui kiến thức' },
-    { id: 'Xuân Vĩnh', name: 'Xuân Vĩnh (Nam - Miền Nam)', gender: 'Male', locale: 'vi-VN', region: 'Nam', style: 'Trầm ấm, gần gũi', suggestedRole: 'Game show, TikTok Shorts' },
-    { id: 'Mai Chi', name: 'Mai Chi (Nữ - Miền Bắc)', gender: 'Female', locale: 'vi-VN', region: 'Bắc', style: 'Dịu dàng, trong trẻo', suggestedRole: 'Kể chuyện, quiz tổng hợp' },
-    { id: 'Thảo Nhi', name: 'Thảo Nhi (Nữ - Miền Nam)', gender: 'Female', locale: 'vi-VN', region: 'Nam', style: 'Tươi vui, năng động', suggestedRole: 'Gen Z quiz, giải trí' },
-    { id: 'Bảo Ngọc', name: 'Bảo Ngọc (Nữ - Miền Trung)', gender: 'Female', locale: 'vi-VN', region: 'Trung', style: 'Mộc mạc, rõ ràng', suggestedRole: 'Văn hóa, lịch sử' },
-    { id: 'Minh Quân', name: 'Minh Quân (Nam - Miền Trung)', gender: 'Male', locale: 'vi-VN', region: 'Trung', style: 'Hào sảng, đĩnh đạc', suggestedRole: 'Phim tài liệu, khoa học' },
-    { id: 'Quỳnh Như', name: 'Quỳnh Như (Nữ - Miền Nam)', gender: 'Female', locale: 'vi-VN', region: 'Nam', style: 'Ngọt ngào, MC truyền hình', suggestedRole: 'Đố vui giải trí, showbiz' },
-    { id: 'Tuấn Kiệt', name: 'Tuấn Kiệt (Nam - Miền Nam)', gender: 'Male', locale: 'vi-VN', region: 'Nam', style: 'Trầm ấm, review phim', suggestedRole: 'Đố vui trinh thám, bí ẩn' },
-    { id: 'Hoàng Nam', name: 'Hoàng Nam (Nam - Miền Bắc)', gender: 'Male', locale: 'vi-VN', region: 'Bắc', style: 'Trầm hùng, trang trọng', suggestedRole: 'Bản tin thời sự, lịch sử' },
-    { id: 'Phương Linh', name: 'Phương Linh (Nữ - Miền Bắc)', gender: 'Female', locale: 'vi-VN', region: 'Bắc', style: 'Êm dịu, nhẹ nhàng podcast', suggestedRole: 'Tâm lý học, thư giãn' },
-    { id: 'Ánh Dương', name: 'Ánh Dương (Nữ - Miền Bắc)', gender: 'Female', locale: 'vi-VN', region: 'Bắc', style: 'Trẻ trung, hiện đại', suggestedRole: 'Đố vui công nghệ, mẹo vặt' },
-    { id: 'Duy Khang', name: 'Duy Khang (Nam - Miền Nam)', gender: 'Male', locale: 'vi-VN', region: 'Nam', style: 'Kịch tính, mạnh mẽ', suggestedRole: 'Đố vui tốc độ, thể thao' },
-    { id: 'Hương Giang', name: 'Hương Giang (Nữ - Miền Trung)', gender: 'Female', locale: 'vi-VN', region: 'Trung', style: 'Đằm thắm, ngọt ngào giọng Huế', suggestedRole: 'Thơ ca, ca dao, ẩm thực' },
-    { id: 'Hùng Dũng', name: 'Hùng Dũng (Nam - Miền Bắc)', gender: 'Male', locale: 'vi-VN', region: 'Bắc', style: 'Trầm dày, nam tính phim rạp', suggestedRole: 'Trailer câu hỏi kịch tính' },
-    { id: 'Thanh Thảo', name: 'Thanh Thảo (Nữ - Miền Nam)', gender: 'Female', locale: 'vi-VN', region: 'Nam', style: 'Năng động, tươi sáng', suggestedRole: 'Đố vui thương hiệu, ẩm thực' },
-    { id: 'Gia Huy', name: 'Gia Huy (Nam - Miền Bắc)', gender: 'Male', locale: 'vi-VN', region: 'Bắc', style: 'Vui tươi, hóm hỉnh', suggestedRole: 'Đố vui hài hước, đố mẹo' },
-    { id: 'Ngọc Bích', name: 'Ngọc Bích (Nữ - Miền Bắc)', gender: 'Female', locale: 'vi-VN', region: 'Bắc', style: 'Chuẩn mực, giọng đọc sách', suggestedRole: 'Đố từ vựng, sách tinh hoa' },
-    { id: 'Khánh An', name: 'Khánh An (Nữ - Miền Nam)', gender: 'Female', locale: 'vi-VN', region: 'Nam', style: 'Mộc mạc, gần gũi', suggestedRole: 'Đố phong tục, chuyện gia đình' },
-    { id: 'Việt Anh', name: 'Việt Anh (Nam - Miền Bắc)', gender: 'Male', locale: 'vi-VN', region: 'Bắc', style: 'Tưng bừng, phong thái MC', suggestedRole: 'Gameshow đố vui có thưởng' },
-    { id: 'Thu Hà', name: 'Thu Hà (Nữ - Miền Bắc)', gender: 'Female', locale: 'vi-VN', region: 'Bắc', style: 'Rành mạch, khoa học', suggestedRole: 'Động vật, khoa học tự nhiên' },
-    { id: 'Adam bựa', name: 'Adam bựa (Nam - Meme/Hài)', gender: 'Male', locale: 'vi-VN', region: 'Bắc', style: 'Hài hước, châm biếm, meme', suggestedRole: 'Đố troll, viral video' },
-    { id: 'en-US-Jenny', name: 'Jenny (Female - English)', gender: 'Female', locale: 'en-US', region: 'US', style: 'Clear, friendly', suggestedRole: 'English trivia host' },
-    { id: 'en-US-Guy', name: 'Guy (Male - English)', gender: 'Male', locale: 'en-US', region: 'US', style: 'Confident, engaging', suggestedRole: 'English game show host' }
+    { id: 'vi-VN-HoaiMyNeural', name: 'Hoài My (Nữ - Miền Nam) ⭐', gender: 'Female', locale: 'vi-VN', region: 'Nam', style: 'Truyền cảm, tự nhiên, siêu mượt', suggestedRole: 'Host đố vui thân thiện, câu hỏi tổng hợp', engine: 'edge' },
+    { id: 'vi-VN-NamMinhNeural', name: 'Nam Minh (Nam - Miền Bắc) ⭐', gender: 'Male', locale: 'vi-VN', region: 'Bắc', style: 'Trầm ấm, rõ ràng, dứt khoát', suggestedRole: 'Host đố vui công nghệ, thời sự, khoa học', engine: 'edge' },
+    { id: 'en-US-JennyNeural', name: 'Jenny (Female - English US) ⭐', gender: 'Female', locale: 'en-US', region: 'US', style: 'Natural, friendly, conversational', suggestedRole: 'English trivia host, quiz', engine: 'edge' },
+    { id: 'en-US-GuyNeural', name: 'Guy (Male - English US) ⭐', gender: 'Male', locale: 'en-US', region: 'US', style: 'Confident, casual, engaging', suggestedRole: 'Game show host, tech quiz', engine: 'edge' },
+    { id: 'en-US-AriaNeural', name: 'Aria (Female - English US)', gender: 'Female', locale: 'en-US', region: 'US', style: 'Expressive, clear, versatile', suggestedRole: 'Documentary, dramatic quiz', engine: 'edge' },
+    { id: 'en-US-ChristopherNeural', name: 'Christopher (Male - English US)', gender: 'Male', locale: 'en-US', region: 'US', style: 'Authoritative, deep, steady', suggestedRole: 'Deep documentary, mystery quiz', engine: 'edge' },
+    { id: 'Trúc Ly', name: 'Trúc Ly (Nữ - Miền Nam) ⭐', gender: 'Female', locale: 'vi-VN', region: 'Nam', style: 'Dịu dàng, truyền cảm, siêu tự nhiên', suggestedRole: 'Host chính đố vui, đọc giải thích', engine: 'vieneu' },
+    { id: 'Thiện Minh', name: 'Thiện Minh (Nam - Miền Bắc) ⭐', gender: 'Male', locale: 'vi-VN', region: 'Bắc', style: 'Đĩnh đạc, chuẩn phát thanh viên', suggestedRole: 'Host đố vui kiến thức chuẩn', engine: 'vieneu' },
+    { id: 'Hải Đăng', name: 'Hải Đăng (Nam - Miền Bắc)', gender: 'Male', locale: 'vi-VN', region: 'Bắc', style: 'Chững chạc, truyền cảm', suggestedRole: 'Host đố vui kiến thức', engine: 'vieneu' },
+    { id: 'Xuân Vĩnh', name: 'Xuân Vĩnh (Nam - Miền Nam)', gender: 'Male', locale: 'vi-VN', region: 'Nam', style: 'Trầm ấm, gần gũi', suggestedRole: 'Game show, TikTok Shorts', engine: 'vieneu' },
+    { id: 'Mai Chi', name: 'Mai Chi (Nữ - Miền Bắc)', gender: 'Female', locale: 'vi-VN', region: 'Bắc', style: 'Dịu dàng, trong trẻo', suggestedRole: 'Kể chuyện, quiz tổng hợp', engine: 'vieneu' },
+    { id: 'Thảo Nhi', name: 'Thảo Nhi (Nữ - Miền Nam)', gender: 'Female', locale: 'vi-VN', region: 'Nam', style: 'Tươi vui, năng động', suggestedRole: 'Gen Z quiz, giải trí', engine: 'vieneu' },
+    { id: 'Bảo Ngọc', name: 'Bảo Ngọc (Nữ - Miền Trung)', gender: 'Female', locale: 'vi-VN', region: 'Trung', style: 'Mộc mạc, rõ ràng', suggestedRole: 'Văn hóa, lịch sử', engine: 'vieneu' },
+    { id: 'Minh Quân', name: 'Minh Quân (Nam - Miền Trung)', gender: 'Male', locale: 'vi-VN', region: 'Trung', style: 'Hào sảng, đĩnh đạc', suggestedRole: 'Phim tài liệu, khoa học', engine: 'vieneu' },
+    { id: 'Quỳnh Như', name: 'Quỳnh Như (Nữ - Miền Nam)', gender: 'Female', locale: 'vi-VN', region: 'Nam', style: 'Ngọt ngào, MC truyền hình', suggestedRole: 'Đố vui giải trí, showbiz', engine: 'vieneu' },
+    { id: 'Tuấn Kiệt', name: 'Tuấn Kiệt (Nam - Miền Nam)', gender: 'Male', locale: 'vi-VN', region: 'Nam', style: 'Trầm ấm, review phim', suggestedRole: 'Đố vui trinh thám, bí ẩn', engine: 'vieneu' },
+    { id: 'Hoàng Nam', name: 'Hoàng Nam (Nam - Miền Bắc)', gender: 'Male', locale: 'vi-VN', region: 'Bắc', style: 'Trầm hùng, trang trọng', suggestedRole: 'Bản tin thời sự, lịch sử', engine: 'vieneu' },
+    { id: 'Phương Linh', name: 'Phương Linh (Nữ - Miền Bắc)', gender: 'Female', locale: 'vi-VN', region: 'Bắc', style: 'Êm dịu, nhẹ nhàng podcast', suggestedRole: 'Tâm lý học, thư giãn', engine: 'vieneu' },
+    { id: 'Ánh Dương', name: 'Ánh Dương (Nữ - Miền Bắc)', gender: 'Female', locale: 'vi-VN', region: 'Bắc', style: 'Trẻ trung, hiện đại', suggestedRole: 'Đố vui công nghệ, mẹo vặt', engine: 'vieneu' },
+    { id: 'Duy Khang', name: 'Duy Khang (Nam - Miền Nam)', gender: 'Male', locale: 'vi-VN', region: 'Nam', style: 'Kịch tính, mạnh mẽ', suggestedRole: 'Đố vui tốc độ, thể thao', engine: 'vieneu' },
+    { id: 'Hương Giang', name: 'Hương Giang (Nữ - Miền Trung)', gender: 'Female', locale: 'vi-VN', region: 'Trung', style: 'Đằm thắm, ngọt ngào giọng Huế', suggestedRole: 'Thơ ca, ca dao, ẩm thực', engine: 'vieneu' },
+    { id: 'Hùng Dũng', name: 'Hùng Dũng (Nam - Miền Bắc)', gender: 'Male', locale: 'vi-VN', region: 'Bắc', style: 'Trầm dày, nam tính phim rạp', suggestedRole: 'Trailer câu hỏi kịch tính', engine: 'vieneu' },
+    { id: 'Thanh Thảo', name: 'Thanh Thảo (Nữ - Miền Nam)', gender: 'Female', locale: 'vi-VN', region: 'Nam', style: 'Năng động, tươi sáng', suggestedRole: 'Đố vui thương hiệu, ẩm thực', engine: 'vieneu' },
+    { id: 'Gia Huy', name: 'Gia Huy (Nam - Miền Bắc)', gender: 'Male', locale: 'vi-VN', region: 'Bắc', style: 'Vui tươi, hóm hỉnh', suggestedRole: 'Đố vui hài hước, đố mẹo', engine: 'vieneu' },
+    { id: 'Ngọc Bích', name: 'Ngọc Bích (Nữ - Miền Bắc)', gender: 'Female', locale: 'vi-VN', region: 'Bắc', style: 'Chuẩn mực, giọng đọc sách', suggestedRole: 'Đố từ vựng, sách tinh hoa', engine: 'vieneu' },
+    { id: 'Khánh An', name: 'Khánh An (Nữ - Miền Nam)', gender: 'Female', locale: 'vi-VN', region: 'Nam', style: 'Mộc mạc, gần gũi', suggestedRole: 'Đố phong tục, chuyện gia đình', engine: 'vieneu' },
+    { id: 'Việt Anh', name: 'Việt Anh (Nam - Miền Bắc)', gender: 'Male', locale: 'vi-VN', region: 'Bắc', style: 'Tưng bừng, phong thái MC', suggestedRole: 'Gameshow đố vui có thưởng', engine: 'vieneu' },
+    { id: 'Thu Hà', name: 'Thu Hà (Nữ - Miền Bắc)', gender: 'Female', locale: 'vi-VN', region: 'Bắc', style: 'Rành mạch, khoa học', suggestedRole: 'Động vật, khoa học tự nhiên', engine: 'vieneu' },
+    { id: 'Adam bựa', name: 'Adam bựa (Nam - Meme/Hài)', gender: 'Male', locale: 'vi-VN', region: 'Bắc', style: 'Hài hước, châm biếm, meme', suggestedRole: 'Đố troll, viral video', engine: 'vieneu' },
+    { id: 'en-US-Jenny', name: 'Jenny (Female - English)', gender: 'Female', locale: 'en-US', region: 'US', style: 'Clear, friendly', suggestedRole: 'English trivia host', engine: 'vieneu' },
+    { id: 'en-US-Guy', name: 'Guy (Male - English)', gender: 'Male', locale: 'en-US', region: 'US', style: 'Confident, engaging', suggestedRole: 'English game show host', engine: 'vieneu' }
   ];
 }
 
@@ -199,6 +206,7 @@ export async function fetchVoiceStudioData(lang?: string): Promise<{
   voices: VoiceInfo[];
   cloned: ClonedVoice[];
   vieneuReady: boolean;
+  edgeReady?: boolean;
 }> {
   try {
     const url = lang ? `${API_BASE}/voices?lang=${lang}` : `${API_BASE}/voices`;
@@ -208,14 +216,15 @@ export async function fetchVoiceStudioData(lang?: string): Promise<{
       return {
         voices: data.voices || [],
         cloned: data.cloned || [],
-        vieneuReady: !!data.vieneuReady
+        vieneuReady: !!data.vieneuReady,
+        edgeReady: data.edgeReady !== false
       };
     }
   } catch (err) {
     console.warn('[API] Failed to fetch voice studio data:', err);
   }
   const fallbackVoices = await fetchVoices(lang);
-  return { voices: fallbackVoices, cloned: [], vieneuReady: false };
+  return { voices: fallbackVoices, cloned: [], vieneuReady: false, edgeReady: true };
 }
 
 export async function cloneVoice(formData: FormData): Promise<ClonedVoice> {
@@ -275,7 +284,7 @@ export async function backupVoicesToDrive(): Promise<{ success: boolean; count: 
   return data;
 }
 
-export async function previewTTS(params: { text: string; voice: string; rate?: string; pitch?: string; volume?: string; speed?: number }) {
+export async function previewTTS(params: { text: string; voice: string; rate?: string; pitch?: string; volume?: string; speed?: number; engine?: string }) {
   const res = await fetch(`${API_BASE}/tts/preview`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

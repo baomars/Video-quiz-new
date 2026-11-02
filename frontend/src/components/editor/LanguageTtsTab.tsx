@@ -38,7 +38,8 @@ import {
   CloudUpload,
   RefreshCw,
   FolderSync,
-  Search
+  Search,
+  Zap
 } from 'lucide-react';
 
 interface LanguageTtsTabProps {
@@ -79,8 +80,9 @@ export const LanguageTtsTab: React.FC<LanguageTtsTabProps> = ({
   const [subTab, setSubTab] = useState<'preset' | 'clone' | 'tuning' | 'scripts'>('preset');
 
   // Voice library filter & search
-  const [voiceFilter, setVoiceFilter] = useState<'all' | 'bac' | 'trung' | 'nam' | 'en' | 'cloned'>('all');
+  const [voiceFilter, setVoiceFilter] = useState<'all' | 'edge' | 'vieneu' | 'bac' | 'trung' | 'nam' | 'en' | 'cloned'>('all');
   const [voiceSearchQuery, setVoiceSearchQuery] = useState<string>('');
+  const [edgeReady, setEdgeReady] = useState<boolean>(true);
 
   // Google Drive Cloud Persistence state
   const [driveStatus, setDriveStatus] = useState<DriveVoiceStatus | null>(null);
@@ -92,7 +94,7 @@ export const LanguageTtsTab: React.FC<LanguageTtsTabProps> = ({
   const [isScriptsOpen, setIsScriptsOpen] = useState<boolean>(true);
 
   const langConfig = channel.languages[activeLanguage] || channel.languages.vi || {
-    voice: 'Trúc Ly',
+    voice: 'vi-VN-HoaiMyNeural',
     rate: '+0%',
     pitch: '+0Hz',
     volume: '+0%',
@@ -117,6 +119,7 @@ export const LanguageTtsTab: React.FC<LanguageTtsTabProps> = ({
         setVoices(data.voices);
         setClonedVoices(data.cloned);
         setVieneuReady(data.vieneuReady);
+        setEdgeReady(data.edgeReady !== false);
       })
       .catch((err) => console.error('[VoiceStudio] Error loading voice data:', err))
       .finally(() => setIsLoading(false));
@@ -176,6 +179,15 @@ export const LanguageTtsTab: React.FC<LanguageTtsTabProps> = ({
     setPlayingVoiceId(null);
   };
 
+  const isEdgeVoice = (voiceId?: string) => {
+    if (!voiceId) return false;
+    return (
+      voiceId.includes('Neural') ||
+      voiceId.startsWith('vi-VN-') ||
+      (voiceId.startsWith('en-') && voiceId.includes('Neural'))
+    );
+  };
+
   const handlePlayVoiceSample = async (voiceId: string, sampleText?: string) => {
     if (playingVoiceId === voiceId) {
       stopCurrentAudio();
@@ -186,10 +198,11 @@ export const LanguageTtsTab: React.FC<LanguageTtsTabProps> = ({
     setPlayingVoiceId(voiceId);
 
     try {
+      const isVoiceEdge = isEdgeVoice(voiceId);
       const text = sampleText || customTestSentence.trim() || (
         activeLanguage === 'vi'
-          ? `Xin chào bạn, đây là mẫu giọng đọc VieNeu AI cho kênh ${channel.branding.identity.channelName || channel.name}.`
-          : `Hello, this is a natural voice preview powered by VieNeu AI.`
+          ? `Xin chào bạn, đây là mẫu giọng đọc ${isVoiceEdge ? 'Microsoft Edge-TTS' : 'VieNeu AI'} cho kênh ${channel.branding.identity.channelName || channel.name}.`
+          : `Hello, this is a clear voice preview powered by ${isVoiceEdge ? 'Microsoft Edge-TTS' : 'VieNeu AI'}.`
       );
 
       const res = await previewTTS({
@@ -197,7 +210,8 @@ export const LanguageTtsTab: React.FC<LanguageTtsTabProps> = ({
         voice: voiceId,
         rate: langConfig.rate,
         pitch: langConfig.pitch,
-        volume: langConfig.volume
+        volume: langConfig.volume,
+        engine: isVoiceEdge ? 'edge' : undefined
       });
 
       if (res && res.url) {
@@ -287,8 +301,13 @@ export const LanguageTtsTab: React.FC<LanguageTtsTabProps> = ({
   });
 
   const displayedVoices = filterVoicesByLang.filter(v => {
+    const isEdge = v.engine === 'edge' || isEdgeVoice(v.id);
     // 1. Tag filter
-    if (voiceFilter === 'cloned') {
+    if (voiceFilter === 'edge') {
+      if (!isEdge) return false;
+    } else if (voiceFilter === 'vieneu') {
+      if (isEdge || v.isCloned) return false;
+    } else if (voiceFilter === 'cloned') {
       if (!v.isCloned) return false;
     } else if (voiceFilter === 'bac') {
       if (v.isCloned || v.region !== 'Bắc') return false;
@@ -297,7 +316,7 @@ export const LanguageTtsTab: React.FC<LanguageTtsTabProps> = ({
     } else if (voiceFilter === 'nam') {
       if (v.isCloned || v.region !== 'Nam') return false;
     } else if (voiceFilter === 'en') {
-      if (v.isCloned || (!v.locale?.startsWith('en') && v.region !== 'US')) return false;
+      if (v.isCloned || (!v.locale?.startsWith('en') && v.region !== 'US' && v.region !== 'UK')) return false;
     }
 
     // 2. Search query
@@ -324,22 +343,26 @@ export const LanguageTtsTab: React.FC<LanguageTtsTabProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-sm font-extrabold text-white uppercase tracking-wider">
-                  Phòng Thu Giọng Đọc VieNeu AI
+                  Phòng Thu Giọng Đọc Đa Nền Tảng (VieNeu AI & Microsoft Edge-TTS)
                 </h3>
                 <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
-                  v3 Turbo
+                  Dual-Engine Studio
                 </span>
               </div>
               <p className="text-xs text-slate-400 mt-0.5">
-                Tổng hợp giọng nói thần kinh tiếng Việt siêu tự nhiên & nhân bản Zero-Shot
+                Tổng hợp giọng nói thần kinh tiếng Việt siêu tự nhiên (VieNeu v3, Clone) & giọng phát thanh viên Microsoft Edge-TTS
               </p>
             </div>
           </div>
 
           <div className="hidden sm:flex items-center gap-2">
+            <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[11px] font-semibold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+              <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+              ⚡ Edge-TTS: Sẵn sàng
+            </span>
             <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              {vieneuReady ? 'VieNeu Native (Colab)' : 'Colab GPU Pipeline Ready'}
+              <span className={`w-2 h-2 rounded-full ${vieneuReady ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
+              {vieneuReady ? 'VieNeu Native (Colab)' : 'VieNeu Engine Ready'}
             </span>
           </div>
         </div>
@@ -416,11 +439,13 @@ export const LanguageTtsTab: React.FC<LanguageTtsTabProps> = ({
             <div className="flex items-center gap-1 overflow-x-auto scrollbar-none py-0.5">
               {[
                 { id: 'all', label: 'Tất cả' },
+                { id: 'edge', label: '⚡ Edge-TTS' },
+                { id: 'vieneu', label: '🧠 VieNeu AI' },
+                { id: 'cloned', label: `Giọng Clone (${clonedVoices.length})` },
                 { id: 'bac', label: 'Miền Bắc' },
                 { id: 'nam', label: 'Miền Nam' },
                 { id: 'trung', label: 'Miền Trung' },
-                { id: 'en', label: 'Tiếng Anh' },
-                { id: 'cloned', label: `Giọng Clone (${clonedVoices.length})` }
+                { id: 'en', label: 'Tiếng Anh' }
               ].map((f) => {
                 const isActive = voiceFilter === f.id;
                 return (
@@ -429,7 +454,9 @@ export const LanguageTtsTab: React.FC<LanguageTtsTabProps> = ({
                     onClick={() => setVoiceFilter(f.id as any)}
                     className={`px-2.5 py-1 rounded-lg text-xs font-bold transition whitespace-nowrap ${
                       isActive
-                        ? 'bg-amber-500 text-slate-950 shadow-sm'
+                        ? f.id === 'edge'
+                          ? 'bg-cyan-500 text-slate-950 shadow-sm font-black'
+                          : 'bg-amber-500 text-slate-950 shadow-sm'
                         : 'bg-slate-800/80 hover:bg-slate-800 text-slate-300 hover:text-white'
                     }`}
                   >
@@ -455,7 +482,7 @@ export const LanguageTtsTab: React.FC<LanguageTtsTabProps> = ({
           {isLoading ? (
             <div className="p-8 text-center text-slate-400 flex flex-col items-center justify-center gap-2 bg-slate-900/60 rounded-2xl border border-slate-800">
               <Loader2 size={24} className="animate-spin text-amber-500" />
-              <span className="text-xs">Đang tải danh sách giọng đọc VieNeu AI...</span>
+              <span className="text-xs">Đang tải danh sách giọng đọc VieNeu AI & Edge-TTS...</span>
             </div>
           ) : displayedVoices.length === 0 ? (
             <div className="p-8 text-center text-slate-400 flex flex-col items-center justify-center gap-2 bg-slate-900/60 rounded-2xl border border-slate-800">
@@ -473,6 +500,7 @@ export const LanguageTtsTab: React.FC<LanguageTtsTabProps> = ({
               {displayedVoices.map((v) => {
                 const isSelected = langConfig.voice === v.id;
                 const isPlaying = playingVoiceId === v.id;
+                const isEdge = v.engine === 'edge' || isEdgeVoice(v.id);
 
                 return (
                   <div
@@ -480,7 +508,9 @@ export const LanguageTtsTab: React.FC<LanguageTtsTabProps> = ({
                     onClick={() => updateConfig('voice', v.id)}
                     className={`relative p-3.5 rounded-2xl border transition cursor-pointer flex flex-col justify-between gap-2.5 ${
                       isSelected
-                        ? 'bg-gradient-to-br from-amber-500/15 via-slate-900 to-slate-900 border-amber-500/60 shadow-lg shadow-amber-500/10 ring-1 ring-amber-500/40'
+                        ? isEdge
+                          ? 'bg-gradient-to-br from-cyan-500/15 via-slate-900 to-slate-900 border-cyan-500/60 shadow-lg shadow-cyan-500/10 ring-1 ring-cyan-500/40'
+                          : 'bg-gradient-to-br from-amber-500/15 via-slate-900 to-slate-900 border-amber-500/60 shadow-lg shadow-amber-500/10 ring-1 ring-amber-500/40'
                         : 'bg-slate-900/80 hover:bg-slate-850 border-slate-800/80 hover:border-slate-700'
                     }`}
                   >
@@ -488,9 +518,18 @@ export const LanguageTtsTab: React.FC<LanguageTtsTabProps> = ({
                       <div className="space-y-1">
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="font-extrabold text-sm text-white">{v.name}</span>
-                          {v.isCloned && (
+                          {isEdge ? (
+                            <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 flex items-center gap-1">
+                              <Zap size={10} className="fill-cyan-300 text-cyan-300" />
+                              EDGE-TTS
+                            </span>
+                          ) : v.isCloned ? (
                             <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">
                               CLONED
+                            </span>
+                          ) : (
+                            <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                              VIENEU AI
                             </span>
                           )}
                           {v.region && (

@@ -69,49 +69,59 @@ export class TimelineEngine {
       const langConfig = channel.languages[quiz.language] || channel.languages.vi;
       const answerTtsEnabled = (template.components.answerButtons as any)?.readTts !== false &&
         (langConfig?.readAnswer !== false);
-      const explanationTtsEnabled = template.components.explanation?.readTts !== false;
-      const showExplanation = template.components.explanation?.enabled !== false;
+      const explanationEnabled = template.components.explanation?.enabled !== false;
+      const hasExpText = Boolean(q.explanation && q.explanation.trim().length > 0);
+      const showExplanation = explanationEnabled && hasExpText;
+      const explanationTtsEnabled = explanationEnabled && (template.components.explanation?.readTts !== false);
       const configuredDisplayDuration = template.components.explanation?.displayDurationSec ??
         template.timing?.explanationDisplayDuration ?? 3.0;
 
       // 4a. Answer TTS (đáp án đúng)
       const hasAnswerAudio = answerTtsEnabled && Boolean(ttsData.revealUrl);
       const answerDelayFrames = 6; // 0.2s pause for visual reveal & SFX pop first
-      const answerDurationSec = hasAnswerAudio ? (ttsData.revealDuration || 1.8) : 0;
+      const answerDurationSec = hasAnswerAudio ? (ttsData.revealDuration || q.durations?.reveal || 1.8) : 0;
       const answerFrames = Math.ceil(answerDurationSec * this.fps);
       const answerTtsStart = revealStart + answerDelayFrames;
       const answerTtsEnd = answerTtsStart + answerFrames;
 
       // 4b. Explanation TTS (đọc giải thích)
-      const hasExplanationAudio = explanationTtsEnabled && Boolean(ttsData.explanationUrl);
-      const expDelayFrames = hasAnswerAudio ? 6 : 10; // 0.2s pause after answer TTS, or 0.33s after reveal if no answer TTS
-      const expDurationSec = hasExplanationAudio
-        ? (ttsData.explanationDuration || q.durations?.explanationTts || 2.0)
-        : 0;
-      const expFrames = Math.ceil(expDurationSec * this.fps);
-      const explanationTtsStart = (hasAnswerAudio ? answerTtsEnd : revealStart) + expDelayFrames;
-      const explanationTtsEnd = explanationTtsStart + expFrames;
+      const hasExplanationAudio = explanationTtsEnabled && hasExpText && Boolean(ttsData.explanationUrl);
 
       let revealFrames: number;
-      const minRevealFrames = Math.ceil(revealSec * this.fps);
+      let explanationTtsStart: number;
+      let explanationTtsEnd: number;
+      let expFrames = 0;
 
       if (hasExplanationAudio) {
-        // Voiceover active: wait for Answer TTS -> Explanation TTS -> post cushion
-        const postExpCushion = Math.ceil(0.6 * this.fps); // 0.6s cushion
-        const neededRevealFrames = (explanationTtsEnd - revealStart) + postExpCushion;
-        revealFrames = Math.max(minRevealFrames, neededRevealFrames);
+        // Voiceover active for Explanation: wait for Answer TTS -> Explanation TTS -> crisp cushion
+        const expDelayFrames = hasAnswerAudio ? 6 : 10; // 0.2s pause after answer TTS, or 0.33s after reveal if no answer TTS
+        const expDurationSec = ttsData.explanationDuration || q.durations?.explanationTts || 2.0;
+        expFrames = Math.ceil(expDurationSec * this.fps);
+        explanationTtsStart = (hasAnswerAudio ? answerTtsEnd : revealStart) + expDelayFrames;
+        explanationTtsEnd = explanationTtsStart + expFrames;
+
+        const postExpCushion = Math.ceil(0.35 * this.fps); // 0.35s cushion
+        revealFrames = (explanationTtsEnd - revealStart) + postExpCushion;
       } else if (hasAnswerAudio) {
-        // Answer TTS is ON, but Explanation TTS is OFF:
-        // Wait for Answer TTS to finish, then hold for configured displayDuration
-        const holdAfterAnswerFrames = Math.ceil(configuredDisplayDuration * this.fps);
-        const neededRevealFrames = (answerTtsEnd - revealStart) + holdAfterAnswerFrames;
-        revealFrames = Math.max(minRevealFrames, neededRevealFrames);
+        // Answer TTS is ON, but Explanation TTS is OFF (or explanation card is disabled/empty).
+        // User requirement: When answer TTS finishes reading, transition immediately to next question!
+        // No 3-5 second dead pause. Add only 0.25s audio decay cushion (~7-8 frames) so voice ends cleanly before transition SFX.
+        explanationTtsStart = answerTtsEnd;
+        explanationTtsEnd = answerTtsEnd;
+
+        const postAnswerCushion = Math.ceil(0.25 * this.fps);
+        revealFrames = (answerTtsEnd - revealStart) + postAnswerCushion;
       } else if (showExplanation) {
-        // Both TTS are OFF, hold for configured displayDuration
+        // Both TTS are OFF, but explanation card is displayed visually with text:
+        // Hold for configuredDisplayDuration so silent viewer has time to read
+        explanationTtsStart = revealStart;
+        explanationTtsEnd = revealStart;
         revealFrames = Math.ceil(Math.max(revealSec, configuredDisplayDuration) * this.fps);
       } else {
-        // Standard reveal duration
-        revealFrames = minRevealFrames;
+        // No explanation card, no answer TTS: quick 1.2s reveal then switch immediately
+        explanationTtsStart = revealStart;
+        explanationTtsEnd = revealStart;
+        revealFrames = Math.ceil(1.2 * this.fps);
       }
 
       currentFrame += revealFrames;

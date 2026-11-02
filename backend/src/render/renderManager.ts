@@ -537,7 +537,8 @@ export class RenderManager {
     const langConfig = channel.languages?.[language] || channel.languages?.vi || (channel.languages ? Object.values(channel.languages)[0] : undefined) || { voice: 'Hải Đăng' };
     const answerTtsEnabled = (template.components.answerButtons as any)?.readTts !== false &&
       (langConfig?.readAnswer !== false);
-    const explanationTtsEnabled = template.components.explanation?.readTts !== false;
+    const explanationEnabled = template.components.explanation?.enabled !== false;
+    const explanationTtsEnabled = explanationEnabled && (template.components.explanation?.readTts !== false);
     const revealPrefix = langConfig.revealScript || (language === 'vi' ? 'Đáp án chính xác là' : 'The correct answer is');
 
     const textQueue: Array<{ text: string; role: string; qIndex: number }> = [];
@@ -904,7 +905,8 @@ export class RenderManager {
     let ttsTotalGeneratedCount = 0;
     const answerTtsEnabled = (template.components.answerButtons as any)?.readTts !== false &&
       (langConfig?.readAnswer !== false);
-    const explanationTtsEnabled = template.components.explanation?.readTts !== false;
+    const explanationEnabled = template.components.explanation?.enabled !== false;
+    const explanationTtsEnabled = explanationEnabled && (template.components.explanation?.readTts !== false);
 
     // Helper tự động tạo TTS an toàn: có bộ đệm cache, tự động thử lại và fallback giọng mặc định
     const generateSafeTTS = async (text: string, role: string, qIndex: number): Promise<any> => {

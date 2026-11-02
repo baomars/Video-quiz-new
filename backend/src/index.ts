@@ -463,7 +463,8 @@ app.post('/api/timeline/compute', (req, res) => {
 
       const answerTtsEnabled = (template?.components?.answerButtons as any)?.readTts !== false &&
         (langConfig?.readAnswer !== false);
-      const explanationTtsEnabled = template?.components?.explanation?.readTts !== false;
+      const explanationEnabled = template?.components?.explanation?.enabled !== false;
+      const explanationTtsEnabled = explanationEnabled && (template?.components?.explanation?.readTts !== false);
 
       for (const q of quiz.questions) {
         if (!ttsMap[q.id]) {

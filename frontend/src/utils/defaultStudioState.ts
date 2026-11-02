@@ -149,35 +149,85 @@ export function computeLocalTimeline(
 
   const questions = quiz?.questions && quiz.questions.length > 0 ? quiz.questions : DEFAULT_FALLBACK_QUIZ.questions;
 
+  const langConfig = channel?.languages?.[quiz?.language || 'vi'] || channel?.languages?.vi;
+  const answerTtsEnabled = (template?.components?.answerButtons as any)?.readTts !== false &&
+    (langConfig?.readAnswer !== false);
+  const explanationEnabled = template?.components?.explanation?.enabled !== false;
+  const explanationTtsEnabled = explanationEnabled && (template?.components?.explanation?.readTts !== false);
+  const configuredDisplayDuration = template?.components?.explanation?.displayDurationSec ??
+    template?.timing?.explanationDisplayDuration ?? 3.0;
+
   for (let i = 0; i < questions.length; i++) {
     const q = questions[i];
     const qStartFrame = currentFrame;
 
-    // Estimated speech duration: ~3.0s for question
+    // 1. Question Speech Phase (~3.0s if not specified)
     const qDurationSec = q.durations?.questionTts || 3.0;
     const qFrames = Math.ceil(qDurationSec * fps);
     const questionTtsStart = currentFrame;
     const questionTtsEnd = questionTtsStart + qFrames;
     currentFrame += qFrames;
 
-    // Countdown phase
+    // 2. Countdown phase
     const countdownStart = currentFrame;
     const countdownEnd = countdownStart + Math.ceil(countdownSec * fps);
     currentFrame = countdownEnd;
 
-    // Reveal phase: ~2.5s
-    const revealDurationSec = q.durations?.explanationTts || revealSec;
+    // 3. Reveal & Explanation Phase
     const revealStart = currentFrame;
-    const revealEnd = revealStart + Math.ceil(revealDurationSec * fps);
-    currentFrame = revealEnd;
+    const hasExpText = Boolean(q.explanation && q.explanation.trim().length > 0);
+    const showExplanation = explanationEnabled && hasExpText;
+    const hasExplanationAudio = explanationTtsEnabled && hasExpText;
 
-    // Transition phase
+    const hasAnswerAudio = answerTtsEnabled;
+    const answerDelayFrames = 6;
+    const answerDurationSec = hasAnswerAudio ? (q.durations?.reveal || 1.8) : 0;
+    const answerFrames = Math.ceil(answerDurationSec * fps);
+    const answerTtsStart = revealStart + answerDelayFrames;
+    const answerTtsEnd = answerTtsStart + answerFrames;
+
+    let revealFrames: number;
+    let explanationTtsStart: number;
+    let explanationTtsEnd: number;
+
+    if (hasExplanationAudio) {
+      const expDelayFrames = hasAnswerAudio ? 6 : 10;
+      const expDurationSec = q.durations?.explanationTts || 2.0;
+      const expFrames = Math.ceil(expDurationSec * fps);
+      explanationTtsStart = (hasAnswerAudio ? answerTtsEnd : revealStart) + expDelayFrames;
+      explanationTtsEnd = explanationTtsStart + expFrames;
+      const postExpCushion = Math.ceil(0.35 * fps);
+      revealFrames = (explanationTtsEnd - revealStart) + postExpCushion;
+    } else if (hasAnswerAudio) {
+      // Explanation TTS is OFF or explanation card disabled:
+      // Transition immediately to next question right after answer TTS ends (+ 0.25s audio cushion)
+      explanationTtsStart = answerTtsEnd;
+      explanationTtsEnd = answerTtsEnd;
+      const postAnswerCushion = Math.ceil(0.25 * fps);
+      revealFrames = (answerTtsEnd - revealStart) + postAnswerCushion;
+    } else if (showExplanation) {
+      explanationTtsStart = revealStart;
+      explanationTtsEnd = revealStart;
+      revealFrames = Math.ceil(Math.max(revealSec, configuredDisplayDuration) * fps);
+    } else {
+      explanationTtsStart = revealStart;
+      explanationTtsEnd = revealStart;
+      revealFrames = Math.ceil(1.2 * fps);
+    }
+
+    currentFrame += revealFrames;
+
+    // 4. Transition phase or Last Question Hold
+    const isLastQuestion = i === questions.length - 1;
     let transitionStart: number | undefined;
     let transitionEnd: number | undefined;
-    if (i < questions.length - 1) {
+
+    if (!isLastQuestion) {
       transitionStart = currentFrame;
       transitionEnd = transitionStart + transitionFrames;
       currentFrame = transitionEnd;
+    } else {
+      currentFrame += endBufferFrames;
     }
 
     const cueDurationFrames = currentFrame - qStartFrame;
@@ -194,13 +244,15 @@ export function computeLocalTimeline(
         countdownStart,
         countdownEnd,
         revealStart,
-        explanationTtsStart: revealStart,
-        explanationTtsEnd: revealEnd
+        answerTtsStart: hasAnswerAudio ? answerTtsStart : undefined,
+        answerTtsEnd: hasAnswerAudio ? answerTtsEnd : undefined,
+        explanationTtsStart,
+        explanationTtsEnd
       },
       audioCues: []
     });
   }
 
-  const totalDurationFrames = currentFrame + endBufferFrames;
+  const totalDurationFrames = currentFrame;
   return { totalDurationFrames, cues };
 }

@@ -109,6 +109,11 @@ export interface RenderJob {
   totalFrames?: number;
   elapsedSec?: number;
   etaSec?: number;
+  ttsDurationSec?: number;
+  renderDurationSec?: number;
+  totalDurationSec?: number;
+  isPipelinedTTS?: boolean;
+  pipeliningNextVideo?: boolean;
   createdAt: string;
   updatedAt: string;
   completedAt?: string;
@@ -129,6 +134,11 @@ export interface BatchRenderJob {
   totalFrames?: number;
   elapsedSec?: number;
   etaSec?: number;
+  ttsDurationSec?: number;
+  renderDurationSec?: number;
+  totalDurationSec?: number;
+  isPipelinedTTS?: boolean;
+  pipeliningNextVideo?: boolean;
   config: BatchConfig;
   completedVideos: Array<{
     index: number;
@@ -140,6 +150,10 @@ export interface BatchRenderJob {
     questionCount: number;
     status: 'completed' | 'failed';
     error?: string;
+    ttsDurationSec?: number;
+    renderDurationSec?: number;
+    totalDurationSec?: number;
+    isPipelinedTTS?: boolean;
   }>;
   error?: string;
   createdAt: string;
@@ -155,6 +169,7 @@ export interface RenderRequestParams {
   customFileName?: string;
   renderPreset?: RenderPresetType;
   customConcurrency?: number;
+  onFrameRenderStart?: () => void;
 }
 
 export interface BatchRenderRequestParams {
@@ -506,6 +521,100 @@ export class RenderManager {
     this.executeJobWithTimeout(next.jobId, next.params);
   }
 
+  /**
+   * Pregenerate TTS audio for all questions in a quiz (Question, Answer reveal, Explanation)
+   * Saving directly into TTS cache so that when the video pipeline reaches stage_2_tts, all items hit the cache instantly.
+   */
+  public async pregenerateQuizTTS(params: {
+    quiz: Quiz;
+    channel: Channel;
+    template: VideoTemplate;
+    language?: LanguageCode;
+    onProgress?: (completed: number, total: number) => void;
+  }): Promise<{ total: number; cached: number; generated: number }> {
+    const { quiz, channel, template } = params;
+    const language = params.language || quiz.language || 'vi';
+    const langConfig = channel.languages?.[language] || channel.languages?.vi || (channel.languages ? Object.values(channel.languages)[0] : undefined) || { voice: 'Hải Đăng' };
+    const answerTtsEnabled = (template.components.answerButtons as any)?.readTts !== false &&
+      (langConfig?.readAnswer !== false);
+    const explanationTtsEnabled = template.components.explanation?.readTts !== false;
+    const revealPrefix = langConfig.revealScript || (language === 'vi' ? 'Đáp án chính xác là' : 'The correct answer is');
+
+    const textQueue: Array<{ text: string; role: string; qIndex: number }> = [];
+
+    for (let i = 0; i < (quiz.questions || []).length; i++) {
+      const q = quiz.questions[i];
+      if (q.question && q.question.trim()) {
+        textQueue.push({ text: q.question.trim(), role: 'Câu hỏi', qIndex: i });
+      }
+      if (answerTtsEnabled && q.correctAnswer) {
+        const answerOption = (q.options && q.options[q.correctAnswer])
+          ? `${q.correctAnswer}. ${q.options[q.correctAnswer]}`
+          : q.correctAnswer;
+        const answerText = `${revealPrefix} ${answerOption}`.trim();
+        textQueue.push({ text: answerText, role: 'Đáp án', qIndex: i });
+      }
+      if (explanationTtsEnabled && q.explanation && q.explanation.trim()) {
+        textQueue.push({ text: q.explanation.trim(), role: 'Giải thích', qIndex: i });
+      }
+    }
+
+    let cachedCount = 0;
+    let generatedCount = 0;
+
+    for (let idx = 0; idx < textQueue.length; idx++) {
+      const item = textQueue[idx];
+      let success = false;
+      let attempts = 0;
+
+      while (!success && attempts < 2) {
+        attempts++;
+        try {
+          const res = await this.ttsProvider.generate({
+            text: item.text,
+            voice: langConfig.voice || 'Hải Đăng',
+            rate: langConfig.rate,
+            pitch: langConfig.pitch,
+            volume: langConfig.volume,
+            channelId: channel.id,
+            lang: language
+          });
+          if (res && res.url) {
+            success = true;
+            if (res.fromCache) {
+              cachedCount++;
+            } else {
+              generatedCount++;
+            }
+          }
+        } catch (e: any) {
+          if (attempts >= 2 && langConfig.voice && langConfig.voice !== 'Hải Đăng') {
+            try {
+              const fbRes = await this.ttsProvider.generate({
+                text: item.text,
+                voice: 'Hải Đăng',
+                rate: langConfig.rate,
+                lang: language
+              });
+              if (fbRes && fbRes.url) {
+                success = true;
+                if (fbRes.fromCache) cachedCount++; else generatedCount++;
+              }
+            } catch (fbErr) {
+              // ignore fallback error in pregenerator
+            }
+          }
+        }
+      }
+
+      if (params.onProgress) {
+        params.onProgress(idx + 1, textQueue.length);
+      }
+    }
+
+    return { total: textQueue.length, cached: cachedCount, generated: generatedCount };
+  }
+
   public async startBatchRender(params: BatchRenderRequestParams): Promise<string> {
     const { channel, template, quiz, language, config } = params;
     const batchId = `batch_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
@@ -536,9 +645,11 @@ export class RenderManager {
       ? allocateBatchBackgrounds(config.backgrounds, totalVideos)
       : [];
 
-    // Run batch sequentially in background
+    // Run batch sequentially in background with pipelined TTS
     (async () => {
       try {
+        let nextVideoPregenPromise: Promise<any> | null = null;
+
         for (let i = 0; i < totalVideos; i++) {
           batchJob.currentVideoIndex = i + 1;
           const questions = videoSets[i];
@@ -565,6 +676,16 @@ export class RenderManager {
             };
           }
 
+          // If next video TTS was pregenerating, wait for it before starting this video
+          if (nextVideoPregenPromise) {
+            try {
+              await nextVideoPregenPromise;
+            } catch (err: any) {
+              console.warn(`[BATCH_PIPELINE] Lỗi pregeneration video trước:`, err.message);
+            }
+            nextVideoPregenPromise = null;
+          }
+
           batchJob.stage = `Đang render Video ${i + 1}/${totalVideos}...`;
           batchJob.updatedAt = new Date().toISOString();
 
@@ -580,7 +701,60 @@ export class RenderManager {
             language,
             customFileName: designatedFileName,
             renderPreset: params.renderPreset,
-            customConcurrency: params.customConcurrency
+            customConcurrency: params.customConcurrency,
+            onFrameRenderStart: () => {
+              // Trigger pipelined TTS pregeneration for video i+1
+              if (i + 1 < totalVideos) {
+                const nextIndex = i + 1;
+                const nextQuestions = videoSets[nextIndex];
+                const nextSubQuiz: Quiz = {
+                  ...quiz,
+                  id: `${quiz.id}_v${nextIndex + 1}`,
+                  title: quiz.title,
+                  questions: nextQuestions
+                };
+                let nextTemplate = template;
+                if (assignedBackgrounds[nextIndex]) {
+                  nextTemplate = {
+                    ...template,
+                    components: {
+                      ...template.components,
+                      background: {
+                        ...template.components.background,
+                        type: 'image',
+                        imageUrl: assignedBackgrounds[nextIndex]
+                      }
+                    }
+                  };
+                }
+
+                console.log(`[BATCH_PIPELINE] ⚡ Kích hoạt gối đầu TTS cho Video ${nextIndex + 1}/${totalVideos} trong lúc Video ${i + 1} render khung hình!`);
+                batchJob.pipeliningNextVideo = true;
+                const activeSub = this.getJob(subJobId);
+                if (activeSub) {
+                  activeSub.pipeliningNextVideo = true;
+                  this.addLog(activeSub, 'info', 'PIPELINE_TTS', `⚡ Gối đầu TTS: Bắt đầu tạo trước giọng đọc cho Video ${nextIndex + 1}/${totalVideos} trong lúc render`);
+                }
+
+                nextVideoPregenPromise = this.pregenerateQuizTTS({
+                  quiz: nextSubQuiz,
+                  channel,
+                  template: nextTemplate,
+                  language
+                }).then((res) => {
+                  console.log(`[BATCH_PIPELINE] ✅ Gối đầu TTS hoàn tất cho Video ${nextIndex + 1}/${totalVideos}! (${res.cached} có sẵn, ${res.generated} vừa tạo mới)`);
+                  batchJob.pipeliningNextVideo = false;
+                  if (activeSub) {
+                    activeSub.pipeliningNextVideo = false;
+                    this.addLog(activeSub, 'info', 'PIPELINE_TTS', `✅ Gối đầu TTS hoàn tất cho Video ${nextIndex + 1}/${totalVideos} (${res.total} đoạn âm thanh sẵn sàng)`);
+                  }
+                }).catch((err: any) => {
+                  console.warn(`[BATCH_PIPELINE] ⚠️ Gối đầu TTS video tiếp theo có lỗi:`, err.message);
+                  batchJob.pipeliningNextVideo = false;
+                  if (activeSub) activeSub.pipeliningNextVideo = false;
+                });
+              }
+            }
           });
 
           batchJob.currentJobId = subJobId;
@@ -599,6 +773,7 @@ export class RenderManager {
             batchJob.totalFrames = currentSub.totalFrames;
             batchJob.elapsedSec = currentSub.elapsedSec;
             batchJob.etaSec = currentSub.etaSec;
+            batchJob.pipeliningNextVideo = currentSub.pipeliningNextVideo ?? batchJob.pipeliningNextVideo;
             batchJob.stage = `[Video ${i + 1}/${totalVideos}] ${currentSub.stage}`;
 
             const baseProgress = (i / totalVideos) * 100;
@@ -617,7 +792,11 @@ export class RenderManager {
                 fileSizeBytes: currentSub.fileSizeBytes,
                 durationSec: currentSub.durationSec,
                 questionCount: questions.length,
-                status: 'completed'
+                status: 'completed',
+                ttsDurationSec: currentSub.ttsDurationSec,
+                renderDurationSec: currentSub.renderDurationSec,
+                totalDurationSec: currentSub.totalDurationSec,
+                isPipelinedTTS: currentSub.isPipelinedTTS
               });
             } else if (currentSub.status === 'failed') {
               subJobDone = true;
@@ -627,15 +806,22 @@ export class RenderManager {
                 fileName: currentSub.fileName,
                 questionCount: questions.length,
                 status: 'failed',
-                error: currentSub.error
+                error: currentSub.error,
+                ttsDurationSec: currentSub.ttsDurationSec,
+                renderDurationSec: currentSub.renderDurationSec,
+                totalDurationSec: currentSub.totalDurationSec,
+                isPipelinedTTS: currentSub.isPipelinedTTS
               });
             }
           }
         }
 
+        const batchTotalMs = Date.now() - new Date(batchJob.createdAt).getTime();
+        batchJob.totalDurationSec = Math.round((batchTotalMs / 100)) / 10;
+        batchJob.isPipelinedTTS = batchJob.completedVideos.some(v => v.isPipelinedTTS);
         batchJob.status = 'completed';
         batchJob.progress = 100;
-        batchJob.stage = `Đã render hoàn tất toàn bộ ${totalVideos} video!`;
+        batchJob.stage = `Đã render hoàn tất toàn bộ ${totalVideos} video! (Tổng: ${batchJob.totalDurationSec}s)`;
         batchJob.completedAt = new Date().toISOString();
         batchJob.updatedAt = new Date().toISOString();
       } catch (err: any) {
@@ -714,6 +900,8 @@ export class RenderManager {
 
     const ttsMap: Record<string, QuestionTTSData> = {};
     let ttsCompletedCount = 0;
+    let ttsFromCacheCount = 0;
+    let ttsTotalGeneratedCount = 0;
     const answerTtsEnabled = (template.components.answerButtons as any)?.readTts !== false &&
       (langConfig?.readAnswer !== false);
     const explanationTtsEnabled = template.components.explanation?.readTts !== false;
@@ -735,6 +923,10 @@ export class RenderManager {
             lang: language
           });
           if (res && res.url) {
+            ttsTotalGeneratedCount++;
+            if (res.fromCache) {
+              ttsFromCacheCount++;
+            }
             return res;
           }
         } catch (err: any) {
@@ -755,6 +947,10 @@ export class RenderManager {
             lang: language
           });
           if (fbRes && fbRes.url) {
+            ttsTotalGeneratedCount++;
+            if (fbRes.fromCache) {
+              ttsFromCacheCount++;
+            }
             return fbRes;
           }
         } catch (fbErr: any) {
@@ -834,6 +1030,18 @@ export class RenderManager {
 
     this.completeStage(job, 'stage_2_tts', `Đã tạo đầy đủ giọng đọc TTS cho toàn bộ ${quiz.questions.length} câu hỏi.`);
 
+    const stage2Obj = job.stages.find(s => s.id === 'stage_2_tts');
+    job.ttsDurationSec = stage2Obj?.durationMs ? Math.round((stage2Obj.durationMs / 100)) / 10 : 0;
+
+    if (ttsTotalGeneratedCount > 0 && ttsFromCacheCount >= ttsTotalGeneratedCount) {
+      job.isPipelinedTTS = true;
+      this.addLog(job, 'info', 'stage_2_tts', `⚡ [GỐI ĐẦU TTS] Toàn bộ ${ttsTotalGeneratedCount} đoạn âm thanh đã có sẵn từ tiến trình gối đầu (Cache hit 100%)! Thời gian tạo TTS: ${job.ttsDurationSec}s`);
+    } else if (ttsFromCacheCount > 0) {
+      this.addLog(job, 'info', 'stage_2_tts', `⚡ [GỐI ĐẦU TTS] ${ttsFromCacheCount}/${ttsTotalGeneratedCount} đoạn âm thanh đã có sẵn trong cache! Thời gian tạo TTS: ${job.ttsDurationSec}s`);
+    } else {
+      this.addLog(job, 'info', 'stage_2_tts', `Thời gian tạo TTS: ${job.ttsDurationSec}s`);
+    }
+
     // =========================================================================
     // STAGE 3: Tính toán Timeline & Đóng gói Composition (25% -> 35%)
     // =========================================================================
@@ -902,6 +1110,27 @@ export class RenderManager {
     // =========================================================================
     this.startStage(job, 'stage_4_render_frames', `Bắt đầu render ${totalDurationFrames} khung hình video (720×1280 bằng Native Skia Engine)...`);
 
+    // Pipelined TTS Trigger: Run background pregeneration for next video
+    if (params.onFrameRenderStart) {
+      try {
+        params.onFrameRenderStart();
+      } catch (err: any) {
+        console.warn('[PIPELINE] Lỗi khi kích hoạt callback onFrameRenderStart:', err?.message);
+      }
+    } else if (this.renderQueue.length > 0) {
+      const nextQueued = this.renderQueue[0];
+      job.pipeliningNextVideo = true;
+      this.addLog(job, 'info', 'PIPELINE_TTS', `⚡ Gối đầu TTS: Bắt đầu tạo trước âm thanh cho tác vụ trong hàng đợi (${nextQueued.jobId})`);
+      this.pregenerateQuizTTS(nextQueued.params)
+        .then((res) => {
+          job.pipeliningNextVideo = false;
+          this.addLog(job, 'info', 'PIPELINE_TTS', `✅ Gối đầu TTS hoàn tất cho tác vụ hàng đợi (${res.total} đoạn âm thanh sẵn sàng)`);
+        })
+        .catch(() => {
+          job.pipeliningNextVideo = false;
+        });
+    }
+
     const hasGpu = this.hasNvidiaGpu();
     const nvencEnabled = this.isNvencAvailable();
 
@@ -962,6 +1191,12 @@ export class RenderManager {
       this.startStage(job, 'stage_6_ffmpeg_mux', 'Đang ghép luồng Video & Audio (FFmpeg Stream Copy FastStart)...');
       await NativeAudioMixer.muxVideoAudio(tempVideoPath, tempAudioPath, outputPath);
       this.completeStage(job, 'stage_6_ffmpeg_mux', 'Ghép muxing video & audio hoàn tất.');
+
+      const stage4Obj = job.stages.find(s => s.id === 'stage_4_render_frames');
+      const stage5Obj = job.stages.find(s => s.id === 'stage_5_process_audio');
+      const stage6Obj = job.stages.find(s => s.id === 'stage_6_ffmpeg_mux');
+      const renderTotalMs = (stage4Obj?.durationMs || 0) + (stage5Obj?.durationMs || 0) + (stage6Obj?.durationMs || 0);
+      job.renderDurationSec = Math.round((renderTotalMs / 100)) / 10;
     } finally {
       // Dọn dẹp các file video và audio tạm
       try {
@@ -1029,6 +1264,18 @@ export class RenderManager {
     job.outputUrl = `/renders/${encodeURIComponent(outputFileName)}`;
     job.completedAt = completedNow;
     job.updatedAt = completedNow;
+
+    const totalJobMs = Date.now() - renderJobStartTime;
+    job.totalDurationSec = Math.round((totalJobMs / 100)) / 10;
+
+    this.addLog(
+      job,
+      'info',
+      'DONE',
+      `TOÀN BỘ TIẾN TRÌNH RENDER ĐÃ HOÀN TẤT THÀNH CÔNG (100%)! ` +
+      `[Thời gian: TTS=${job.ttsDurationSec || 0}s, Render=${job.renderDurationSec || 0}s, Tổng=${job.totalDurationSec || 0}s] ` +
+      `Video URL: /renders/${outputFileName}`
+    );
 
     this.addLog(job, 'info', 'DONE', `TOÀN BỘ TIẾN TRÌNH RENDER ĐÃ HOÀN TẤT THÀNH CÔNG (100%)! Video URL: /renders/${outputFileName}`);
   }

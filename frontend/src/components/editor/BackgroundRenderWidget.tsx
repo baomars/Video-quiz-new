@@ -57,10 +57,12 @@ export const BackgroundRenderWidget: React.FC<BackgroundRenderWidgetProps> = ({
 
   const progress = isBatch ? (batchState?.progress || 0) : (jobState?.progress || 0);
   const currentFps = (isBatch ? batchState?.currentFps : jobState?.currentFps) || 0;
+  const renderSpeed = (isBatch ? batchState?.renderSpeed : jobState?.renderSpeed) || 0;
   const currentFrame = (isBatch ? batchState?.currentFrame : jobState?.currentFrame) || 0;
   const totalFrames = (isBatch ? batchState?.totalFrames : jobState?.totalFrames) || 0;
   const elapsedSec = (isBatch ? batchState?.elapsedSec : jobState?.elapsedSec) || 0;
   const etaSec = isBatch ? batchState?.etaSec : jobState?.etaSec;
+  const isPipeliningNext = Boolean(isBatch ? batchState?.pipeliningNextVideo : jobState?.pipeliningNextVideo);
 
   const framesText = totalFrames ? `${currentFrame}/${totalFrames}` : `${currentFrame}`;
   const fpsText = currentFps.toFixed(1);
@@ -137,10 +139,14 @@ export const BackgroundRenderWidget: React.FC<BackgroundRenderWidgetProps> = ({
             </div>
 
             {/* Metrics Grid */}
-            <div className="grid grid-cols-3 gap-2 pt-1 text-[11px] font-mono text-slate-400">
+            <div className="grid grid-cols-4 gap-1.5 pt-1 text-[11px] font-mono text-slate-400">
               <div className="bg-slate-950/60 p-1.5 rounded-lg border border-slate-800/50 flex flex-col">
                 <span className="text-[9px] text-slate-400 uppercase font-semibold">FPS</span>
-                <span className="font-bold text-slate-200">{fpsText}</span>
+                <span className="font-bold text-emerald-400">{fpsText}</span>
+              </div>
+              <div className="bg-slate-950/60 p-1.5 rounded-lg border border-slate-800/50 flex flex-col">
+                <span className="text-[9px] text-slate-400 uppercase font-semibold">Tốc độ</span>
+                <span className="font-bold text-purple-300">{renderSpeed > 0 ? `${renderSpeed.toFixed(1)}x` : '--'}</span>
               </div>
               <div className="bg-slate-950/60 p-1.5 rounded-lg border border-slate-800/50 flex flex-col">
                 <span className="text-[9px] text-slate-400 uppercase font-semibold">Frames</span>
@@ -151,6 +157,14 @@ export const BackgroundRenderWidget: React.FC<BackgroundRenderWidgetProps> = ({
                 <span className="font-bold text-slate-200">{timeText}</span>
               </div>
             </div>
+
+            {/* Pipelining Next Video Banner */}
+            {isPipeliningNext && (
+              <div className="flex items-center gap-1.5 p-1.5 rounded-lg bg-purple-500/15 border border-purple-500/30 text-[10px] text-purple-300">
+                <Sparkles size={11} className="animate-spin text-purple-400 shrink-0" />
+                <span>⚡ Gối đầu TTS: Đang tự động tạo giọng đọc video tiếp theo...</span>
+              </div>
+            )}
 
             {etaText && isProcessing && (
               <div className="flex items-center justify-between text-[11px] text-slate-400 pt-0.5">
@@ -172,20 +186,39 @@ export const BackgroundRenderWidget: React.FC<BackgroundRenderWidgetProps> = ({
                 {batchState.completedVideos.map((vid) => (
                   <div
                     key={vid.index}
-                    className="flex items-center justify-between p-2 rounded-lg bg-slate-900/60 border border-slate-800/60 text-xs"
+                    className="flex flex-col gap-1 p-2 rounded-lg bg-slate-900/60 border border-slate-800/60 text-xs"
                   >
-                    <div className="flex items-center gap-1.5 truncate pr-2">
-                      <CheckCircle2 size={12} className="text-emerald-400 shrink-0" />
-                      <span className="text-slate-300 truncate">Video #{vid.index + 1}</span>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5 truncate pr-2">
+                        <CheckCircle2 size={12} className="text-emerald-400 shrink-0" />
+                        <span className="text-slate-200 font-bold truncate">Video #{vid.index}</span>
+                      </div>
+                      {vid.outputUrl && (
+                        <a
+                          href={vid.outputUrl}
+                          download
+                          className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 font-semibold text-[10px] flex items-center gap-1 transition shrink-0"
+                        >
+                          <Download size={10} /> Tải MP4
+                        </a>
+                      )}
                     </div>
-                    {vid.outputUrl && (
-                      <a
-                        href={vid.outputUrl}
-                        download
-                        className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 font-semibold text-[10px] flex items-center gap-1 transition shrink-0"
-                      >
-                        <Download size={10} /> Tải MP4
-                      </a>
+                    {(vid.ttsDurationSec !== undefined || vid.renderDurationSec !== undefined || vid.totalDurationSec !== undefined) && (
+                      <div className="flex items-center gap-1.5 text-[9px] font-mono text-slate-400">
+                        {vid.ttsDurationSec !== undefined && (
+                          <span className="text-sky-300">
+                            TTS: {vid.ttsDurationSec}s {vid.isPipelinedTTS && '⚡'}
+                          </span>
+                        )}
+                        <span>•</span>
+                        {vid.renderDurationSec !== undefined && (
+                          <span className="text-amber-300">Render: {vid.renderDurationSec}s</span>
+                        )}
+                        <span>•</span>
+                        {vid.totalDurationSec !== undefined && (
+                          <span className="text-emerald-300">Tổng: {vid.totalDurationSec}s</span>
+                        )}
+                      </div>
                     )}
                   </div>
                 ))}
@@ -193,16 +226,38 @@ export const BackgroundRenderWidget: React.FC<BackgroundRenderWidgetProps> = ({
             </div>
           )}
 
-          {/* Single Video Quick Download when Completed */}
-          {!isBatch && isCompleted && jobState?.outputUrl && (
-            <a
-              href={jobState.outputUrl}
-              download
-              className="w-full py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition shadow-lg shadow-emerald-950/40"
-            >
-              <Download size={14} />
-              <span>Tải Video MP4 Về Máy</span>
-            </a>
+          {/* Single Video Quick Download & Time Summary when Completed */}
+          {!isBatch && isCompleted && (
+            <div className="space-y-2">
+              {(jobState?.ttsDurationSec !== undefined || jobState?.renderDurationSec !== undefined || jobState?.totalDurationSec !== undefined) && (
+                <div className="grid grid-cols-3 gap-1.5 p-2 rounded-xl bg-slate-950/80 border border-slate-800 text-[10px] font-mono">
+                  <div className="flex flex-col">
+                    <span className="text-slate-500 text-[9px]">TTS:</span>
+                    <span className="text-sky-300 font-bold">
+                      {jobState?.ttsDurationSec ? `${jobState.ttsDurationSec}s` : '--'} {jobState?.isPipelinedTTS && '⚡'}
+                    </span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-slate-500 text-[9px]">Render:</span>
+                    <span className="text-amber-300 font-bold">{jobState?.renderDurationSec ? `${jobState.renderDurationSec}s` : '--'}</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-slate-500 text-[9px]">Tổng:</span>
+                    <span className="text-emerald-300 font-bold">{jobState?.totalDurationSec ? `${jobState.totalDurationSec}s` : '--'}</span>
+                  </div>
+                </div>
+              )}
+              {jobState?.outputUrl && (
+                <a
+                  href={jobState.outputUrl}
+                  download
+                  className="w-full py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition shadow-lg shadow-emerald-950/40"
+                >
+                  <Download size={14} />
+                  <span>Tải Video MP4 Về Máy</span>
+                </a>
+              )}
+            </div>
           )}
 
           {/* Footer Actions */}
@@ -263,12 +318,21 @@ export const BackgroundRenderWidget: React.FC<BackgroundRenderWidgetProps> = ({
           </span>
           <span className="text-slate-600">|</span>
           <span className="text-slate-300">
-            <strong className="text-slate-400 font-medium">FPS:</strong> {fpsText}
+            <strong className="text-slate-400 font-medium">Tốc độ:</strong> {fpsText} FPS {renderSpeed > 0 && `(${renderSpeed.toFixed(1)}x)`}
           </span>
           <span className="text-slate-600">|</span>
           <span className="text-slate-300">
             <strong className="text-slate-400 font-medium">Time:</strong> {timeText}
           </span>
+          {isPipeliningNext && (
+            <>
+              <span className="text-slate-600">|</span>
+              <span className="text-purple-300 font-bold flex items-center gap-1 text-[11px]" title="Đang tạo trước âm thanh cho video tiếp theo">
+                <Sparkles size={11} className="animate-spin text-purple-400" />
+                <span>Gối đầu TTS</span>
+              </span>
+            </>
+          )}
           <span className="text-slate-600">|</span>
           <span
             className={`font-black ${

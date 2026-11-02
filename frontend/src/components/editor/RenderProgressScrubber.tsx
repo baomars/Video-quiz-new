@@ -50,9 +50,9 @@ export interface ChapterConfig {
 
 export const PIPELINE_CHAPTERS: ChapterConfig[] = [
   { id: 'stage_1_prepare', name: '1. Chuẩn bị tài nguyên', shortName: '1. Chuẩn bị', startPct: 0, endPct: 10, icon: Layers },
-  { id: 'stage_2_tts', name: '2. Giọng đọc Edge-TTS', shortName: '2. Edge-TTS', startPct: 10, endPct: 25, icon: Mic },
+  { id: 'stage_2_tts', name: '2. Giọng đọc TTS (VieNeu / Edge)', shortName: '2. TTS', startPct: 10, endPct: 25, icon: Mic },
   { id: 'stage_3_timeline', name: '3. Tính toán Timeline', shortName: '3. Timeline', startPct: 25, endPct: 35, icon: Clock },
-  { id: 'stage_4_render_frames', name: '4. Render khung hình (Chromium)', shortName: '4. Frames', startPct: 35, endPct: 75, icon: Film },
+  { id: 'stage_4_render_frames', name: '4. Render khung hình (Native Skia)', shortName: '4. Frames', startPct: 35, endPct: 75, icon: Film },
   { id: 'stage_5_process_audio', name: '5. Hòa âm Audio (BGM & SFX)', shortName: '5. Hòa âm', startPct: 75, endPct: 88, icon: Music },
   { id: 'stage_6_ffmpeg_mux', name: '6. Ghép Video & Audio (FFmpeg)', shortName: '6. Muxing', startPct: 88, endPct: 98, icon: Sparkles },
   { id: 'stage_7_export', name: '7. Xuất bản & Hoàn tất MP4', shortName: '7. Xuất MP4', startPct: 98, endPct: 100, icon: FileCheck2 },

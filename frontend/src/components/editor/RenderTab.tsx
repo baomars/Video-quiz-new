@@ -58,7 +58,8 @@ import {
   ChevronUp,
   AudioWaveform,
   Headphones,
-  Sliders
+  Sliders,
+  Mic
 } from 'lucide-react';
 
 interface RenderTabProps {
@@ -120,6 +121,11 @@ export interface RenderJob {
   totalFrames?: number;
   elapsedSec?: number;
   etaSec?: number;
+  ttsDurationSec?: number;
+  renderDurationSec?: number;
+  totalDurationSec?: number;
+  isPipelinedTTS?: boolean;
+  pipeliningNextVideo?: boolean;
   createdAt: string;
   updatedAt: string;
   completedAt?: string;
@@ -140,6 +146,11 @@ export interface BatchRenderJob {
   totalFrames?: number;
   elapsedSec?: number;
   etaSec?: number;
+  ttsDurationSec?: number;
+  renderDurationSec?: number;
+  totalDurationSec?: number;
+  isPipelinedTTS?: boolean;
+  pipeliningNextVideo?: boolean;
   config: BatchConfig;
   completedVideos: Array<{
     index: number;
@@ -151,6 +162,10 @@ export interface BatchRenderJob {
     questionCount: number;
     status: 'completed' | 'failed';
     error?: string;
+    ttsDurationSec?: number;
+    renderDurationSec?: number;
+    totalDurationSec?: number;
+    isPipelinedTTS?: boolean;
   }>;
   error?: string;
   createdAt: string;
@@ -1771,10 +1786,10 @@ export const RenderTab: React.FC<RenderTabProps> = ({
             <div className="p-3 bg-slate-950/80 rounded-xl border border-slate-800">
               <span className="text-[10px] text-slate-400 uppercase block font-sans font-bold flex items-center gap-1">
                 <Gauge size={12} className="text-emerald-400" />
-                <span>Current FPS</span>
+                <span>Tốc Độ (FPS)</span>
               </span>
               <span className="text-sm font-black text-emerald-400 mt-1 block">
-                {currentDisplayFps > 0 ? `${currentDisplayFps} FPS` : '-- FPS'}
+                {currentDisplayFps > 0 ? `${currentDisplayFps.toFixed(1)} FPS` : '-- FPS'}
               </span>
             </div>
 
@@ -1785,7 +1800,7 @@ export const RenderTab: React.FC<RenderTabProps> = ({
                 <span>Render Speed</span>
               </span>
               <span className="text-sm font-black text-purple-400 mt-1 block">
-                {currentDisplaySpeed > 0 ? `${currentDisplaySpeed}x` : '--x'}
+                {currentDisplaySpeed > 0 ? `${currentDisplaySpeed.toFixed(2)}x` : '--x'}
               </span>
             </div>
 
@@ -1800,6 +1815,24 @@ export const RenderTab: React.FC<RenderTabProps> = ({
               </span>
             </div>
           </div>
+
+          {/* Gối Đầu TTS Status Banner */}
+          {(jobState?.pipeliningNextVideo || batchState?.pipeliningNextVideo) && (
+            <div className="p-2.5 bg-gradient-to-r from-purple-950/50 via-indigo-950/40 to-purple-950/50 border border-purple-500/40 rounded-xl flex items-center gap-2.5 text-xs text-purple-200 animate-in fade-in">
+              <div className="w-6 h-6 rounded-lg bg-purple-500/25 text-purple-300 flex items-center justify-center shrink-0">
+                <Sparkles size={14} className="animate-spin text-purple-300" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <span className="font-bold text-purple-300 flex items-center gap-1.5">
+                  <span>⚡ Gối Đầu TTS Tự Động Đang Chạy</span>
+                  <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30">Background</span>
+                </span>
+                <span className="text-[11px] text-purple-200/80 block mt-0.5">
+                  Đang khởi tạo trước toàn bộ giọng đọc TTS cho video tiếp theo trong lúc GPU/Skia render khung hình video hiện tại!
+                </span>
+              </div>
+            </div>
+          )}
 
           {/* Detailed 7-Stage Stepper View */}
           <div className="pt-2">
@@ -1887,9 +1920,27 @@ export const RenderTab: React.FC<RenderTabProps> = ({
                       <span className="font-bold text-white block truncate" title={v.fileName || `Video ${v.index}`}>
                         #{v.index}: {v.fileName || `${v.jobId}.mp4`}
                       </span>
-                      <span className="text-[10px] text-slate-400 font-mono block">
-                        {v.questionCount} câu • {v.durationSec ? `${v.durationSec}s` : ''} — {formatBytes(v.fileSizeBytes)}
-                      </span>
+                      <div className="flex items-center flex-wrap gap-1.5 text-[10px] font-mono mt-1 text-slate-400">
+                        <span className="px-1.5 py-0.5 rounded bg-sky-500/15 text-sky-300 border border-sky-500/30 flex items-center gap-1">
+                          <Mic size={10} />
+                          <span>TTS: {v.ttsDurationSec !== undefined ? `${v.ttsDurationSec}s` : '--'}</span>
+                          {v.isPipelinedTTS && <span className="text-emerald-400 font-sans font-bold" title="Tạo trước bằng tính năng Gối Đầu TTS">⚡ Gối đầu</span>}
+                        </span>
+
+                        <span className="px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30 flex items-center gap-1">
+                          <Film size={10} />
+                          <span>Render: {v.renderDurationSec !== undefined ? `${v.renderDurationSec}s` : '--'}</span>
+                        </span>
+
+                        <span className="px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 flex items-center gap-1 font-bold">
+                          <Clock size={10} />
+                          <span>Tổng: {v.totalDurationSec !== undefined ? `${v.totalDurationSec}s` : '--'}</span>
+                        </span>
+
+                        <span className="text-slate-400">
+                          {v.questionCount} câu • {v.durationSec ? `${v.durationSec}s` : ''} — {formatBytes(v.fileSizeBytes)}
+                        </span>
+                      </div>
                     </div>
 
                     {v.outputUrl && (
@@ -1911,19 +1962,40 @@ export const RenderTab: React.FC<RenderTabProps> = ({
           {/* Single Completed Video Preview & Download */}
           {!batchState && jobState?.status === 'completed' && jobState.outputUrl && (
             <div className="pt-3 border-t border-slate-800 space-y-3">
-              <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-3 flex items-center justify-between text-xs">
-                <div className="flex items-center gap-2 text-emerald-300 font-bold">
-                  <CheckCircle size={16} />
-                  <span>Video đã hoàn tất! Dung lượng: {formatBytes(jobState.fileSizeBytes)} (~{jobState.durationSec || 0}s)</span>
+              <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-3.5 space-y-2.5 text-xs">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-emerald-300 font-bold text-sm">
+                    <CheckCircle size={18} />
+                    <span>Video đã render hoàn tất! ({formatBytes(jobState.fileSizeBytes)} • ~{jobState.durationSec || 0}s)</span>
+                  </div>
+                  <a
+                    href={`/api/render/download/${jobState.jobId}`}
+                    download={jobState.fileName || `${jobState.jobId}.mp4`}
+                    className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-lg shadow-sm transition flex items-center gap-1.5 text-xs cursor-pointer"
+                  >
+                    <Download size={14} />
+                    <span>Tải MP4 ({jobState.fileName || `${jobState.jobId}.mp4`})</span>
+                  </a>
                 </div>
-                <a
-                  href={`/api/render/download/${jobState.jobId}`}
-                  download={jobState.fileName || `${jobState.jobId}.mp4`}
-                  className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-lg shadow-sm transition flex items-center gap-1.5 text-xs cursor-pointer"
-                >
-                  <Download size={14} />
-                  <span>Tải MP4 ({jobState.fileName || `${jobState.jobId}.mp4`})</span>
-                </a>
+
+                {/* 3 Mốc Thời Gian Chi Tiết: TTS, Render, Tổng */}
+                <div className="flex items-center flex-wrap gap-2 pt-2 border-t border-emerald-500/20 text-xs font-mono">
+                  <span className="px-2.5 py-1 rounded-lg bg-sky-500/20 text-sky-300 border border-sky-500/30 flex items-center gap-1.5">
+                    <Mic size={12} className="text-sky-400" />
+                    <span>Thời gian tạo TTS: <strong>{jobState.ttsDurationSec !== undefined ? `${jobState.ttsDurationSec}s` : '--'}</strong></span>
+                    {jobState.isPipelinedTTS && <span className="text-emerald-400 font-sans font-bold text-[11px] ml-0.5">⚡ Gối đầu</span>}
+                  </span>
+
+                  <span className="px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1.5">
+                    <Film size={12} className="text-amber-400" />
+                    <span>Thời gian render video: <strong>{jobState.renderDurationSec !== undefined ? `${jobState.renderDurationSec}s` : '--'}</strong></span>
+                  </span>
+
+                  <span className="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1.5 font-bold">
+                    <Clock size={12} className="text-emerald-400" />
+                    <span>Tổng thời gian hoàn thành: <strong>{jobState.totalDurationSec !== undefined ? `${jobState.totalDurationSec}s` : '--'}</strong></span>
+                  </span>
+                </div>
               </div>
 
               <div className="aspect-[9/16] max-w-xs mx-auto rounded-2xl overflow-hidden border-2 border-emerald-500 shadow-2xl bg-black">
@@ -1969,9 +2041,28 @@ export const RenderTab: React.FC<RenderTabProps> = ({
                   <span className="font-bold text-white block font-mono">
                     {j.fileName || j.jobId}
                   </span>
-                  <span className="text-[11px] text-slate-400">
+                  <span className="text-[11px] text-slate-400 block">
                     {new Date(j.createdAt).toLocaleTimeString()} — {j.stage}
                   </span>
+                  {(j.ttsDurationSec !== undefined || j.renderDurationSec !== undefined || j.totalDurationSec !== undefined) && (
+                    <div className="flex items-center gap-2 text-[10px] font-mono text-slate-400 mt-1">
+                      {j.ttsDurationSec !== undefined && (
+                        <span className="text-sky-300">
+                          TTS: <strong>{j.ttsDurationSec}s</strong> {j.isPipelinedTTS && '⚡'}
+                        </span>
+                      )}
+                      {j.renderDurationSec !== undefined && (
+                        <span className="text-amber-300">
+                          Render: <strong>{j.renderDurationSec}s</strong>
+                        </span>
+                      )}
+                      {j.totalDurationSec !== undefined && (
+                        <span className="text-emerald-300">
+                          Tổng: <strong>{j.totalDurationSec}s</strong>
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex items-center gap-2">
